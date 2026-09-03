@@ -1,0 +1,77 @@
+/* Crisp, aligned treatment for “One hub. Everything that follows.” */
+#features {
+  overflow: hidden;
+  padding: 108px 0 116px;
+  border-top: 1px solid #eee8f2;
+  border-bottom: 1px solid #eee8f2;
+  background: #fff;
+}
+
+#features > .page-shell { padding: 0; }
+#features > .page-shell h2 { max-width: 780px; margin: 14px 0 20px; }
+#features > .page-shell .eyebrow { display: inline-flex; align-items: center; gap: 9px; }
+#features > .page-shell .eyebrow::before { content: ""; width: 24px; height: 2px; border-radius: 2px; background: var(--purple); }
+#features .rail-hint { max-width: 650px; margin: 0 !important; color: #625a6d !important; font-size: 17px !important; line-height: 1.65 !important; }
+
+#features .journey { margin-top: 42px; }
+#features .journey-controls { margin-bottom: 20px; }
+#features .journey-track {
+  gap: 20px;
+  padding: 8px clamp(24px, 9vw, 150px) 38px;
+  scroll-padding-inline: clamp(24px, 9vw, 150px);
+}
+
+#features .journey-card {
+  flex-basis: 356px;
+  padding: 10px 10px 24px;
+  scroll-snap-align: start;
+  opacity: 1;
+  filter: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid #e8e1ed;
+  border-radius: 34px;
+  background: #fff;
+  box-shadow: 0 14px 38px rgba(49, 31, 66, .07);
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+
+#features .journey-card.is-active {
+  opacity: 1;
+  border-color: #bda5e8;
+  box-shadow: 0 20px 48px rgba(72, 42, 101, .13);
+  transform: translateY(-3px);
+}
+
+#features .journey-card::after { display: none; }
+#features .journey-art { height: 360px; border: 0; border-radius: 25px; background: linear-gradient(145deg, #f4effb, #ece4f7); }
+#features .journey-copy { padding: 20px 12px 0; }
+#features .journey-card h3,
+#features .journey-card p,
+#features .journey-number,
+#features .journey-badge { opacity: 1; filter: none; }
+#features .journey-card p { color: #625a6d; }
+#features .journey-dots { margin-top: 4px; }
+
+/* At reduced browser zoom the rest of the site switches to a centered 1280px
+   shell. Match that shell instead of measuring the rail from the viewport edge. */
+.layout-zoomed-out #features .journey-track {
+  width: min(calc(100% - 48px), 1280px);
+  margin-inline: auto;
+  padding-inline: 0;
+  scroll-padding-inline: 0;
+}
+
+@media (max-width: 850px) {
+  #features { padding: 80px 0 88px; }
+  #features .journey-card { flex-basis: min(82vw, 356px); }
+  #features .journey-art { height: 330px; }
+}
+
+@media (max-width: 540px) {
+  #features { padding-top: 68px; }
+  #features > .page-shell h2 { font-size: clamp(40px, 12vw, 54px); }
+  #features .rail-hint { font-size: 15px !important; }
+  #features .journey-track { padding-inline: 18px; scroll-padding-inline: 18px; }
+  #features .journey-card { flex-basis: calc(100vw - 36px); border-radius: 28px; }
+}

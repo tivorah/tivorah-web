@@ -1,0 +1,26 @@
+.brand {
+  display: flex;
+  align-items: center;
+  color: inherit;
+  font-size: inherit;
+}
+
+.brand img {
+  display: block;
+  width: 154px;
+  height: auto;
+}
+
+.phone-logo {
+  width: 132px;
+  height: 132px;
+  object-fit: contain;
+  margin: auto;
+  filter: drop-shadow(0 12px 24px #32166d55);
+}
+
+.footer-logo {
+  display: block;
+  width: 142px;
+  height: auto;
+}

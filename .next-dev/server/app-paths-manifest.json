@@ -1,0 +1,8 @@
+{
+  "/page": "app/page.js",
+  "/community-guidelines/page": "app/community-guidelines/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/about/page": "app/about/page.js",
+  "/account-deletion/page": "app/account-deletion/page.js",
+  "/terms/page": "app/terms/page.js"
+}
