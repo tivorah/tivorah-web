@@ -30,7 +30,7 @@ export function SiteHeader() {
           <Link href="/#about">About</Link>
           <Link href="/#different">Why Tivorah</Link>
           <Link href="/#features">Features</Link>
-          <Link href="/#waitlist">Join waitlist</Link>
+          <Link href="/#updates">News &amp; updates</Link>
         </nav>
       </div>
     </header>
