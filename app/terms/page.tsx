@@ -11,7 +11,7 @@ export default function Terms() {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 8 September 2026
+        <strong>Last updated:</strong> 10 September 2026
       </p>
 
       <p>
@@ -73,6 +73,28 @@ export default function Terms() {
         reasonably remain in backups, reports, shared conversations or records
         we are required or permitted to retain.
       </p>
+
+      <h2>Messaging and encryption</h2>
+      <p>
+        Only an eligible personal one-to-one chat that Tivorah expressly marks
+        as end-to-end encrypted has that protection. Banter, posts, threads,
+        Hub messages, announcements, group conversations and conversations
+        associated with listings, marketplace items, services, events, tickets,
+        jobs or other transactions are not end-to-end encrypted and may be
+        stored, processed and reviewed as described in our Privacy Policy.
+        Private membership, an audience restriction or the word
+        &quot;private&quot; does not by itself mean that content is end-to-end
+        encrypted.
+      </p>
+      <p>
+        End-to-end encryption does not prevent another participant from saving,
+        copying, forwarding, photographing or reporting a message. A participant
+        who reports an encrypted conversation may choose to provide readable
+        copies of selected messages to Tivorah Safety. You must not attempt to
+        bypass encryption notices, compromise another device or misuse Tivorah
+        to conceal unlawful conduct. We may restrict messaging where device
+        keys, membership, security checks or required service data are not ready.
+      </p>
       <p>
         You must have the rights and permissions needed to upload your content.
         You are accountable for its accuracy and legality and for ensuring it
@@ -109,24 +131,30 @@ export default function Terms() {
         control every event.
       </p>
       <p>
-        Paid ticket transactions may be processed by Stripe. Prices, quantities
-        and any Tivorah or organiser fees will be shown before payment. Refunds
-        and cancellations are handled according to the displayed event terms,
-        the organiser&apos;s obligations, Tivorah&apos;s applicable process and
-        rights that cannot be excluded under Australian law. Organisers using
-        payouts must complete provider verification and remain responsible for
-        taxes and accurate payout information.
+        Tivorah currently supports free in-app tickets and may open a secure
+        external organiser ticket link. Native paid-ticket checkout is not
+        currently enabled. A purchase completed through an external link is
+        governed by the organiser or external provider&apos;s checkout terms,
+        privacy practices, fees and refund process. Rights that cannot be
+        excluded under Australian law continue to apply.
       </p>
 
-      <h2>Jobs and applications</h2>
+      <h2>Jobs and opportunities</h2>
       <p>
-        Job posters are responsible for lawful, accurate and non-discriminatory
-        opportunities. Applicants are responsible for their application
-        information and decisions about engaging with an employer. Tivorah does
-        not guarantee a role, applicant, employer, qualification or employment
-        outcome. Protected application documents may be made available to the
-        relevant authorised employer or reviewer and may generate an access
-        record.
+        Hub members may publish job and opportunity posts and choose to receive
+        responses through an external HTTPS application link, a contextual
+        Tivorah direct message, or both. Posters are responsible for lawful,
+        accurate and non-discriminatory opportunities and for the security and
+        privacy practices of any external application service they select.
+        Members should review the external provider&apos;s terms and privacy policy
+        before submitting information outside Tivorah.
+      </p>
+      <p>
+        Tivorah does not currently receive native job applications, cover
+        letters or CVs through the mobile app and does not provide application
+        tracking, recruitment, candidate screening or personnel placement.
+        Tivorah does not guarantee a role, poster, applicant, qualification or
+        employment outcome.
       </p>
 
       <h2>Acceptable use</h2>

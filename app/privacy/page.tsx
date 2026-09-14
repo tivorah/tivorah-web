@@ -11,7 +11,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 8 September 2026
+        <strong>Last updated:</strong> 10 September 2026
       </p>
 
       <p>
@@ -41,9 +41,11 @@ export default function Privacy() {
           announcements, comments, reactions, polls and reports.
         </li>
         <li>
-          <strong>Messages and calls:</strong> private or group messages, voice
-          notes, attachments, delivery information and technical call or
-          signalling records. If calling is made available, camera and
+          <strong>Messages and calls:</strong> conversation content where the
+          conversation is not end-to-end encrypted; encrypted message
+          envelopes and attachments for eligible one-to-one private chats;
+          reports that a participant chooses to submit; and delivery, device,
+          key-management and technical call or signalling records. Camera and
           microphone access occurs only with device permission.
         </li>
         <li>
@@ -52,16 +54,18 @@ export default function Privacy() {
           and information needed to arrange pickup, delivery or a service.
         </li>
         <li>
-          <strong>Events and payments:</strong> events, bookings, ticket types,
-          ticket and QR identifiers, attendance/check-in records, order status,
-          refunds and payment-provider references. Payment card details are
-          entered with our payment provider and are not intended to be stored
-          by Tivorah.
+          <strong>Events and tickets:</strong> events, bookings, free Tivorah
+          ticket types, ticket and QR identifiers, attendance and check-in
+          records, and external organiser ticket links. Native paid-ticket
+          checkout is not currently enabled. If you follow an external ticket
+          link, the external provider&apos;s privacy practices apply.
         </li>
         <li>
-          <strong>Jobs:</strong> job and employer information, applications,
-          cover letters, uploaded CVs or other documents, application status
-          and access records for protected documents.
+          <strong>Jobs and opportunities:</strong> Hub job or opportunity posts,
+          Australian locality information, the response method selected by the
+          poster, external application links and contextual direct-message
+          activity. Tivorah does not currently collect native job applications,
+          cover letters or CVs through the mobile app.
         </li>
         <li>
           <strong>Location:</strong> a location you enter, a profile locality,
@@ -89,7 +93,7 @@ export default function Privacy() {
         device when you use Tivorah, from other members when they interact with
         or report content, and from providers that help us operate payments,
         communications, security, media and analytics. Event organisers,
-        sellers, service providers and employers may also provide information
+        sellers, service providers and opportunity posters may also provide information
         needed to complete the activity you request.
       </p>
 
@@ -106,8 +110,8 @@ export default function Privacy() {
           enabled;
         </li>
         <li>
-          process payments, organiser payouts, cancellations, refunds and
-          transaction support;
+          issue free tickets, support event attendance and check-in, and manage
+          cancellations or related support;
         </li>
         <li>
           enforce Hub rules and our policies, investigate reports, prevent
@@ -135,11 +139,48 @@ export default function Privacy() {
         addresses, financial information or anything you do not want the
         relevant audience to see.
       </p>
+      <h2>Messages and end-to-end encryption</h2>
       <p>
-        Private messages are shown to their participants and may be accessed by
-        authorised personnel or providers only where reasonably necessary for
-        delivery, support, safety, legal compliance or investigation of a
-        report.
+        Tivorah distinguishes personal one-to-one private chats from community
+        and transactional conversations. An eligible one-to-one chat is
+        end-to-end encrypted only when the conversation screen expressly shows
+        that protection. In such a chat, message content and attachments are
+        encrypted on the sender&apos;s device and can ordinarily be decrypted only
+        by the participating devices. Tivorah may temporarily hold encrypted
+        envelopes for delivery, but does not hold the private device keys needed
+        to read that content.
+      </p>
+      <p>
+        Banter, posts, threads, Hub messages, announcements, group conversations
+        and conversations connected to a listing, marketplace item, service,
+        event, ticket, job or other transaction are not end-to-end encrypted.
+        Tivorah and relevant service providers store and process that content as
+        reasonably necessary to deliver the feature, maintain transaction
+        records, provide support, investigate reports, moderate content, prevent
+        fraud and comply with law. Audience controls or private-Hub membership
+        restrict who should receive content but do not make it end-to-end
+        encrypted.
+      </p>
+      <p>
+        End-to-end encryption does not hide all communication metadata and does
+        not prevent a recipient from copying, forwarding, photographing or
+        reporting content. Tivorah may process participant and device
+        identifiers, key records containing public keys, delivery and read
+        status, dates and times, encrypted-envelope size, IP address, abuse and
+        security signals, and device or application information. If a
+        participant reports an encrypted chat, Tivorah will ask that person to
+        choose the messages and associated information to submit. Submitted
+        report content becomes readable by authorised safety personnel and
+        providers for investigation.
+      </p>
+      <p>
+        Do not assume a conversation is end-to-end encrypted unless Tivorah
+        displays an end-to-end encryption notice in that conversation. Feature
+        availability may depend on application version, device support and
+        successful security setup. Tivorah will not silently downgrade a chat
+        that is marked as end-to-end encrypted; if secure messaging is not ready,
+        sending will be unavailable or the app will clearly disclose the
+        different protection before a message is sent.
       </p>
 
       <h2>Device permissions</h2>
@@ -198,17 +239,13 @@ export default function Privacy() {
           contribution;
         </li>
         <li>
-          event organisers, sellers, buyers, service providers, employers or
-          applicants when necessary for an interaction you request;
+          event organisers, sellers, buyers, service providers or opportunity
+          posters when necessary for an interaction you request;
         </li>
         <li>
           infrastructure, database, media-storage, email, SMS, push,
           customer-support, security and analytics providers, including
           ImageKit, SendGrid, TextMagic, Expo and PostHog;
-        </li>
-        <li>
-          Stripe and related financial providers for paid tickets, organiser
-          onboarding, payouts, refunds and fraud prevention;
         </li>
         <li>
           professional advisers, insurers, auditors or a successor involved in
@@ -239,8 +276,11 @@ export default function Privacy() {
       <p>
         We use safeguards including access controls, password hashing,
         encryption in transit, restricted document access, session revocation
-        and operational audit records. No online service can guarantee absolute
-        security. If an eligible data breach occurs, we will assess and respond
+        and operational audit records. Eligible one-to-one private chats also
+        use the end-to-end encryption described above. No online service can
+        guarantee absolute security, and encryption cannot protect content on a
+        compromised or unlocked device. If an eligible data breach occurs, we
+        will assess and respond
         to it in accordance with applicable Australian law, including notifying
         affected people and the Office of the Australian Information
         Commissioner where required.
@@ -252,6 +292,15 @@ export default function Privacy() {
         purposes described above, including service delivery, legal and tax
         obligations, fraud prevention, safety, backups and dispute resolution.
         Retention periods differ by record type.
+      </p>
+      <p>
+        For eligible end-to-end encrypted chats, encrypted delivery envelopes
+        are retained only until delivery or expiry under the applicable
+        delivery policy. Decrypted chat history is stored on participating
+        devices and may remain on another participant&apos;s device after you delete
+        your account or your own copy. Non-encrypted community and transactional
+        conversations may be retained for moderation, safety, fraud prevention,
+        transaction integrity, legal obligations and dispute resolution.
       </p>
       <p>
         You can request deletion in the mobile app under

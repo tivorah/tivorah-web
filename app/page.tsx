@@ -2,11 +2,8 @@ import { NewsletterForm } from "./newsletter-form";
 import Image from "next/image";
 import { AppPreview } from "./app-preview";
 import { JourneyRail, type JourneyStep } from "./journey-rail";
-import { BrandedQrCode } from "./branded-qr-code";
 
-// What makes Tivorah different from a general community app. Every claim here ships
-// today: hub rules, approval-gated hubs, verified-member trade and moderation are all
-// live in the product.
+// What makes Tivorah different from a general community app.
 const differences = [
   [
     "Hubs with real rules",
@@ -78,10 +75,6 @@ const featureRail: JourneyStep[] = [
 ];
 
 export default async function Home() {
-  const downloadUrl =
-    process.env.NEXT_PUBLIC_APP_DOWNLOAD_URL || "https://tivorah.com/#download";
-  const iosUrl = process.env.NEXT_PUBLIC_IOS_APP_URL || "#updates";
-  const androidUrl = process.env.NEXT_PUBLIC_ANDROID_APP_URL || "#updates";
   return (
     <>
       <section className="hero hero-home">
@@ -157,23 +150,24 @@ export default async function Home() {
           <div className="hero-message-inner">
             <div className="hero-copy">
               <span className="eyebrow light">
-                Your community, wherever you are in Australia
+                Coming soon across Australia
               </span>
               <h1>
-                Your people are
+                Find your people.
                 <br />
-                already here.
+                Build your life in Australia.
               </h1>
             </div>
             <div className="hero-intro">
               <p>
-                Tivorah is built around communities that know you — where the
-                people you buy from, work with and turn up for are members of
-                the same Hub as you.
+                Tivorah connects people new to Australia with trusted
+                communities already here. Join local Hubs, ask real questions,
+                meet people nearby and discover opportunities shared by people
+                who understand your journey.
               </p>
               <div className="actions">
                 <a className="button hero-primary" href="#updates">
-                  Get app updates <span>→</span>
+                  Join the waiting list <span>→</span>
                 </a>
                 <a className="button hero-secondary" href="#different">
                   What makes it different
@@ -289,8 +283,8 @@ export default async function Home() {
               place you moved to and more like a place where you belong.
             </p>
             <div className="actions">
-              <a className="button" href="#download">
-                Find your first Hub
+              <a className="button" href="#updates">
+                Join the waiting list
               </a>
             </div>
           </div>
@@ -306,49 +300,14 @@ export default async function Home() {
           </div>
         </div>
       </section>
-      <section className="download" id="download">
-        <div className="page-shell download-layout">
-          <div>
-            <span className="eyebrow light">Tivorah in your pocket</span>
-            <h2>Take your community with you.</h2>
-            <p>
-              Choose your device or scan the QR code with your phone. Store
-              links can be activated the moment each app is published.
-            </p>
-            <div className="store-buttons">
-              <a href={iosUrl} className="store-button">
-                <span className="store-icon">●</span>
-                <span>
-                  <small>Download for</small>
-                  <strong>iPhone</strong>
-                </span>
-              </a>
-              <a href={androidUrl} className="store-button">
-                <span className="store-icon">▶</span>
-                <span>
-                  <small>Download for</small>
-                  <strong>Android</strong>
-                </span>
-              </a>
-            </div>
-          </div>
-          <div className="qr-card">
-            <div className="qr-code-wrap">
-              <BrandedQrCode value={downloadUrl} />
-            </div>
-            <strong>Scan to get Tivorah</strong>
-            <small>Open the camera on your phone</small>
-          </div>
-        </div>
-      </section>
       <section className="waitlist" id="updates">
         <div className="page-shell waitlist-layout">
           <div>
-            <span className="eyebrow light">Tivorah news</span>
-            <h2>Stay close to what comes next.</h2>
+            <span className="launch-status"><i />Coming soon</span>
+            <h2>Be there when Tivorah opens.</h2>
             <p>
-              Subscribe for Tivorah news, product stories and important app
-              updates, delivered without unnecessary noise.
+              Join the waiting list for launch news and early access updates.
+              We will let you know when Tivorah is ready in Australia.
             </p>
           </div>
           <NewsletterForm />

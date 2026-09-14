@@ -25,7 +25,7 @@ export function NewsletterForm() {
             email: data.get("email"),
             consent: data.get("consent") === "on",
             website: data.get("website"),
-            source: "website-newsletter",
+            source: "website-waitlist",
           }),
         },
       );
@@ -33,7 +33,7 @@ export function NewsletterForm() {
       if (!response.ok)
         throw new Error(result.message || "Please check your details.");
       setState("success");
-      setMessage("You’re subscribed to Tivorah news and app updates.");
+      setMessage("You’re on the Tivorah waiting list.");
       event.currentTarget.reset();
     } catch (error) {
       setState("error");
@@ -78,12 +78,12 @@ export function NewsletterForm() {
         </label>
       </div>
       <button className="waitlist-submit" disabled={state === "loading"}>
-        {state === "loading" ? "Subscribing…" : "Subscribe for updates"}
+        {state === "loading" ? <><span className="waitlist-spinner" aria-hidden="true"/>Joining…</> : "Join the waiting list"}
       </button>
       <label className="consent">
         <input name="consent" type="checkbox" required />
         <span>
-          I agree to receive Tivorah news and app updates. I can unsubscribe
+          I agree to receive Tivorah launch news and app updates. I can unsubscribe
           anytime.
         </span>
       </label>

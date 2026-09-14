@@ -154,6 +154,45 @@ footer {
 
 .waitlist-submit {
   width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.waitlist-spinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: waitlist-spin 0.7s linear infinite;
+}
+
+.launch-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  color: #dccaff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.launch-status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a979f1;
+  box-shadow: 0 0 0 4px rgba(169, 121, 241, 0.16);
+}
+
+@keyframes waitlist-spin {
+  to { transform: rotate(360deg); }
 }
 
 .waitlist-submit:disabled {

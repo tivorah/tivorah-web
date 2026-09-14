@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 
-type Props = { value: string; size?: number };
+type Props = { value: string; size?: number; ariaLabel?: string };
 
 const QUIET_ZONE = 4;
 const FINDER_SIZE = 7;
@@ -9,7 +9,7 @@ const inFinder = (row: number, column: number, modules: number) =>
   (row < FINDER_SIZE && column >= modules - FINDER_SIZE) ||
   (row >= modules - FINDER_SIZE && column < FINDER_SIZE);
 
-export function BrandedQrCode({ value, size = 220 }: Props) {
+export function BrandedQrCode({ value, size = 220, ariaLabel = "Scan to download Tivorah" }: Props) {
   const matrix = QRCode.create(value, { errorCorrectionLevel: "H" }).modules;
   const moduleCount = matrix.size;
   const viewSize = moduleCount + QUIET_ZONE * 2;
@@ -27,7 +27,7 @@ export function BrandedQrCode({ value, size = 220 }: Props) {
 
   return (
     <svg
-      aria-label="Scan to download Tivorah"
+      aria-label={ariaLabel}
       role="img"
       width={size}
       height={size}
