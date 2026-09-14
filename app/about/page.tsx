@@ -36,9 +36,10 @@ export default function About() {
           context.
         </li>
         <li>
-          <strong>People are not anonymous profiles.</strong> Members can see the
-          community connection behind a seller, service provider or referral before
-          deciding to engage.
+          <strong>Profiles have community context.</strong> Members can see the
+          Hub connection behind a seller, service provider or referral before
+          deciding to engage. That context is not an identity, qualification or
+          background check.
         </li>
         <li>
           <strong>Local discovery is genuinely local.</strong> Tivorah helps surface

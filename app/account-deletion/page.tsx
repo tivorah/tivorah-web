@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LegalNavigation } from "../legal-navigation";
 
 export const metadata: Metadata = {
   title: "Delete Your Account",
@@ -11,7 +12,7 @@ export default function AccountDeletion() {
       <span className="eyebrow">Account controls</span>
       <h1>Delete your Tivorah account</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 8 September 2026
+        <strong>Last updated:</strong> 15 September 2026
       </p>
 
       <h2>Delete in the mobile app</h2>
@@ -24,7 +25,8 @@ export default function AccountDeletion() {
           Select <strong>Delete my account</strong>.
         </li>
         <li>
-          Enter your password and confirm <strong>Permanently delete</strong>.
+          For a password account, enter your password. For an Apple account,
+          sign in with Apple again if prompted. Confirm <strong>Permanently delete</strong>.
         </li>
       </ol>
       <p>
@@ -45,6 +47,15 @@ export default function AccountDeletion() {
         that you control the account before acting on the request.
       </p>
 
+      <h2>What happens next</h2>
+      <p>
+        In-app deletion begins immediately by revoking active sessions and
+        de-identifying the core account. Email requests are acknowledged after
+        identity verification and completed within a reasonable period, subject
+        to any lawful reason to retain limited information. We will tell you if
+        we need more information or cannot delete a particular record.
+      </p>
+
       <h2>What may be retained</h2>
       <p>
         Some contributions or limited records may remain in anonymised or
@@ -58,6 +69,7 @@ export default function AccountDeletion() {
         Read the <a href="/privacy">Privacy Policy</a> for more information
         about retention, access and correction requests.
       </p>
+      <LegalNavigation />
     </article>
   );
 }

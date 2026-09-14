@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { LegalNavigation } from "../legal-navigation";
 
 export const metadata: Metadata = {
   title: "Community Guidelines",
@@ -11,7 +13,7 @@ export default function Guidelines() {
       <span className="eyebrow">Safety</span>
       <h1>Community Guidelines</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 8 September 2026
+        <strong>Last updated:</strong> 15 September 2026
       </p>
 
       <p>
@@ -68,6 +70,27 @@ export default function Guidelines() {
         services or law enforcement.
       </p>
 
+      <h2>Child safety is non-negotiable</h2>
+      <p>
+        Tivorah accounts are for people aged 18 and over. Never sexualise,
+        groom, exploit or solicit a child; seek or share child sexual abuse
+        material; or use Tivorah to arrange unsafe contact with a child. Do not
+        repost suspected child sexual abuse material as “evidence”. Report it
+        immediately through Tivorah and, where appropriate, to police or the
+        eSafety Commissioner.
+      </p>
+
+      <h2>Regulated goods and services</h2>
+      <p>
+        Do not offer weapons, illegal drugs, tobacco or vaping products,
+        prescription-only medicines, recalled goods, counterfeit items,
+        financial products, unlicensed migration assistance or another item or
+        service that is unlawful or requires approval you do not hold. Alcohol,
+        gambling, adult services and other age-restricted categories are not
+        permitted unless Tivorah has expressly enabled the category with
+        appropriate legal and safety controls.
+      </p>
+
       <h2>Respect each Hub</h2>
       <p>
         Follow the published rules and purpose of every Hub you join. Hub rules
@@ -92,6 +115,11 @@ export default function Guidelines() {
         report where someone may be at risk. Reports should be truthful and
         include enough context for review. Do not use Tivorah for emergency
         help; contact the appropriate Australian emergency service directly.
+      </p>
+      <p>
+        A person without an account can also make a report using our
+        <Link href="/safety"> Safety Centre</Link>. Never send passwords,
+        verification codes or illegal intimate material as part of a report.
       </p>
 
       <h2>How enforcement works</h2>
@@ -119,6 +147,7 @@ export default function Guidelines() {
         . Include links or screenshots where safe, but do not forward passwords,
         verification codes or unnecessary private information.
       </p>
+      <LegalNavigation />
     </article>
   );
 }

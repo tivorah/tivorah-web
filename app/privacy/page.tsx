@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { LegalNavigation } from "../legal-navigation";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -11,7 +13,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 10 September 2026
+        <strong>Last updated:</strong> 15 September 2026
       </p>
 
       <p>
@@ -22,18 +24,40 @@ export default function Privacy() {
         the choices available to you.
       </p>
 
+      <div className="legal-callout">
+        <strong>Privacy at a glance</strong>
+        <p>
+          We do not sell personal information. Public and Hub activity is not
+          the same as a private message. Optional product analytics can be
+          disabled in the mobile app. You can request access, correction or
+          deletion by contacting <a href="mailto:privacy@tivorah.com">privacy@tivorah.com</a>.
+        </p>
+      </div>
+
       <h2>Information we collect</h2>
       <ul>
         <li>
           <strong>Account and verification information:</strong> name,
           username, email address, phone number, country code, encrypted
-          password, verification status, account role and acceptance of our
-          legal terms.
+          password credential, verification and two-factor status, linked
+          sign-in provider, session and device information, account role and
+          acceptance of our legal terms. If you use Sign in with Apple, Apple
+          provides an account identifier and the name or relay email you choose
+          to share; Tivorah does not receive your Apple password.
         </li>
         <li>
           <strong>Profile information:</strong> profile photo, biography,
           gender if supplied, country, suburb or city, postcode, interests and
           other information you choose to add.
+        </li>
+        <li>
+          <strong>Sensitive information you choose to reveal:</strong> a Hub,
+          profile, post or interaction may reveal or suggest racial or ethnic
+          origin, religion, sexual orientation, health, disability, political
+          opinions or another sensitive characteristic. You should only share
+          this information when you are comfortable doing so. We process it to
+          provide the community feature you deliberately use and seek any
+          additional consent required by law.
         </li>
         <li>
           <strong>Hub and social activity:</strong> Hubs you create, join or
@@ -54,18 +78,19 @@ export default function Privacy() {
           and information needed to arrange pickup, delivery or a service.
         </li>
         <li>
-          <strong>Events and tickets:</strong> events, bookings, free Tivorah
-          ticket types, ticket and QR identifiers, attendance and check-in
-          records, and external organiser ticket links. Native paid-ticket
-          checkout is not currently enabled. If you follow an external ticket
-          link, the external provider&apos;s privacy practices apply.
+          <strong>Events, tickets and payments:</strong> events, bookings,
+          ticket and QR identifiers, attendance and check-in records, order
+          totals, payment status, refunds and Stripe customer, checkout or
+          connected-account identifiers where paid features are enabled.
+          Tivorah does not store full payment-card numbers. If you follow an
+          external ticket link, the external provider&apos;s privacy practices apply.
         </li>
         <li>
-          <strong>Jobs and opportunities:</strong> Hub job or opportunity posts,
-          Australian locality information, the response method selected by the
-          poster, external application links and contextual direct-message
-          activity. Tivorah does not currently collect native job applications,
-          cover letters or CVs through the mobile app.
+          <strong>Jobs and opportunities:</strong> job and employer profiles,
+          Australian locality information, saved jobs, application status,
+          cover letters, CVs or other documents where native applications are
+          enabled, external application links, contextual direct-message
+          activity and access records for protected application documents.
         </li>
         <li>
           <strong>Location:</strong> a location you enter, a profile locality,
@@ -95,6 +120,16 @@ export default function Privacy() {
         communications, security, media and analytics. Event organisers,
         sellers, service providers and opportunity posters may also provide information
         needed to complete the activity you request.
+      </p>
+
+      <h2>When information is required</h2>
+      <p>
+        Account, authentication and essential service information is required
+        to create and protect an account. Other fields, permissions, precise
+        location, analytics, marketing and most profile details are optional.
+        If required information is not provided, we may be unable to create an
+        account or provide the related feature. We do not ask for government
+        identity documents merely to join an ordinary Hub.
       </p>
 
       <h2>How we use information</h2>
@@ -216,6 +251,15 @@ export default function Privacy() {
         records.
       </p>
 
+      <h2>Website cookies and mobile storage</h2>
+      <p>
+        The public website does not currently use advertising cookies or
+        non-essential behavioural analytics cookies. The restricted admin
+        portal uses necessary authentication and security cookies. The mobile
+        app uses local and secure device storage for sessions, settings,
+        encryption keys and feature state. See our <Link href="/cookies">Cookie Notice</Link>.
+      </p>
+
       <h2>Notifications, news and marketing</h2>
       <p>
         You can manage push categories and optional marketing notifications in
@@ -243,9 +287,10 @@ export default function Privacy() {
           posters when necessary for an interaction you request;
         </li>
         <li>
-          infrastructure, database, media-storage, email, SMS, push,
-          customer-support, security and analytics providers, including
-          ImageKit, SendGrid, TextMagic, Expo and PostHog;
+          infrastructure, database, media-storage, email, push, authentication,
+          payment, customer-support, security and analytics providers, including
+          Netlify, Apple, Resend, ImageKit, Stripe, Expo and PostHog when the
+          relevant service is configured;
         </li>
         <li>
           professional advisers, insurers, auditors or a successor involved in
@@ -262,14 +307,13 @@ export default function Privacy() {
 
       <h2>Overseas processing</h2>
       <p>
-        Some providers may store or process information outside Australia,
-        including in the United States and other countries in which they or
-        their subprocessors operate. The exact location can depend on the
-        provider and the hosting region configured for Tivorah. We assess our
-        providers and take reasonable steps appropriate to the information and
-        service to protect personal information used or disclosed overseas. You
-        may contact us for current information about relevant provider
-        locations.
+        Some providers may store, access or process information outside
+        Australia. Likely locations include the United States, United Kingdom,
+        European Economic Area and Singapore, depending on the provider,
+        configured region and content-delivery location. Provider subprocessors
+        and locations can change. We assess providers and take reasonable steps
+        appropriate to the information and service before an overseas
+        disclosure. Contact us for the current provider and location register.
       </p>
 
       <h2>Storage, security and data breaches</h2>
@@ -334,9 +378,12 @@ export default function Privacy() {
       <h2>Children</h2>
       <p>
         Tivorah is designed for people aged 18 and over. We do not knowingly
-        permit children to create accounts. Contact us if you believe a child
-        has provided personal information so we can investigate and take
-        appropriate action.
+        permit children to create or keep accounts. We may ask for an age
+        declaration and use proportionate age-assurance or anti-circumvention
+        signals where required. We do not use age-assurance information for
+        advertising. Contact us if you believe a child has an account so we can
+        investigate, protect any necessary evidence and remove or restrict the
+        account as appropriate.
       </p>
 
       <h2>Changes and contact</h2>
@@ -356,6 +403,7 @@ export default function Privacy() {
         </a>
         .
       </p>
+      <LegalNavigation />
     </article>
   );
 }

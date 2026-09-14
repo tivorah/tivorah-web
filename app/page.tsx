@@ -11,7 +11,7 @@ const differences = [
   ],
   [
     "Trade with people you know",
-    "A seller is a confirmed member of your hub, not an anonymous account. Buying from your community means something.",
+                "See the Hub connection behind a listing before you engage. Membership adds context, but you should still verify claims that matter.",
   ],
   [
     "Doors that can close",
@@ -175,7 +175,7 @@ export default async function Home() {
               </div>
               <div className="trust-row">
                 <span>Community-run hubs</span>
-                <span>Verified members</span>
+                <span>Account-based membership</span>
                 <span>Real moderation</span>
               </div>
             </div>

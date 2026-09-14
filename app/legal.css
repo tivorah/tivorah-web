@@ -1,0 +1,259 @@
+.content {
+  width: 100%;
+  min-width: 0;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.content-wide {
+  max-width: 1080px;
+}
+
+.content-lead {
+  max-width: 760px;
+  font-size: 19px;
+}
+
+.content a:not(.legal-card) {
+  color: #6031bd;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.content a:focus-visible,
+.footer-links a:focus-visible,
+.nav a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #8d62df;
+  outline-offset: 3px;
+}
+
+.legal-callout,
+.legal-alert {
+  max-width: 100%;
+  margin: 30px 0;
+  padding: 22px 24px;
+  border: 1px solid #d9cbed;
+  border-radius: 18px;
+  background: #f4efff;
+}
+
+.legal-alert {
+  border-color: #efc6c2;
+  background: #fff4f2;
+}
+
+.legal-callout > strong,
+.legal-alert > strong {
+  display: block;
+  color: #2a2033;
+  font-size: 17px;
+}
+
+.legal-callout p,
+.legal-alert p {
+  margin-bottom: 0;
+}
+
+.legal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 42px 0;
+}
+
+.legal-card {
+  min-height: 210px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.legal-card:hover {
+  border-color: #ad8de5;
+  box-shadow: 0 14px 30px rgba(51, 34, 69, 0.08);
+  transform: translateY(-2px);
+}
+
+.legal-card h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.legal-card p {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.legal-card span {
+  color: var(--purple);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.legal-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 52px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.content .legal-navigation a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #453a4f;
+  background: #fff;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.contact-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 38px 0;
+}
+
+.contact-list section {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.contact-list h2 {
+  margin: 0 0 8px;
+  font-size: 21px;
+}
+
+.contact-list p {
+  margin: 0 0 12px;
+}
+
+.content-form-page {
+  max-width: 720px;
+}
+
+.standalone-form {
+  display: grid;
+  gap: 18px;
+  margin: 32px 0;
+  border: 1px solid var(--line);
+}
+
+.standalone-form > label:not(.honey) {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.standalone-form input {
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+}
+
+.standalone-form button {
+  min-height: 48px;
+}
+
+.standalone-form button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.standalone-form .success,
+.standalone-form .error,
+.form-fine-print {
+  margin: 0;
+  font-size: 13px;
+}
+
+.waitlist-form a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-inner {
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(130px, 1fr));
+  gap: clamp(28px, 4vw, 60px);
+}
+
+.footer-links nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.footer-links strong {
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.footer-links a {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  color: #655b70;
+  font-size: 13px;
+}
+
+@media (max-width: 850px) {
+  .legal-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-links {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .content {
+    padding-top: 64px;
+  }
+
+  .content h1 {
+    font-size: clamp(40px, 13vw, 54px);
+  }
+
+  .legal-grid,
+  .contact-list,
+  .footer-links {
+    grid-template-columns: 1fr;
+  }
+
+  .legal-card {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legal-card {
+    transition: none;
+  }
+}

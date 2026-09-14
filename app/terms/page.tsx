@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { LegalNavigation } from "../legal-navigation";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
@@ -11,8 +13,18 @@ export default function Terms() {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 10 September 2026
+        <strong>Last updated:</strong> 15 September 2026
       </p>
+
+      <div className="legal-callout">
+        <strong>Important</strong>
+        <p>
+          Tivorah provides the platform. Members generally provide their own
+          posts, advice, listings, services, jobs and events. A profile, badge
+          or Hub membership is not a background, identity or qualification
+          check unless a screen clearly states exactly what Tivorah verified.
+        </p>
+      </div>
 
       <p>
         These Terms of Use govern your access to the Tivorah mobile application,
@@ -30,6 +42,13 @@ export default function Terms() {
         results from a failure for which Tivorah is legally responsible.
       </p>
       <p>
+        We may use proportionate age-assurance measures, request an age
+        declaration, restrict an account or require further review where we
+        reasonably believe the eligibility requirement is not met. Attempts to
+        circumvent an age or account restriction are prohibited. A mistaken
+        restriction may be appealed through our support channel.
+      </p>
+      <p>
         You may not impersonate another person, create an account for someone
         without authority, evade a suspension, sell or transfer your account, or
         use automated account creation. One person should use one genuine member
@@ -39,7 +58,8 @@ export default function Terms() {
       <h2>What Tivorah provides</h2>
       <p>
         Tivorah provides tools for community discovery, Hubs, Banter, messaging,
-        media, events and ticketing, local listings and services, jobs,
+        media, events and ticketing, local listings and services, jobs and
+        applications,
         notifications and related interactions. Features may vary by device,
         location, account, rollout stage or feature availability. We may improve,
         add, limit or retire features, while giving reasonable notice where a
@@ -114,6 +134,12 @@ export default function Terms() {
         guarantee, background check or endorsement.
       </p>
       <p>
+        Tivorah is not normally the seller, employer, event organiser or service
+        provider and does not take responsibility for an independent member&apos;s
+        legal obligations. This does not limit any responsibility Tivorah itself
+        has for the platform service or a product Tivorah directly supplies.
+      </p>
+      <p>
         Listings must be accurate and must not involve illegal, stolen,
         dangerous, recalled, counterfeit or prohibited items or services. Use
         safe meeting and payment practices, verify claims that matter and report
@@ -131,30 +157,51 @@ export default function Terms() {
         control every event.
       </p>
       <p>
-        Tivorah currently supports free in-app tickets and may open a secure
-        external organiser ticket link. Native paid-ticket checkout is not
-        currently enabled. A purchase completed through an external link is
-        governed by the organiser or external provider&apos;s checkout terms,
-        privacy practices, fees and refund process. Rights that cannot be
-        excluded under Australian law continue to apply.
+        Where paid tickets are enabled, the total price, applicable Tivorah fee,
+        organiser terms and material cancellation information are shown before
+        payment. Payments may be processed by Stripe and funds may be directed
+        to an organiser&apos;s connected account. Tivorah does not store full card
+        numbers. A purchase completed through an external link is governed by
+        the organiser or external provider&apos;s checkout terms, privacy practices,
+        fees and refund process. Rights that cannot be excluded under Australian
+        law continue to apply.
+      </p>
+      <p>
+        Refund responsibility depends on who supplied and processed the ticket,
+        why the refund is requested and applicable law. An organiser&apos;s
+        “no refund” statement cannot remove rights that apply under the
+        Australian Consumer Law. Contact the organiser first and contact Tivorah
+        support if an in-app payment or platform process did not work as described.
       </p>
 
       <h2>Jobs and opportunities</h2>
       <p>
-        Hub members may publish job and opportunity posts and choose to receive
-        responses through an external HTTPS application link, a contextual
-        Tivorah direct message, or both. Posters are responsible for lawful,
+        Members may publish job and opportunity posts and, where enabled,
+        receive responses through an external HTTPS application link, a
+        contextual Tivorah direct message, a native application or a combination.
+        Posters are responsible for lawful,
         accurate and non-discriminatory opportunities and for the security and
         privacy practices of any external application service they select.
         Members should review the external provider&apos;s terms and privacy policy
         before submitting information outside Tivorah.
       </p>
       <p>
-        Tivorah does not currently receive native job applications, cover
-        letters or CVs through the mobile app and does not provide application
-        tracking, recruitment, candidate screening or personnel placement.
-        Tivorah does not guarantee a role, poster, applicant, qualification or
-        employment outcome.
+        Unless Tivorah expressly identifies itself as the recruiter or employer,
+        Tivorah provides communication and application tools only. It does not
+        guarantee a role, poster, applicant, qualification, right to work or
+        employment outcome. Never pay an unexpected fee to obtain a job and
+        independently verify claims that affect your safety, visa or finances.
+      </p>
+
+      <h2>Information is not professional advice</h2>
+      <p>
+        Member posts and discussions are not migration assistance, legal,
+        medical or financial advice, and are not official government guidance.
+        Tivorah is not affiliated with or endorsed by the Australian Government.
+        Check authoritative sources and consult an appropriately registered or
+        qualified professional before acting on information that could materially
+        affect your rights, health, visa, employment or finances. See our
+        <Link href="/disclaimer"> Important Disclaimer</Link>.
       </p>
 
       <h2>Acceptable use</h2>
@@ -194,6 +241,13 @@ export default function Terms() {
         suspend or close an account, or refer a matter to authorities. We
         consider the context, severity, risk and available evidence, but cannot
         guarantee that every report will lead to the outcome requested.
+      </p>
+      <p>
+        Anyone, including a person without an account, may submit an external
+        safety report using the process in our <Link href="/safety">Safety Centre</Link>.
+        Knowingly false, retaliatory or manipulative reports may themselves lead
+        to action, but a good-faith report will not be penalised merely because
+        Tivorah reaches a different conclusion.
       </p>
       <p>
         Where appropriate and lawful, we will provide notice and an opportunity
@@ -265,6 +319,15 @@ export default function Terms() {
         material change, you may stop using Tivorah and delete your account.
       </p>
 
+      <h2>Complaints and disputes</h2>
+      <p>
+        Please contact us first so we can try to resolve a concern promptly.
+        Nothing in these Terms prevents either party from seeking urgent court
+        relief or using a regulator, tribunal or dispute process available by
+        law. We do not require confidential arbitration or prevent a person from
+        participating in a lawful class action.
+      </p>
+
       <h2>Governing law and contact</h2>
       <p>
         These Terms are governed by the laws of South Australia and applicable
@@ -283,6 +346,7 @@ export default function Terms() {
         </a>
         .
       </p>
+      <LegalNavigation />
     </article>
   );
 }
