@@ -40,7 +40,8 @@
   margin-inline: clamp(24px, 7vw, 112px);
 }
 
-.section {
+.section,
+.showcase {
   padding-inline: 0;
 }
 
@@ -109,6 +110,16 @@ footer {
   }
   .footer-inner nav {
     flex-wrap: wrap;
+  }
+}
+
+/* Match the confident 18px mobile gutter used by the app preview. Keeping the
+   shell rule here also prevents nested sections such as the newcomer showcase
+   from applying horizontal spacing twice. */
+@media (max-width: 600px) {
+  main .page-shell,
+  .hero-message-inner {
+    margin-inline: 18px;
   }
 }
 
