@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useId();
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 12);
@@ -13,6 +15,19 @@ export function SiteHeader() {
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
   }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
+
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <header className={`nav${scrolled ? " nav-scrolled" : ""}`}>
@@ -23,14 +38,33 @@ export function SiteHeader() {
             alt="Tivorah"
             width={708}
             height={226}
+            sizes="(max-width: 360px) 116px, (max-width: 850px) 146px, 154px"
             priority
           />
         </Link>
-        <nav>
-          <Link href="/#about">About</Link>
-          <Link href="/#different">Why Tivorah</Link>
-          <Link href="/#features">Features</Link>
-          <Link href="/#updates">Join waitlist</Link>
+        <button
+          className="nav-menu-button"
+          type="button"
+          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-controls={menuId}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+        </button>
+        <nav
+          id={menuId}
+          className={`site-nav${menuOpen ? " is-open" : ""}`}
+          aria-label="Primary navigation"
+        >
+          <Link href="/#about" onClick={closeMenu}>About</Link>
+          <Link href="/#different" onClick={closeMenu}>Why Tivorah</Link>
+          <Link href="/#features" onClick={closeMenu}>Features</Link>
+          <Link className="site-nav-primary" href="/#updates" onClick={closeMenu}>
+            Join waitlist
+          </Link>
         </nav>
       </div>
     </header>

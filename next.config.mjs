@@ -7,6 +7,10 @@ const root = dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   outputFileTracingRoot: root,
+  images: {
+    // Reuse optimised responses instead of regenerating them on each visit.
+    minimumCacheTTL: 86400,
+  },
   async headers() {
     return [{
       source: '/:path*',

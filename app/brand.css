@@ -1,14 +1,101 @@
 .brand {
   display: flex;
   align-items: center;
+  min-width: 0;
   color: inherit;
   font-size: inherit;
 }
 
 .brand img {
   display: block;
-  width: 154px;
+  width: clamp(126px, 14vw, 154px);
+  max-width: 100%;
   height: auto;
+}
+
+.nav-menu-button {
+  display: none;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  place-items: center;
+}
+
+.nav-menu-button span {
+  position: absolute;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.nav-menu-button span:first-child { transform: translateY(-6px); }
+.nav-menu-button span:last-child { transform: translateY(6px); }
+.nav-menu-button[aria-expanded="true"] span:first-child { transform: rotate(45deg); }
+.nav-menu-button[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-menu-button[aria-expanded="true"] span:last-child { transform: rotate(-45deg); }
+
+.site-nav-primary {
+  color: var(--purple);
+  font-weight: 800;
+}
+
+@media (max-width: 850px) {
+  .brand img { width: clamp(124px, 38vw, 146px); }
+  .nav-menu-button { display: grid; }
+
+  .site-nav {
+    position: absolute;
+    top: calc(100% + 1px);
+    right: 20px;
+    left: 20px;
+    display: none;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 20px 50px rgba(39, 27, 52, .14);
+  }
+
+  .site-nav.is-open { display: grid; }
+
+  .site-nav a {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .site-nav a:hover,
+  .site-nav a:focus-visible { background: var(--soft); }
+
+  .site-nav-primary {
+    justify-content: center;
+    margin-top: 6px;
+    background: var(--purple);
+    color: #fff;
+  }
+
+  .site-nav-primary:hover,
+  .site-nav-primary:focus-visible { background: #6032c4 !important; }
+}
+
+@media (max-width: 360px) {
+  .brand img { width: 116px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-menu-button span { transition: none; }
 }
 
 .phone-logo {

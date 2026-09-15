@@ -7,3 +7,30 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Netlify may retain marketing images for a year, while browsers revalidate
+# after a day so replacements from later atomic deploys reach visitors promptly.
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, s-maxage=31536000, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, s-maxage=31536000, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/*.jpeg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, s-maxage=31536000, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, s-maxage=31536000, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/*.avif"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, s-maxage=31536000, stale-while-revalidate=604800"
