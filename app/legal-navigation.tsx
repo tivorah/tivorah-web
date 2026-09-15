@@ -6,6 +6,7 @@ const links = [
   ["Terms", "/terms"],
   ["Community guidelines", "/community-guidelines"],
   ["Safety centre", "/safety"],
+  ["Child safety", "/child-safety"],
   ["Cookies", "/cookies"],
 ] as const;
 

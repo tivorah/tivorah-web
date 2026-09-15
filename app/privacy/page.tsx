@@ -383,7 +383,8 @@ export default function Privacy() {
         signals where required. We do not use age-assurance information for
         advertising. Contact us if you believe a child has an account so we can
         investigate, protect any necessary evidence and remove or restrict the
-        account as appropriate.
+        account as appropriate. Our <Link href="/child-safety">Child Safety
+        Standards</Link> explain how to report exploitation or abuse concerns.
       </p>
 
       <h2>Changes and contact</h2>

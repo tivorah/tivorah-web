@@ -62,6 +62,7 @@ export default function RootLayout({
                 <Link href="/terms">Terms</Link>
                 <Link href="/community-guidelines">Community guidelines</Link>
                 <Link href="/safety">Safety centre</Link>
+                <Link href="/child-safety">Child safety</Link>
               </nav>
               <nav aria-label="Account and access">
                 <strong>Account &amp; access</strong>

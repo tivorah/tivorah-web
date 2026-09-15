@@ -81,7 +81,8 @@ export default function SafetyCentre() {
 
       <p>
         Our <Link href="/community-guidelines">Community Guidelines</Link> explain the
-        standards we enforce.
+        standards we enforce. Our dedicated <Link href="/child-safety">Child Safety
+        Standards</Link> explain Tivorah&apos;s response to child sexual abuse and exploitation.
       </p>
       <LegalNavigation />
     </article>

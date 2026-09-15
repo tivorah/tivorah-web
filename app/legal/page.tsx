@@ -12,6 +12,7 @@ const sections = [
   ["Terms of Use", "The agreement that applies when you create an account or use Tivorah.", "/terms"],
   ["Community Guidelines", "The conduct and content standards for every Tivorah surface.", "/community-guidelines"],
   ["Safety Centre", "How to report harm, block someone, appeal a decision and get urgent help.", "/safety"],
+  ["Child Safety Standards", "Our 18+ rule and zero-tolerance response to child sexual abuse and exploitation.", "/child-safety"],
   ["Account deletion", "Delete in the app or request deletion when you cannot sign in.", "/account-deletion"],
   ["Cookies", "The limited browser storage used by the website and admin portal.", "/cookies"],
   ["Accessibility", "Our accessibility commitment and how to report a barrier.", "/accessibility"],
