@@ -4,6 +4,7 @@ const links = [
   ["Legal & trust", "/legal"],
   ["Privacy", "/privacy"],
   ["Terms", "/terms"],
+  ["Partner agreement", "/marketplace-partner-agreement"],
   ["Community guidelines", "/community-guidelines"],
   ["Safety centre", "/safety"],
   ["Child safety", "/child-safety"],
