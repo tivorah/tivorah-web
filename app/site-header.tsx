@@ -59,8 +59,8 @@ export function SiteHeader() {
           className={`site-nav${menuOpen ? " is-open" : ""}`}
           aria-label="Primary navigation"
         >
-          <Link href="/#about" onClick={closeMenu}>About</Link>
-          <Link href="/#different" onClick={closeMenu}>Why Tivorah</Link>
+          <Link href="/about" onClick={closeMenu}>About</Link>
+          <Link href="/why-tivorah" onClick={closeMenu}>Why Tivorah</Link>
           <Link href="/#features" onClick={closeMenu}>Features</Link>
           <Link className="site-nav-primary" href="/#updates" onClick={closeMenu}>
             Join waitlist

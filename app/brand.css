@@ -111,3 +111,14 @@
   width: 142px;
   height: auto;
 }
+
+.footer-legal {
+  width: min(100% - 40px, 1180px);
+  margin: 22px auto 0;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .14);
+  color: #a9a0ae;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}

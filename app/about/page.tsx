@@ -1,80 +1,20 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = { title: "About Tivorah", description: "About Tivorah Pty Ltd and the community platform we are building in Australia." };
+
 export default function About() {
-  return (
-    <article className="content">
-      <span className="eyebrow">About Tivorah</span>
-      <h1>Belonging starts with connection.</h1>
-
-      <p>
-        Tivorah is an Australian-founded community platform that brings local life
-        into one trusted place. It helps people find communities where they feel
-        understood, meet members nearby and turn online introductions into useful,
-        real-world connections.
-      </p>
-
-      <p>
-        At the centre of Tivorah are hubs. A hub is Tivorah&apos;s name for a community
-        group built around a location, culture, profession, life experience or shared
-        interest. It is more than a feed: members can have conversations, discover local
-        events, share trusted jobs and referrals, buy or sell useful items and offer
-        services to people they are connected to.
-      </p>
-
-      <h2>Why Tivorah is different</h2>
-
-      <p>
-        Most social platforms separate the parts of community life. Conversations
-        happen in one app, events in another, job opportunities are passed around
-        privately and local marketplaces are filled with anonymous strangers.
-        Tivorah connects those experiences through the communities people already
-        belong to.
-      </p>
-
-      <ul>
-        <li>
-          <strong>Community comes first.</strong> Listings, events, opportunities and
-          conversations can be connected to a hub, giving every interaction useful
-          context.
-        </li>
-        <li>
-          <strong>Profiles have community context.</strong> Members can see the
-          Hub connection behind a seller, service provider or referral before
-          deciding to engage. That context is not an identity, qualification or
-          background check.
-        </li>
-        <li>
-          <strong>Local discovery is genuinely local.</strong> Tivorah helps surface
-          relevant people, services, items and events near a member while preserving
-          the trust created inside their hubs.
-        </li>
-        <li>
-          <strong>Each hub has clear ownership.</strong> Hub creators set expectations,
-          approve members where needed and have tools to respond when someone crosses
-          a line.
-        </li>
-        <li>
-          <strong>Connection can lead somewhere.</strong> A conversation can become a
-          friendship, a referral can become a job and a shared interest can become an
-          event people attend together.
-        </li>
-      </ul>
-
-      <h2>Built for life in Australia</h2>
-
-      <p>
-        Australia is local and multicultural at the same time. People build their
-        lives through neighbourhoods, professional networks, cultural communities,
-        family connections and shared interests. Tivorah is designed for that
-        reality—from someone newly arriving in Adelaide and looking for practical
-        advice, to a long-time local organising a weekend group or recommending a
-        trusted service.
-      </p>
-
-      <p>
-        The aim is simple: make it easier to find your people, participate with
-        confidence and discover more of what is already around you. Safety controls,
-        community moderation and transparent privacy choices are part of that
-        foundation—not an afterthought.
-      </p>
-    </article>
-  );
+  return <article className="content">
+    <span className="eyebrow">About Tivorah</span>
+    <h1>Belonging starts with connection.</h1>
+    <p>Tivorah is an Australian-founded community platform designed to help people find communities where they feel understood, meet people nearby and turn online introductions into useful real-world connections.</p>
+    <p>At the centre of Tivorah are Hubs: groups built around a location, culture, profession, life experience or shared interest. Members can talk, discover events, share opportunities and find useful local services in a community context.</p>
+    <h2>The company</h2>
+    <p><strong>TIVORAH PTY LTD</strong> is an Australian proprietary company based in <strong>Parafield Gardens, South Australia</strong>.</p>
+    <dl><dt>Australian Business Number</dt><dd>94 702 094 844</dd><dt>ABN status</dt><dd>Active</dd><dt>Public business location</dt><dd>Parafield Gardens, South Australia, Australia</dd></dl>
+    <p>For privacy and security, Tivorah does not publish a residential or full street address on this website. Formal notices can be directed through our <Link href="/contact">contact and complaints page</Link>.</p>
+    <h2>What guides us</h2>
+    <p>Community context can support trust, but it is not an identity, qualification, licence or background check. Tivorah combines clear rules, member reporting and moderation with reminders to verify claims that matter.</p>
+    <p>Read <Link href="/why-tivorah">Why Tivorah</Link>, our <Link href="/community-guidelines">Community Guidelines</Link> and our <Link href="/safety">Safety Centre</Link>.</p>
+  </article>;
 }

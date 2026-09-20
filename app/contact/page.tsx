@@ -16,6 +16,7 @@ export default function Contact() {
         Include enough information to identify the issue, but never email your password,
         one-time verification code, full payment-card details or unnecessary identity documents.
       </p>
+      <p><strong>TIVORAH PTY LTD</strong><br />ABN 94 702 094 844<br />Parafield Gardens, South Australia, Australia</p>
 
       <div className="contact-list">
         <section>

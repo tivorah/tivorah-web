@@ -2,6 +2,7 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
+const mediaCdnHost = process.env.NEXT_PUBLIC_MEDIA_CDN_HOST?.trim();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,6 +11,12 @@ const nextConfig = {
   images: {
     // Reuse optimised responses instead of regenerating them on each visit.
     minimumCacheTTL: 86400,
+    remotePatterns: [
+      ...(mediaCdnHost ? [{ protocol: 'https', hostname: mediaCdnHost }] : []),
+      { protocol: 'https', hostname: 'ik.imagekit.io' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'randomuser.me' },
+    ],
   },
   async headers() {
     return [{

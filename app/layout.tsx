@@ -52,6 +52,9 @@ export default function RootLayout({
               <nav aria-label="Tivorah">
                 <strong>Company</strong>
                 <Link href="/about">About</Link>
+                <Link href="/why-tivorah">Why Tivorah</Link>
+                <Link href="/hub-organisers">Hub organisers</Link>
+                <Link href="/service-providers">Service providers</Link>
                 <Link href="/contact">Contact &amp; complaints</Link>
                 <Link href="/#updates">Join the waiting list</Link>
               </nav>
@@ -63,6 +66,8 @@ export default function RootLayout({
                 <Link href="/community-guidelines">Community guidelines</Link>
                 <Link href="/safety">Safety centre</Link>
                 <Link href="/child-safety">Child safety</Link>
+                <Link href="/hub-organisers">Organiser rules</Link>
+                <Link href="/service-providers">Provider rules</Link>
               </nav>
               <nav aria-label="Account and access">
                 <strong>Account &amp; access</strong>
@@ -74,6 +79,7 @@ export default function RootLayout({
               </nav>
             </div>
           </div>
+          <p className="footer-legal">TIVORAH PTY LTD · ABN 94 702 094 844 · Parafield Gardens, South Australia</p>
         </footer>
       </body>
     </html>

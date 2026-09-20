@@ -3,26 +3,6 @@ import Image from "next/image";
 import { AppPreview } from "./app-preview";
 import { JourneyRail, type JourneyStep } from "./journey-rail";
 
-// What makes Tivorah different from a general community app.
-const differences = [
-  [
-    "Hubs with real rules",
-    "Every hub sets its own house rules, and you see them before you join. No guessing what is welcome here.",
-  ],
-  [
-    "Trade with people you know",
-                "See the Hub connection behind a listing before you engage. Membership adds context, but you should still verify claims that matter.",
-  ],
-  [
-    "Doors that can close",
-    "Some communities only work when entry is considered. Hub creators approve who joins, so the space stays what it was built to be.",
-  ],
-  [
-    "Moderation that answers to the hub",
-    "Hub creators and moderators look after their own space, with the tools to act when someone crosses a line.",
-  ],
-];
-
 const featureRail: JourneyStep[] = [
   {
     step: "Start here",
@@ -169,73 +149,24 @@ export default async function Home() {
                 <a className="button hero-primary" href="#updates">
                   Join the waiting list <span>→</span>
                 </a>
-                <a className="button hero-secondary" href="#different">
+                <a className="button hero-secondary" href="/why-tivorah">
                   What makes it different
                 </a>
               </div>
               <div className="trust-row">
                 <span>Community-run hubs</span>
-                <span>Account-based membership</span>
-                <span>Real moderation</span>
+                <span>Adults 18+ only</span>
+                <span>Reporting and moderation</span>
               </div>
+              <p
+                className="hero-safety-note"
+                style={{ fontSize: 13, lineHeight: 1.55, marginTop: 16, color: "#bfb3c9" }}
+              >
+                Tivorah checks age eligibility during registration and screens
+                public images before publication. Read our{" "}
+                <a href="/child-safety" style={{ color: "#ffffff", textDecoration: "underline", textUnderlineOffset: 3 }}>Child Safety Standards</a>.
+              </p>
             </div>
-          </div>
-        </div>
-      </section>
-      <section className="section" id="different">
-        <div className="page-shell">
-          <span className="eyebrow">Why Tivorah, and not a group chat</span>
-          <h2>Communities with something at stake.</h2>
-          <p>
-            Anyone can start a group. What is hard is a place where people
-            behave like neighbours — because they are known, the rules are
-            clear, and someone is looking after it.
-          </p>
-          <div className="grid">
-            {differences.map(([title, body], i) => (
-              <article key={title}>
-                <span className="number">{String(i + 1).padStart(2, "0")}</span>
-                <h3>{title}</h3>
-                <p>{body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="section about-home" id="about">
-        <div className="page-shell about-home-layout">
-          <div>
-            <span className="eyebrow">About Tivorah</span>
-            <h2>
-              Community is the purpose.
-              <br />A hub is how it begins.
-            </h2>
-          </div>
-          <div className="about-home-copy">
-            <p>
-              Tivorah is an Australian-founded platform that brings the useful
-              parts of local life into one trusted place. It helps people find
-              communities where they feel understood, meet members nearby and
-              turn online introductions into real-world connections.
-            </p>
-            <p>
-              <strong>
-                A hub is Tivorah&apos;s name for a community group.
-              </strong>{" "}
-              It can be built around a suburb, culture, profession, life
-              experience or shared interest. Inside it, members can talk,
-              organise events, share jobs and referrals, buy or sell useful
-              items and recommend services to people they are connected to.
-            </p>
-            <p>
-              Instead of asking people to build a different network for every
-              need, Tivorah lets trust travel with the community—from a first
-              conversation to a local event, a referral, a purchase or a new
-              friendship.
-            </p>
-            <a className="about-home-link" href="/about">
-              Read more about Tivorah <span>→</span>
-            </a>
           </div>
         </div>
       </section>

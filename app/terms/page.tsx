@@ -13,7 +13,7 @@ export default function Terms() {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 15 September 2026
+        <strong>Last updated:</strong> 19 September 2026
       </p>
 
       <div className="legal-callout">
@@ -81,6 +81,11 @@ export default function Terms() {
         community purposes. Tivorah may intervene where needed to enforce these
         Terms, protect people or comply with law.
       </p>
+      <p>
+        If you create, administer or moderate a Hub or publish an event, the{" "}
+        <Link href="/hub-organisers">Hub Organiser Rules</Link> form part of
+        these Terms and apply in addition to the rules above.
+      </p>
 
       <h2>Your content and permissions</h2>
       <p>
@@ -147,6 +152,36 @@ export default function Terms() {
         Consumer Law or other law continue to apply between the relevant
         parties.
       </p>
+      <p>
+        If you advertise or provide a service through Tivorah, the{" "}
+        <Link href="/service-providers">Service Provider Listing Rules</Link>{" "}
+        form part of these Terms and apply to each listing and enquiry.
+      </p>
+
+      <h2>In-app marketplace payments and payouts</h2>
+      <p>
+        Where Tivorah enables an in-app payment for an item, service or event,
+        the seller, provider or organiser is the supplier and seller of that
+        underlying offering unless the checkout expressly identifies Tivorah as
+        the supplier. Tivorah provides booking, ticketing and payment-facilitation
+        tools. Stripe processes payments and onboards payout recipients through
+        Stripe Connect Express.
+      </p>
+      <p>
+        Tivorah may charge different percentage or fixed platform fees for
+        items, services and events. A fee may be added to the customer total or
+        deducted from provider proceeds, as disclosed for the transaction.
+        Completed orders retain the fee configuration that applied when the
+        order was created. Stripe processing, dispute or payout fees may also
+        apply under Stripe&apos;s terms.
+      </p>
+      <p>
+        A person who connects Stripe or uses Tivorah&apos;s paid transaction tools
+        also agrees to the <Link href="/marketplace-partner-agreement">Marketplace
+        Partner Agreement</Link>. That agreement explains payout timing,
+        refunds, chargebacks, customer-data restrictions, taxes and the
+        responsibilities of organisers, providers and sellers.
+      </p>
 
       <h2>Events, tickets and payments</h2>
       <p>
@@ -157,9 +192,9 @@ export default function Terms() {
         control every event.
       </p>
       <p>
-        Where paid tickets are enabled, the total price, applicable Tivorah fee,
+        Where paid tickets are enabled, the total customer price, any customer-paid Tivorah fee,
         organiser terms and material cancellation information are shown before
-        payment. Payments may be processed by Stripe and funds may be directed
+        payment. Payments are processed by Stripe and net funds may be directed
         to an organiser&apos;s connected account. Tivorah does not store full card
         numbers. A purchase completed through an external link is governed by
         the organiser or external provider&apos;s checkout terms, privacy practices,
@@ -167,8 +202,10 @@ export default function Terms() {
         law continue to apply.
       </p>
       <p>
-        Refund responsibility depends on who supplied and processed the ticket,
-        why the refund is requested and applicable law. An organiser&apos;s
+        The organiser is responsible for supplying the event and providing
+        refunds required by its policy or applicable law. Tivorah may facilitate
+        a refund through Stripe and may reverse connected-account transfers and
+        platform fees where configured or legally required. An organiser&apos;s
         “no refund” statement cannot remove rights that apply under the
         Australian Consumer Law. Contact the organiser first and contact Tivorah
         support if an in-app payment or platform process did not work as described.
@@ -330,7 +367,8 @@ export default function Terms() {
 
       <h2>Governing law and contact</h2>
       <p>
-        These Terms are governed by the laws of South Australia and applicable
+        These Terms are between you and TIVORAH PTY LTD (ABN 94 702 094 844),
+        based in Parafield Gardens, South Australia. They are governed by the laws of South Australia and applicable
         Commonwealth laws. Courts with jurisdiction may hear disputes, subject
         to any rights you have to bring a claim elsewhere under applicable
         consumer law.

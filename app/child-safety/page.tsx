@@ -71,11 +71,28 @@ export default function ChildSafetyStandards() {
 
       <h2>Adults-only access</h2>
       <p>
-        A person must be at least 18 to create or keep a Tivorah account. By
-        creating an account, a member accepts Terms that include this age
-        requirement. If we reasonably identify an account as belonging to a
-        person under 18, we may restrict or remove it and take other protective
-        action. Contact us if you believe a child has created an account.
+        A person must be at least 18 to create or keep a Tivorah account.
+        Registration asks for a date of birth and an explicit confirmation
+        that the person is 18 or older. Tivorah also validates the age
+        requirement on its server before an account can use protected app
+        features. If we reasonably identify an account as belonging to a person
+        under 18, we may restrict or remove it and take other protective action.
+        Contact us if you believe a child has created an account.
+      </p>
+
+      <h2>Safety measures in the app</h2>
+      <p>
+        Tivorah uses several layers of protection. Images intended for public
+        display are checked by automated safety screening before they become
+        visible. Automated systems can make mistakes and cannot identify every
+        form of harmful or illegal material, so screening supports—but does not
+        replace—member reports and human review.
+      </p>
+      <p>
+        Members can report profiles, Hubs, Banter and thread messages, private
+        messages, events, jobs, services and listings from the relevant app
+        surface. Report evidence is restricted to authorised review rather than
+        published as member content.
       </p>
 
       <h2>How to report a child-safety concern</h2>
@@ -141,8 +158,8 @@ export default function ChildSafetyStandards() {
 
       <h2>Designated child-safety contact</h2>
       <p>
-        Tivorah&apos;s designated public contact for CSAE and CSAM concerns is
-        the Tivorah Safety team at{" "}
+        Tivorah&apos;s designated public channel for CSAE and CSAM concerns is
+        managed by Tivorah&apos;s responsible child-safety contact at{" "}
         <a href="mailto:support@tivorah.com?subject=Child%20safety">
           <strong>support@tivorah.com</strong>
         </a>

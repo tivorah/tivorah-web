@@ -19,7 +19,7 @@ lawyer before accepting public accounts, payments or marketplace transactions.
   precise location, encrypted and unencrypted chat, job documents, moderation reports,
   Apple sign-in, analytics and Stripe Connect.
 - [ ] Verify the actual hosting region, overseas recipient countries, contracts and data
-  processing terms for Aiven, Redis Cloud, ImageKit, Resend, Stripe, Expo, PostHog,
+  processing terms for Aiven, Redis Cloud, Cloudflare R2, transitional ImageKit storage, Resend, Stripe, Expo, PostHog,
   Cloudflare and Netlify. Update the Privacy Policy when providers or regions change.
 - [ ] Approve and automate a record-retention schedule for accounts, messages, reports,
   transaction/tax records, job documents, audit logs, waitlist entries and backups. Test
@@ -37,6 +37,13 @@ lawyer before accepting public accounts, payments or marketplace transactions.
   checkout, identify the supplier, publish accurate cancellation/refund terms, issue
   receipts and test Stripe refund and dispute workflows. Never describe statutory
   Australian Consumer Law rights as optional.
+- [ ] Have Australian counsel review the Marketplace Partner Agreement, the decision to
+  identify connected organisers/providers as settlement merchants, Tivorah's remaining
+  destination-charge and negative-balance exposure, refund authority, indemnity and
+  liability wording. Confirm the Stripe account configuration matches the public wording.
+- [ ] Have an Australian tax adviser determine Tivorah's GST invoicing and Sharing Economy
+  Reporting Regime obligations for item, service and event transactions. Collect only the
+  Partner identity fields that are lawfully required and document the reporting workflow.
 - [ ] Ensure “verified”, “trusted”, “safe” and endorsement claims describe exactly what was
   checked. Hub membership and email verification are not identity, qualification,
   migration-agent, right-to-work or background checks.
@@ -55,4 +62,3 @@ lawyer before accepting public accounts, payments or marketplace transactions.
 - eSafety social media minimum age guidance: https://www.esafety.gov.au/about-us/industry-regulation/social-media-age-restrictions/faqs
 - ACMA spam compliance: https://www.acma.gov.au/avoid-sending-spam
 - ACCC online buying and marketplaces: https://www.accc.gov.au/consumers/buying-products-and-services/buying-online
-

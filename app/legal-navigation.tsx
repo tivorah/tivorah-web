@@ -8,6 +8,8 @@ const links = [
   ["Community guidelines", "/community-guidelines"],
   ["Safety centre", "/safety"],
   ["Child safety", "/child-safety"],
+  ["Organiser rules", "/hub-organisers"],
+  ["Provider rules", "/service-providers"],
   ["Cookies", "/cookies"],
 ] as const;
 

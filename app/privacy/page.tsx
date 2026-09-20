@@ -13,11 +13,12 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 15 September 2026
+        <strong>Last updated:</strong> 19 September 2026
       </p>
 
       <p>
-        This Privacy Policy explains how Tivorah (&quot;Tivorah&quot;,
+        This Privacy Policy explains how TIVORAH PTY LTD (ABN 94 702 094 844),
+        based in Parafield Gardens, South Australia (&quot;Tivorah&quot;,
         &quot;we&quot;, &quot;us&quot; or &quot;our&quot;) handles personal
         information when you use the Tivorah mobile application, website,
         newsletter and related support and community services. It also explains
@@ -41,7 +42,8 @@ export default function Privacy() {
           username, email address, phone number, country code, encrypted
           password credential, verification and two-factor status, linked
           sign-in provider, session and device information, account role and
-          acceptance of our legal terms. If you use Sign in with Apple, Apple
+          acceptance of our legal terms. We collect date of birth and 18+
+          confirmation to enforce Tivorah&apos;s adults-only eligibility rule. If you use Sign in with Apple, Apple
           provides an account identifier and the name or relay email you choose
           to share; Tivorah does not receive your Apple password.
         </li>
@@ -82,7 +84,11 @@ export default function Privacy() {
           ticket and QR identifiers, attendance and check-in records, order
           totals, payment status, refunds and Stripe customer, checkout or
           connected-account identifiers where paid features are enabled.
-          Tivorah does not store full payment-card numbers. If you follow an
+          Stripe may collect identity, beneficial-owner, business, tax and bank
+          information directly from organisers, providers and sellers during
+          Connect onboarding. Tivorah receives account identifiers, capability,
+          verification and payout-status information rather than full identity
+          documents, full bank-account details or full payment-card numbers. If you follow an
           external ticket link, the external provider&apos;s privacy practices apply.
         </li>
         <li>
@@ -284,12 +290,13 @@ export default function Privacy() {
         </li>
         <li>
           event organisers, sellers, buyers, service providers or opportunity
-          posters when necessary for an interaction you request;
+          posters when necessary for an interaction you request, including the
+          booking, fulfilment, check-in, cancellation or refund of a transaction;
         </li>
         <li>
           infrastructure, database, media-storage, email, push, authentication,
           payment, customer-support, security and analytics providers, including
-          Netlify, Apple, Resend, ImageKit, Stripe, Expo and PostHog when the
+          Netlify, Apple, Resend, Cloudflare R2, ImageKit during storage migration or rollback, Google Cloud Vision, Stripe, Expo and PostHog when the
           relevant service is configured;
         </li>
         <li>
@@ -304,6 +311,24 @@ export default function Privacy() {
         </li>
       </ul>
       <p>We do not sell personal information.</p>
+
+      <h2>Payments, fraud prevention and tax reporting</h2>
+      <p>
+        Stripe processes payment methods and Connect onboarding under its own
+        privacy terms. Tivorah uses payment, connected-account, booking,
+        fulfilment, refund and dispute information to calculate disclosed fees,
+        issue tickets, route payouts, prevent fraud, provide support, process
+        refunds, respond to chargebacks and keep financial records. We may share
+        relevant transaction and fulfilment evidence with Stripe, a payment
+        network or a customer&apos;s bank when investigating a dispute.
+      </p>
+      <p>
+        Tivorah may collect and report Partner identity and transaction details
+        to the Australian Taxation Office or another authority where required,
+        including under the Sharing Economy Reporting Regime. Legal and
+        financial records may be retained after account deletion where needed
+        for tax, refunds, disputes, fraud prevention or another lawful purpose.
+      </p>
 
       <h2>Overseas processing</h2>
       <p>
