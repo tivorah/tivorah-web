@@ -5,168 +5,87 @@ import { JourneyRail, type JourneyStep } from "./journey-rail";
 
 const featureRail: JourneyStep[] = [
   {
-    step: "Start here",
-    title: "You join a hub",
-    body: "A community built around your background, your interests, or the city you landed in. You see its rules before you are in.",
-    shot: "/preview-hubs-ios.png",
-  },
-  {
     step: "",
-    title: "You find your people",
-    body: "See who else is in the hub and who is closest to you. Not strangers with a shared postcode — people with a shared story.",
-    shot: "/preview-people-ios.png",
-  },
-  {
-    step: "",
-    title: "You actually talk",
+    title: "Keep the conversation going",
     body: "Message people and groups, share photos and voice notes, and turn a name on a list into someone you know.",
-    shot: "/preview-messages-ios.png",
-  },
-  {
-    step: "",
-    title: "You buy from each other",
-    body: "Every seller is a confirmed member of your hub. Trading with someone who has to see you again works differently.",
-    shot: "/preview-shop-ios.png",
+    shot: "/app-screens/2026-09-22/messages.png",
   },
   {
     step: "",
     title: "Work comes through people",
     body: "Jobs and referrals from members who have walked the path you are on, and know what it took.",
-    shot: "/preview-hub-jobs-ios.png",
+    shot: "/app-screens/2026-09-22/jobs.png",
+  },
+  {
+    step: "",
+    title: "Find something useful nearby",
+    body: "Browse items and local services, ask the seller a question and arrange the details directly.",
+    shot: "/app-screens/2026-09-22/shop.png",
+  },
+  {
+    step: "Start here",
+    title: "Find your Hub",
+    body: "A community built around your background, your interests, or the city you landed in. You see its rules before you are in.",
+    shot: "/app-screens/2026-09-22/hubs.png",
   },
   {
     step: "",
     title: "You show up in person",
-    body: "Events your hub is actually going to, with a ticket that lives on your phone.",
-    shot: "/preview-events-ios.png",
+    body: "Find local events, book a ticket and keep the details close when it is time to head out.",
+    shot: "/app-screens/2026-09-22/events.png",
   },
   {
     step: "",
-    title: "It reaches your street",
-    body: "Listings, events and conversations happening near you, from the communities you already belong to.",
-    shot: "/preview-discover-ios.png",
+    title: "Discover people nearby",
+    body: "A shared interest is a good place to start. Discover people near you and send a connection request.",
+    shot: "/app-screens/2026-09-22/discover.png",
   },
   {
     step: "What holds it",
     title: "Someone looks after it",
-    body: "Hub creators set the rules, approve who joins and can act when someone crosses a line. That is why the rest works.",
-    shot: "/preview-hub-profile-ios.png",
+    body: "Hub creators set the rules, review private Hub requests and help keep conversations welcoming. Members can report concerns.",
+    shot: "/app-screens/2026-09-22/ballarat-hub.png",
   },
 ];
 
 export default async function Home() {
   return (
-    <>
-      <section className="hero hero-home">
-        <div className="hero-world" aria-hidden="true">
-          <div className="world-glow" />
-          <div className="hero-showcase">
-            <div className="hero-people">
-              <div className="hero-people-bubble" />
-              <Image
-                className="hero-people-photo hero-photo-main"
-                src="/community-asian-black.jpg"
-                alt=""
-                width={1600}
-                height={1067}
-                sizes="(max-width: 850px) 240px, 300px"
-                priority
-              />
-              <Image
-                className="hero-people-photo hero-photo-second"
-                src="/community-women.jpg"
-                alt=""
-                width={512}
-                height={568}
-                sizes="180px"
-              />
-              <Image
-                className="hero-people-photo hero-photo-third"
-                src="/community-friends.jpg"
-                alt=""
-                width={512}
-                height={568}
-                sizes="150px"
-              />
+    <div className="home-page">
+      <section className="home-opening" aria-labelledby="home-title">
+        <div className="page-shell opening-layout">
+          <div className="opening-copy">
+            <span className="opening-origin">Local roots. Australian connections.</span>
+            <h1 id="home-title">A new place.<br />Your kind of<br /><em>people.</em></h1>
+            <p className="opening-intro">Find your local circle, make plans and discover opportunities through the people around you.</p>
+            <div className="opening-actions">
+              <a className="button opening-primary" href="#updates">Join the waitlist <span aria-hidden="true">→</span></a>
+              <a className="opening-tour-link" href="#preview">Take a look inside <span aria-hidden="true">↓</span></a>
             </div>
-            <div className="hero-product-copy">
-              <span>The app, in action</span>
-              <strong>One place for local life.</strong>
-              <small>
-                <i /># Communities across Australia
-              </small>
-            </div>
-            <div className="hero-app-preview">
-              <div className="hero-preview-halo" />
-              <div className="hero-device hero-device-back">
-                <Image
-                  src="/preview-hub-profile-ios.png"
-                  alt="Adelaide Weekend Crew hub profile in Tivorah"
-                  width={1179}
-                  height={2556}
-                  sizes="(max-width: 540px) 160px, 240px"
-                  priority
-                />
+            <p className="opening-note">Coming soon across Australia · For adults 18+</p>
+          </div>
+          <div className="opening-product">
+            <div className="opening-phones">
+              <div className="opening-phone opening-phone-front">
+                <Image src="/app-screens/2026-09-22/ballarat-hub.png" alt="Ballarat Arts and Culture Circle in Tivorah" width={1206} height={2622} sizes="(max-width: 600px) 45vw, (max-width: 980px) 260px, 23vw" priority />
               </div>
-              <div className="hero-device hero-device-front">
-                <Image
-                  src="/preview-discover-ios.png"
-                  alt="Discovering nearby people in Tivorah"
-                  width={1179}
-                  height={2556}
-                  sizes="(max-width: 540px) 185px, 265px"
-                  priority
-                />
+              <div className="opening-phone opening-phone-back">
+                <Image src="/app-screens/2026-09-22/events.png" alt="Discover local events in Tivorah" width={1206} height={2622} sizes="(max-width: 600px) 40vw, (max-width: 980px) 230px, 21vw" priority />
               </div>
             </div>
           </div>
-          <div className="signal signal-one" />
-          <div className="signal signal-two" />
-          <div className="signal signal-three" />
-          <div className="land land-back" />
-          <div className="land land-front" />
         </div>
-        <div className="hero-message">
-          <div className="hero-message-inner">
-            <div className="hero-copy">
-              <span className="eyebrow light">
-                Coming soon across Australia
-              </span>
-              <h1>
-                Find your people.
-                <br />
-                Build your life in Australia.
-              </h1>
-            </div>
-            <div className="hero-intro">
-              <p>
-                Tivorah connects people new to Australia with trusted
-                communities already here. Join local Hubs, ask real questions,
-                meet people nearby and discover opportunities shared by people
-                who understand your journey.
-              </p>
-              <div className="actions">
-                <a className="button hero-primary" href="#updates">
-                  Join the waiting list <span>→</span>
-                </a>
-                <a className="button hero-secondary" href="/why-tivorah">
-                  What makes it different
-                </a>
-              </div>
-              <div className="trust-row">
-                <span>Community-run hubs</span>
-                <span>Adults 18+ only</span>
-                <span>Reporting and moderation</span>
-              </div>
-              <p
-                className="hero-safety-note"
-                style={{ fontSize: 13, lineHeight: 1.55, marginTop: 16, color: "#bfb3c9" }}
-              >
-                Tivorah checks age eligibility during registration and screens
-                public images before publication. Read our{" "}
-                <a href="/child-safety" style={{ color: "#ffffff", textDecoration: "underline", textUnderlineOffset: 3 }}>Child Safety Standards</a>.
-              </p>
-            </div>
+      </section>
+      <section className="belonging-section" aria-labelledby="belonging-title">
+        <div className="page-shell">
+          <div className="belonging-heading">
+            <span className="eyebrow">Your life, a little more connected</span>
+            <h2 id="belonging-title">People first.<br />Possibilities follow.</h2>
+            <p>A community app for life in Australia. From a first conversation to a local event, a useful service or your next opportunity.</p>
+          </div>
+          <div className="belonging-moments">
+            <article><span className="moment-number">01 / Connect</span><h3>Find your circle.</h3><p>Join Hubs around your interests, culture or city. Meet people nearby and keep the conversation going.</p></article>
+            <article><span className="moment-number">02 / Take part</span><h3>Put something in the diary.</h3><p>Discover events, book tickets and make time for the people and things you enjoy.</p></article>
+            <article><span className="moment-number">03 / Discover</span><h3>Make local life easier.</h3><p>Browse items, find a service provider, or explore jobs and referrals shared in your Hub.</p></article>
           </div>
         </div>
       </section>
@@ -174,76 +93,72 @@ export default async function Home() {
         <div className="page-shell">
           <span className="eyebrow">How Tivorah works</span>
           <h2>
-            One hub.
+            One Hub.
             <br />
             Everything that follows.
           </h2>
           <p className="rail-hint">
-            A hub is Tivorah&apos;s name for a community group. Join one and the
-            people, conversations, listings, jobs and events connected to it
-            come together in one place.
+            A Hub is your community group on Tivorah. The people, conversations,
+            events and opportunities connected to it all have a place here.
           </p>
         </div>
-        <JourneyRail steps={featureRail} />
+        <JourneyRail steps={featureRail} initialIndex={3} />
+      </section>
+      <section className="people-interlude" id="new-here" aria-labelledby="people-title">
+        <div className="page-shell people-interlude-layout">
+          <div className="people-interlude-photo"><Image src="/community-asian-black.jpg" alt="Friends greeting each other outdoors" width={1600} height={1067} sizes="(max-width: 760px) 100vw, 50vw" /></div>
+          <div className="people-interlude-copy">
+            <span className="eyebrow">New city. Familiar feeling.</span>
+            <h2 id="people-title">It starts with<br />someone saying <em>hello.</em></h2>
+            <p>New to Australia, new to the neighbourhood, or ready to find your people? You deserve somewhere to start.</p>
+            <p>Ask a question. Share what you know. Find a Hub where your next chapter feels a little less like starting from scratch.</p>
+            <a href="/why-tivorah">Why we&apos;re building Tivorah <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
       </section>
       <AppPreview />
-      <section className="showcase" id="new-here">
-        <div className="page-shell">
-          <div className="showcase-copy">
-            <span className="eyebrow">New to Australia?</span>
-            <h2>Arrive with questions. Find people with answers.</h2>
-            <p>
-              You can arrive in Australia carrying years of experience, a heart
-              full of hope and a plan for the life ahead—yet still feel as
-              though you have become unknown. The hardest part is often facing
-              every first alone: the first rental search, the first job
-              application asking for local experience, the first quiet weekend
-              with nobody to call, and the first moment you wonder where you
-              belong. A search engine can give you instructions. It cannot say,
-              “I have stood where you are standing.” Tivorah connects you with
-              people who can.
-            </p>
-            <p>
-              Join Hubs such as <strong>New to Australia</strong>,{" "}
-              <strong>Newcomer Career Circle</strong> or{" "}
-              <strong>International Students Australia</strong>. Ask the
-              questions that feel too small or too personal for a search box.
-              Meet people who understand the courage it took to begin again,
-              discover opportunities shared through real connections and build a
-              circle that knows your name—until Australia feels less like the
-              place you moved to and more like a place where you belong.
-            </p>
-            <div className="actions">
-              <a className="button" href="#updates">
-                Join the waiting list
-              </a>
-            </div>
+      <section className="local-tools" aria-labelledby="local-tools-title">
+        <div className="page-shell local-tools-layout">
+          <div className="local-tools-heading">
+            <span className="eyebrow">For the people making things happen</span>
+            <h2 id="local-tools-title">Bring what you do<br />to the people nearby.</h2>
+            <p>Organising a meetup, offering a service or bringing a community together? Give it a place on Tivorah.</p>
           </div>
-          <div className="showcase-photo">
-            <div className="showcase-photo-bubble" />
-            <Image
-              src="/community-women.jpg"
-              alt="Members of a Tivorah hub walking together"
-              width={900}
-              height={1350}
-              sizes="(max-width: 850px) 100vw, 420px"
-            />
+          <div className="local-tools-list">
+            <article>
+              <span aria-hidden="true">01</span>
+              <div><h3>Your event, from invite to entry.</h3><p>Create events, offer tickets and manage attendees. Guests can find the details, book and keep their ticket on their phone.</p><a href="/hub-organisers">Explore event organising <span aria-hidden="true">↗</span></a></div>
+            </article>
+            <article>
+              <span aria-hidden="true">02</span>
+              <div><h3>Let local people find your skills.</h3><p>Give your service a home with photos, pricing and the areas you cover. Make it easier for people nearby to discover you and enquire.</p><a href="/service-providers">Explore service listings <span aria-hidden="true">↗</span></a></div>
+            </article>
+            <article>
+              <span aria-hidden="true">03</span>
+              <div><h3>Build a Hub people return to.</h3><p>Set your rules, welcome members and share announcements, conversations and opportunities in one place.</p><a href="/hub-organisers">Explore Hub organising <span aria-hidden="true">↗</span></a></div>
+            </article>
           </div>
+        </div>
+      </section>
+      <section className="adelaide-section" aria-labelledby="adelaide-title">
+        <div className="page-shell adelaide-layout">
+          <div><span className="eyebrow">Our home, our beginning</span><h2 id="adelaide-title">Proudly built<br />in Adelaide.</h2></div>
+          <div className="adelaide-copy"><p>Made here. For connections everywhere.</p><p>We&apos;re building Tivorah in Adelaide for people finding their place across Australia. Wherever your story began, there is room for your next chapter.</p><a className="button secondary" href="/about">Meet Tivorah <span aria-hidden="true">↗</span></a></div>
         </div>
       </section>
       <section className="waitlist" id="updates">
         <div className="page-shell waitlist-layout">
           <div>
             <span className="launch-status"><i />Coming soon</span>
-            <h2>Be there when Tivorah opens.</h2>
+            <h2>Your next hello could start here.</h2>
             <p>
-              Join the waiting list for launch news and early access updates.
+              Join the waitlist for launch news and early access updates.
               We will let you know when Tivorah is ready in Australia.
             </p>
           </div>
           <NewsletterForm />
         </div>
       </section>
-    </>
+    </div>
   );
 }

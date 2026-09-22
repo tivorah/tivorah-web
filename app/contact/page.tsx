@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
+import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
   title: "Contact & Complaints",
@@ -12,34 +13,35 @@ export default function Contact() {
     <article className="content">
       <span className="eyebrow">Contact Tivorah</span>
       <h1>Start with the right team.</h1>
-      <p>
-        Include enough information to identify the issue, but never email your password,
-        one-time verification code, full payment-card details or unnecessary identity documents.
-      </p>
-      <p><strong>TIVORAH PTY LTD</strong><br />ABN 94 702 094 844<br />Parafield Gardens, South Australia, Australia</p>
+      <p>Choose a topic and send your message here. Tivorah will reply to the email address you provide.</p>
+      <p><strong>TIVORAH PTY LTD</strong><br />ABN 94 702 094 844<br />Adelaide, South Australia, Australia<br /><a href="mailto:hello@tivorah.com">hello@tivorah.com</a></p>
+
+      <ContactForm />
 
       <div className="contact-list">
         <section>
+          <h2>General enquiries</h2>
+          <p>Questions about Tivorah, partnerships, events or listing your services.</p>
+          <p>Use the form and select <strong>General enquiry</strong>, <strong>Events and ticketing</strong>, or <strong>Service provider or partnership</strong>.</p>
+        </section>
+        <section>
           <h2>General support</h2>
           <p>Account access, features, events, listings and ordinary questions.</p>
-          <a href="mailto:support@tivorah.com">support@tivorah.com</a>
+          <p>Use the form and select <strong>Account or app support</strong>.</p>
         </section>
         <section>
           <h2>Privacy</h2>
           <p>Access, correction, deletion and privacy complaints.</p>
-          <a href="mailto:privacy@tivorah.com">privacy@tivorah.com</a>
+          <p>Use the form and select <strong>Privacy request</strong>.</p>
         </section>
         <section>
           <h2>Safety</h2>
           <p>Use in-app reporting where possible. Anyone can also make an external report.</p>
-          <a href="mailto:support@tivorah.com?subject=Safety%20report">Send a safety report</a>
-        </section>
-        <section>
-          <h2>Copyright or intellectual property</h2>
-          <p>Identify the protected work, the Tivorah material concerned and your authority to act.</p>
-          <a href="mailto:support@tivorah.com?subject=Intellectual%20property%20notice">Send an IP notice</a>
+          <p>Use the form and select <strong>Safety report</strong>. Call emergency services on 000 if someone is in immediate danger.</p>
         </section>
       </div>
+
+      <p className="contact-email-fallback">If the form is unavailable, email <a href="mailto:hello@tivorah.com">hello@tivorah.com</a> for general enquiries or <a href="mailto:support@tivorah.com">support@tivorah.com</a> for support.</p>
 
       <h2>How complaints are handled</h2>
       <p>

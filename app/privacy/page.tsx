@@ -18,7 +18,7 @@ export default function Privacy() {
 
       <p>
         This Privacy Policy explains how TIVORAH PTY LTD (ABN 94 702 094 844),
-        based in Parafield Gardens, South Australia (&quot;Tivorah&quot;,
+        based in Adelaide, South Australia (&quot;Tivorah&quot;,
         &quot;we&quot;, &quot;us&quot; or &quot;our&quot;) handles personal
         information when you use the Tivorah mobile application, website,
         newsletter and related support and community services. It also explains

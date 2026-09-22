@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export type JourneyStep = {
   step: string;
@@ -15,12 +15,23 @@ export type JourneyStep = {
 // through it, a progress bar showing how far along you are, and dots to jump. Native
 // scrolling stays the source of truth — the buttons drive scrollTo, so trackpad, touch
 // and keyboard all keep working without a second state machine to fall out of sync.
-export function JourneyRail({ steps }: { steps: JourneyStep[] }) {
+export function JourneyRail({ steps, initialIndex = 0 }: { steps: JourneyStep[]; initialIndex?: number }) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(initialIndex);
   const [progress, setProgress] = useState(0);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
+  const [positioned, setPositioned] = useState(initialIndex <= 0);
+
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    const card = track?.querySelector<HTMLElement>("[data-card]");
+    if (track && card && initialIndex > 0) {
+      const stride = card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || "0");
+      track.scrollLeft = Math.min(initialIndex, steps.length - 1) * stride;
+    }
+    setPositioned(true);
+  }, [initialIndex, steps.length]);
 
   const sync = useCallback(() => {
     const track = trackRef.current;
@@ -31,7 +42,7 @@ export function JourneyRail({ steps }: { steps: JourneyStep[] }) {
     setAtEnd(track.scrollLeft > max - 8);
     const card = track.querySelector<HTMLElement>("[data-card]");
     if (!card) return;
-    const stride = card.offsetWidth + 22;
+    const stride = card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || "0");
     setActive(Math.min(steps.length - 1, Math.round(track.scrollLeft / stride)));
   }, [steps.length]);
 
@@ -51,7 +62,7 @@ export function JourneyRail({ steps }: { steps: JourneyStep[] }) {
     const track = trackRef.current;
     const card = track?.querySelector<HTMLElement>("[data-card]");
     if (!track || !card) return;
-    track.scrollTo({ left: index * (card.offsetWidth + 22), behavior: "smooth" });
+    track.scrollTo({ left: index * (card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || "0")), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   };
 
   const nudge = (direction: 1 | -1) =>
@@ -69,7 +80,7 @@ export function JourneyRail({ steps }: { steps: JourneyStep[] }) {
         </div>
       </div>
 
-      <div className="journey-track" ref={trackRef}>
+      <div className={`journey-track${positioned ? " is-positioned" : ""}`} ref={trackRef} aria-busy={!positioned}>
         {steps.map((item, i) => (
           <article
             className={`journey-card${i === active ? " is-active" : ""}`}

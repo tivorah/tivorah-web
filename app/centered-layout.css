@@ -1,13 +1,8 @@
-/* Sections stay fluid above 75% browser zoom. ZoomLayoutController adds the
-   layout-zoomed-out class at the 75% boundary and below. */
-.page-shell {
-  width: auto;
-  margin-inline: clamp(24px, 9vw, 150px);
-}
-
+/* One centered, bounded shell at every zoom level; no client-side zoom guess. */
+.page-shell,
 .hero-message-inner {
-  width: auto;
-  margin-inline: clamp(24px, 8.5vw, 140px);
+  width: min(calc(100% - 48px), 1280px);
+  margin-inline: auto;
 }
 
 .nav {
@@ -37,7 +32,8 @@
 
 .nav-inner {
   height: 100%;
-  margin-inline: clamp(24px, 7vw, 112px);
+  width: min(calc(100% - 48px), 1280px);
+  margin-inline: auto;
 }
 
 .section,
@@ -81,13 +77,6 @@ footer {
 }
 
 .footer-inner {
-  margin-inline: clamp(24px, 7vw, 112px);
-}
-
-.layout-zoomed-out .page-shell,
-.layout-zoomed-out .hero-message-inner,
-.layout-zoomed-out .nav-inner,
-.layout-zoomed-out .footer-inner {
   width: min(calc(100% - 48px), 1280px);
   margin-inline: auto;
 }
@@ -119,7 +108,8 @@ footer {
 @media (max-width: 600px) {
   main .page-shell,
   .hero-message-inner {
-    margin-inline: 18px;
+    width: calc(100% - 36px);
+    margin-inline: auto;
   }
 }
 

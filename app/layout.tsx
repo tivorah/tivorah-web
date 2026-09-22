@@ -3,19 +3,18 @@ import Link from "next/link";
 import Image from "next/image";
 import "./styles.css";
 import "./brand.css";
-import "./hero-preview.css";
 import "./product-tour.css";
 import "./centered-layout.css";
 import "./journey-polish.css";
 import "./legal.css";
-import { ZoomLayoutController } from "./zoom-layout-controller";
+import "./home-polish.css";
 import { SiteHeader } from "./site-header";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tivorah.com"),
   title: { default: "Tivorah — Your community, wherever you are in Australia", template: "%s | Tivorah" },
   description:
-    "Communities with real rules and members you can place. Buy, sell, find work and turn up for each other alongside people who share your background — across Australia.",
+    "Find local Hubs, conversations, events, tickets, services, listings and opportunities with people across Australia.",
   icons: { icon: "/tivorah-mark.png", apple: "/tivorah-mark.png" },
   openGraph: {
     type: "website",
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
     locale: "en_AU",
     title: "Tivorah — Find your people. Build your life in Australia.",
     description:
-      "Tivorah connects people new to Australia with communities already here.",
+      "Find local Hubs, book events, discover services and meet people who make Australia feel closer.",
   },
 };
 
@@ -33,7 +32,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ZoomLayoutController />
         <SiteHeader />
         <main>{children}</main>
         <footer>
@@ -55,8 +53,8 @@ export default function RootLayout({
                 <Link href="/why-tivorah">Why Tivorah</Link>
                 <Link href="/hub-organisers">Hub organisers</Link>
                 <Link href="/service-providers">Service providers</Link>
-                <Link href="/contact">Contact &amp; complaints</Link>
-                <Link href="/#updates">Join the waiting list</Link>
+                <Link href="/contact">Contact us</Link>
+                <Link href="/#updates">Join the waitlist</Link>
               </nav>
               <nav aria-label="Legal and trust">
                 <strong>Legal &amp; trust</strong>
@@ -79,7 +77,10 @@ export default function RootLayout({
               </nav>
             </div>
           </div>
-          <p className="footer-legal">TIVORAH PTY LTD · ABN 94 702 094 844 · Parafield Gardens, South Australia</p>
+          <div className="page-shell footer-bottom">
+            <div className="footer-business"><strong>TIVORAH PTY LTD</strong><span>ABN 94 702 094 844</span><span>Adelaide, South Australia, Australia</span></div>
+            <div className="footer-hometown"><span>Proudly built in Adelaide, South Australia.</span><span>Made for belonging across Australia.</span></div>
+          </div>
         </footer>
       </body>
     </html>

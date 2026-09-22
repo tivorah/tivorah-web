@@ -63,7 +63,7 @@ export function SiteHeader() {
           <Link href="/why-tivorah" onClick={closeMenu}>Why Tivorah</Link>
           <Link href="/#features" onClick={closeMenu}>Features</Link>
           <Link className="site-nav-primary" href="/#updates" onClick={closeMenu}>
-            Join waitlist
+            Join the waitlist
           </Link>
         </nav>
       </div>

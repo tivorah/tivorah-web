@@ -64,7 +64,7 @@ Use the existing legal/business presentation consistently:
 
 - Legal entity: TIVORAH PTY LTD
 - ABN: 94 702 094 844
-- Public business location: Parafield Gardens, South Australia
+- Public business location: Adelaide, South Australia
 - Product term: “Hub,” not “community” as a competing feature name
 - Core public message: helping people find trusted communities and build their life
   in Australia
@@ -79,6 +79,16 @@ source documents.
   user explicitly requests a theme change.
 - Preserve the established logo, typography, spacing, centered content widths, and
   mobile navigation patterns in shared styles/components.
+- Public content uses a centered 1280px maximum-width shell at every zoom level.
+  Decorative sections use overflow clipping without becoming hidden scroll containers,
+  so search-engine text-fragment links cannot shift the hero sideways.
+- The homepage uses a spacious split invitation/product opening in `home-polish.css`,
+  with a single supporting paragraph and two upright, separated app screens;
+  the business identity and Adelaide origin share the aligned `footer-bottom` block.
+- The homepage flows from the product introduction to the Hub journey rail,
+  newcomer story, interactive app tour, organiser/provider tools, Adelaide origin
+  and waitlist. Keep these sections distinct rather than repeating belonging copy.
+- Homepage previews are user-controlled, with keyboard-accessible tabs.
 - Reuse shared styles such as brand, centered-layout, hero/preview, product-tour,
   journey-polish, and legal styles rather than creating page-specific duplicates.
 - Mobile navigation must expose essential links through a familiar accessible menu;

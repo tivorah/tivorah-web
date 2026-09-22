@@ -11,9 +11,10 @@ export function NewsletterForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setState("loading");
     setMessage("");
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(form);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
     const submitToNetlify = async () => {
@@ -56,8 +57,8 @@ export function NewsletterForm() {
         await submitToNetlify();
       }
       setState("success");
-      setMessage("You’re on the Tivorah waiting list.");
-      event.currentTarget.reset();
+      setMessage("You’re on the Tivorah waitlist. We’ll email you with launch news.");
+      form.reset();
     } catch (error) {
       setState("error");
       setMessage(
@@ -110,7 +111,7 @@ export function NewsletterForm() {
         </label>
       </div>
       <button className="waitlist-submit" disabled={state === "loading"}>
-        {state === "loading" ? <><span className="waitlist-spinner" aria-hidden="true"/>Joining…</> : "Join the waiting list"}
+        {state === "loading" ? <><span className="waitlist-spinner" aria-hidden="true"/>Joining…</> : "Join the waitlist"}
       </button>
       <label className="consent">
         <input name="consent" type="checkbox" required />

@@ -368,7 +368,7 @@ export default function Terms() {
       <h2>Governing law and contact</h2>
       <p>
         These Terms are between you and TIVORAH PTY LTD (ABN 94 702 094 844),
-        based in Parafield Gardens, South Australia. They are governed by the laws of South Australia and applicable
+        based in Adelaide, South Australia. They are governed by the laws of South Australia and applicable
         Commonwealth laws. Courts with jurisdiction may hear disputes, subject
         to any rights you have to bring a claim elsewhere under applicable
         consumer law.

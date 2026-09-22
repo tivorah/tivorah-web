@@ -12,6 +12,6 @@ export default function WhyTivorah() {
     <h2>Built for life in Australia</h2>
     <p>Tivorah is for people newly arriving and people already established here. It reflects the way life in Australia is built through neighbourhoods, professional networks, cultural communities and shared interests.</p>
     <p>Tivorah does not guarantee a member, provider, listing, event or opportunity merely because it appears in the app. Members should independently verify claims, licences, prices and safety information that matter.</p>
-    <p><Link href="/#updates">Join the waiting list</Link> or learn about <Link href="/hub-organisers">running a Hub</Link> and <Link href="/service-providers">listing a service</Link>.</p>
+    <p><Link href="/#updates">Join the waitlist</Link> or learn about <Link href="/hub-organisers">running a Hub</Link> and <Link href="/service-providers">listing a service</Link>.</p>
   </article>;
 }
