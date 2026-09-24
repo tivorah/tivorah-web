@@ -23,7 +23,7 @@ const previews = [
   {
     label: "Events",
     kicker: "Make plans together",
-    title: "Turn discovery into a real day out.",
+    title: "Find something to do nearby.",
     body: "Browse nearby experiences, filter by mood or date and find reasons to step out with people around you.",
     image: "/app-screens/2026-09-22/events.png",
     notes: ["Local event discovery", "Useful date and category filters", "Tickets and secure QR entry"],
@@ -34,12 +34,12 @@ const previews = [
     title: "Buy, sell and book nearby.",
     body: "Find useful items and independent local services, then message directly to arrange the details.",
     image: "/app-screens/2026-09-22/shop.png",
-    notes: ["Items and local services", "Direct seller conversations", "Pickup-friendly discovery"],
+    notes: ["Items and local services", "Direct seller conversations", "Find items near you"],
   },
   {
     label: "Messages",
     kicker: "Conversations with context",
-    title: "Keep every connection moving.",
+    title: "Keep talking.",
     body: "Continue conversations with friends, sellers and people you meet through Tivorah in one calm, private inbox.",
     image: "/app-screens/2026-09-22/messages.png",
     notes: ["Real profile avatars", "Private one-to-one chat", "Friends and connection requests"],

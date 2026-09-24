@@ -88,6 +88,8 @@ source documents.
 - The homepage flows from the product introduction to the Hub journey rail,
   newcomer story, interactive app tour, organiser/provider tools, Adelaide origin
   and waitlist. Keep these sections distinct rather than repeating belonging copy.
+- Write public copy in plain, natural language. Avoid invented hyphenated phrases,
+  vague slogans and stock-sounding promises; describe what people can actually do.
 - Homepage previews are user-controlled, with keyboard-accessible tabs.
 - Reuse shared styles such as brand, centered-layout, hero/preview, product-tour,
   journey-polish, and legal styles rather than creating page-specific duplicates.

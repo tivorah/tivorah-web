@@ -5,6 +5,7 @@ import { UnsubscribeForm } from "./unsubscribe-form";
 export const metadata: Metadata = {
   title: "Unsubscribe",
   description: "Stop Tivorah launch news and marketing updates.",
+  robots: { index: false, follow: true },
 };
 
 export default function Unsubscribe() {

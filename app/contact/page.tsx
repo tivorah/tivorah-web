@@ -6,6 +6,7 @@ import { ContactForm } from "./contact-form";
 export const metadata: Metadata = {
   title: "Contact & Complaints",
   description: "Contact Tivorah support, privacy and safety teams or make a complaint.",
+  alternates: { canonical: "/contact" },
 };
 
 export default function Contact() {

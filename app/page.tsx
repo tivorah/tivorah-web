@@ -1,7 +1,10 @@
 import { NewsletterForm } from "./newsletter-form";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { AppPreview } from "./app-preview";
 import { JourneyRail, type JourneyStep } from "./journey-rail";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const featureRail: JourneyStep[] = [
   {
@@ -111,7 +114,7 @@ export default async function Home() {
             <span className="eyebrow">New city. Familiar feeling.</span>
             <h2 id="people-title">It starts with<br />someone saying <em>hello.</em></h2>
             <p>New to Australia, new to the neighbourhood, or ready to find your people? You deserve somewhere to start.</p>
-            <p>Ask a question. Share what you know. Find a Hub where your next chapter feels a little less like starting from scratch.</p>
+            <p>Find a Hub in your area. Ask a question, share what you know and make plans with people nearby.</p>
             <a href="/why-tivorah">Why we&apos;re building Tivorah <span aria-hidden="true">↗</span></a>
           </div>
         </div>

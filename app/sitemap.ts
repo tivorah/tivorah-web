@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tivorah.com";
+  const siteOrigin = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tivorah.com").origin;
   const paths = [
-    "",
+    "/",
     "/about",
     "/why-tivorah",
     "/hub-organisers",
@@ -20,8 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/disclaimer",
     "/contact",
     "/account-deletion",
-    "/unsubscribe",
   ];
 
-  return paths.map((path) => ({ url: `${base}${path}`, lastModified: new Date() }));
+  return paths.map((path) => ({ url: new URL(path, siteOrigin).toString() }));
 }
