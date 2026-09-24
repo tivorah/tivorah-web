@@ -4,7 +4,35 @@ import Image from "next/image";
 import { AppPreview } from "./app-preview";
 import { JourneyRail, type JourneyStep } from "./journey-rail";
 
-export const metadata: Metadata = { alternates: { canonical: "/" } };
+const appDescription = "Tivorah is a community app based in Adelaide, Australia. Join Hubs, find or offer services, create or book events, and buy or sell new and used local items.";
+
+export const metadata: Metadata = {
+  title: { absolute: "Tivorah | Australian Community App" },
+  description: appDescription,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website", url: "/", siteName: "Tivorah", locale: "en_AU",
+    title: "Tivorah | Australian Community App", description: appDescription,
+  },
+};
+
+// Identify the app's operator without publishing a residential address or map pin.
+const siteIdentity = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization", "@id": "https://tivorah.com/#organization",
+      name: "Tivorah", legalName: "TIVORAH PTY LTD", url: "https://tivorah.com/",
+      logo: "https://tivorah.com/tivorah-logo.png", description: appDescription,
+      address: { "@type": "PostalAddress", addressLocality: "Adelaide", addressCountry: "AU" },
+    },
+    {
+      "@type": "WebSite", "@id": "https://tivorah.com/#website",
+      name: "Tivorah", url: "https://tivorah.com/", description: appDescription,
+      publisher: { "@id": "https://tivorah.com/#organization" }, inLanguage: "en-AU",
+    },
+  ],
+};
 
 const featureRail: JourneyStep[] = [
   {
@@ -22,7 +50,7 @@ const featureRail: JourneyStep[] = [
   {
     step: "",
     title: "Find something useful nearby",
-    body: "Browse items and local services, ask the seller a question and arrange the details directly.",
+    body: "Buy or sell new and used local items, find a service provider or offer your own services. Message directly to arrange the details.",
     shot: "/app-screens/2026-09-22/shop.png",
   },
   {
@@ -34,7 +62,7 @@ const featureRail: JourneyStep[] = [
   {
     step: "",
     title: "You show up in person",
-    body: "Find local events, book a ticket and keep the details close when it is time to head out.",
+    body: "Create an event and offer tickets, or discover local events and book your place. Keep your ticket close when it is time to head out.",
     shot: "/app-screens/2026-09-22/events.png",
   },
   {
@@ -54,12 +82,13 @@ const featureRail: JourneyStep[] = [
 export default async function Home() {
   return (
     <div className="home-page">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteIdentity).replace(/</g, "\\u003c") }} />
       <section className="home-opening" aria-labelledby="home-title">
         <div className="page-shell opening-layout">
           <div className="opening-copy">
             <span className="opening-origin">Local roots. Australian connections.</span>
             <h1 id="home-title">A new place.<br />Your kind of<br /><em>people.</em></h1>
-            <p className="opening-intro">Find your local circle, make plans and discover opportunities through the people around you.</p>
+            <p className="opening-intro">Meet people through Hubs, find or offer services, create or book events, and buy or sell new and used local items on Tivorah.</p>
             <div className="opening-actions">
               <a className="button opening-primary" href="#updates">Join the waitlist <span aria-hidden="true">→</span></a>
               <a className="opening-tour-link" href="#preview">Take a look inside <span aria-hidden="true">↓</span></a>
@@ -83,12 +112,12 @@ export default async function Home() {
           <div className="belonging-heading">
             <span className="eyebrow">Your life, a little more connected</span>
             <h2 id="belonging-title">People first.<br />Possibilities follow.</h2>
-            <p>A community app for life in Australia. From a first conversation to a local event, a useful service or your next opportunity.</p>
+            <p>Tivorah is an Australian community app that brings people, services, events and a local marketplace together.</p>
           </div>
           <div className="belonging-moments">
             <article><span className="moment-number">01 / Connect</span><h3>Find your circle.</h3><p>Join Hubs around your interests, culture or city. Meet people nearby and keep the conversation going.</p></article>
-            <article><span className="moment-number">02 / Take part</span><h3>Put something in the diary.</h3><p>Discover events, book tickets and make time for the people and things you enjoy.</p></article>
-            <article><span className="moment-number">03 / Discover</span><h3>Make local life easier.</h3><p>Browse items, find a service provider, or explore jobs and referrals shared in your Hub.</p></article>
+            <article><span className="moment-number">02 / Take part</span><h3>Put something in the diary.</h3><p>Create an event, offer tickets or book your place at something happening nearby.</p></article>
+            <article><span className="moment-number">03 / Discover</span><h3>Make local life easier.</h3><p>Buy or sell new and used local items. Find a service provider or offer your own services.</p></article>
           </div>
         </div>
       </section>

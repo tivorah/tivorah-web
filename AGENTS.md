@@ -240,3 +240,11 @@ For a normal web change:
 
 - Keep homepage carousel cards visible in server-rendered HTML. JavaScript may
   position the rail and enable buttons, but must not be required to reveal content.
+
+## Public search identity and location privacy
+
+- Describe Tivorah as an Australian community app operated by TIVORAH PTY LTD.
+- Public identity metadata may use Adelaide, Australia only. Never add a home
+  street address, residential postcode, coordinates or a residential directory link.
+- Keep homepage Organization/WebSite structured data consistent with visible copy.
+  Do not represent Tivorah as a property or a physical storefront.

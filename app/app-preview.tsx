@@ -32,9 +32,9 @@ const previews = [
     label: "Shop",
     kicker: "Local finds and skills",
     title: "Buy, sell and book nearby.",
-    body: "Find useful items and independent local services, then message directly to arrange the details.",
+    body: "Buy or sell new and used local items, find a service provider or offer your services. Message directly to arrange the details.",
     image: "/app-screens/2026-09-22/shop.png",
-    notes: ["Items and local services", "Direct seller conversations", "Find items near you"],
+    notes: ["New and used local items", "Find or offer services", "Message buyers and sellers"],
   },
   {
     label: "Messages",

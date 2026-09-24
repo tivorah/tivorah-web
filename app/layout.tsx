@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tivorah.com"),
   title: { default: "Tivorah — Your community, wherever you are in Australia", template: "%s | Tivorah" },
   description:
-    "Find local Hubs, conversations, events, tickets, services, listings and opportunities with people across Australia.",
+    "Join Hubs, find or offer services, create or book events, and buy or sell new and used local items. Tivorah is a community app based in Adelaide, Australia.",
   icons: { icon: "/tivorah-mark.png", apple: "/tivorah-mark.png" },
   openGraph: {
     type: "website",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     locale: "en_AU",
     title: "Tivorah — Find your people. Build your life in Australia.",
     description:
-      "Find local Hubs, book events, discover services and meet people who make Australia feel closer.",
+      "Connect through Hubs, find or offer services, create or book events, and buy or sell new and used local items on Tivorah.",
   },
 };
 

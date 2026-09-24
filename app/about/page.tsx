@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "About Tivorah", description: "About Tivorah Pty Ltd and the community platform we are building in Australia.", alternates: { canonical: "/about" } };
+export const metadata: Metadata = { title: "About Tivorah", description: "Tivorah is an Australian community app operated by TIVORAH PTY LTD, based in Adelaide, Australia. Join Hubs, find or offer services, create or book events, and buy or sell new and used local items.", alternates: { canonical: "/about" } };
 
 export default function About() {
   return <article className="content">
     <span className="eyebrow">About Tivorah</span>
     <h1>Belonging starts with connection.</h1>
-    <p>Tivorah is a community platform built in Australia to help people find groups where they feel understood, meet people nearby and turn online introductions into connections in person.</p>
-    <p>At the centre of Tivorah are Hubs: groups built around a location, culture, profession, life experience or shared interest. Members can talk, discover events, share opportunities and find useful local services in a community context.</p>
+    <p>Tivorah is an Australian community app, based in Adelaide, Australia, built to help people find groups where they feel understood, meet people nearby and turn online introductions into connections in person.</p>
+    <p>At the centre of Tivorah are Hubs: groups built around a location, culture, profession, life experience or shared interest. Members can connect, chat and share opportunities. They can also find service providers or offer their own services, create events or book tickets, and buy or sell new and used local items.</p>
     <h2>The company</h2>
     <p><strong>TIVORAH PTY LTD</strong> is an Australian proprietary company based in <strong>Adelaide, South Australia</strong>.</p>
     <dl className="company-details">
