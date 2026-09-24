@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 export function NewsletterForm() {
@@ -8,6 +8,33 @@ export function NewsletterForm() {
     "idle",
   );
   const [message, setMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const submitRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!showSuccess) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusable = () => Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button, a[href]') ?? []);
+    focusable()[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShowSuccess(false);
+      if (event.key !== "Tab") return;
+      const controls = focusable();
+      if (!controls.length) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      submitRef.current?.focus();
+    };
+  }, [showSuccess]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,6 +85,7 @@ export function NewsletterForm() {
       }
       setState("success");
       setMessage("You’re on the Tivorah waitlist. We’ll email you with launch news.");
+      setShowSuccess(true);
       form.reset();
     } catch (error) {
       setState("error");
@@ -110,7 +138,7 @@ export function NewsletterForm() {
           />
         </label>
       </div>
-      <button className="waitlist-submit" disabled={state === "loading"}>
+      <button ref={submitRef} className="waitlist-submit" disabled={state === "loading"}>
         {state === "loading" ? <><span className="waitlist-spinner" aria-hidden="true"/>Joining…</> : "Join the waitlist"}
       </button>
       <label className="consent">
@@ -128,6 +156,20 @@ export function NewsletterForm() {
           {message}
         </p>
       )}
+      {showSuccess ? (
+        <div className="waitlist-success-backdrop" onMouseDown={() => setShowSuccess(false)}>
+          <div ref={dialogRef} className="waitlist-success-dialog" role="dialog" aria-modal="true" aria-labelledby="waitlist-success-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="success-signal" aria-hidden="true"><i /><i /><i /><span>✓</span></div>
+            <button className="success-close" type="button" aria-label="Close confirmation" onClick={() => setShowSuccess(false)}>×</button>
+            <div className="success-copy">
+              <span className="success-kicker">Your place is saved</span>
+              <h3 id="waitlist-success-title">You&apos;re on the list.</h3>
+              <p>We&apos;ll let you know when Tivorah is ready. Until then, take a closer look at the Hubs, people and local plans we&apos;re bringing together.</p>
+            </div>
+            <a className="success-action" href="#preview" onClick={() => setShowSuccess(false)}>Explore Tivorah <span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+      ) : null}
     </form>
   );
 }

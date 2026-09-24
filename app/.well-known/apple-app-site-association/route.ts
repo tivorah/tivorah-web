@@ -8,7 +8,7 @@ export function GET() {
       apps: [],
       details: appId ? [{
         appID: appId,
-        paths: ["/u/*", "/hubs/invite*"],
+        paths: ["/u/*", "/hubs/invite*", "/events/*"],
       }] : [],
     },
   }, {

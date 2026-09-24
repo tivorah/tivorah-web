@@ -67,16 +67,17 @@ section[id] { scroll-margin-top: 100px; }
 .opening-note { margin: 24px 0 0; font-size: 13px; color: #6b6073; line-height: 1.7; }
 .opening-product { min-width: 0; perspective: 900px; }
 .opening-phones { display: grid; grid-template-columns: 1fr .88fr; align-items: start; gap: 24px; width: 100%; max-width: 558px; margin-inline: auto; transform-style: preserve-3d; }
-.opening-phone { min-width: 0; border: 5px solid #29252c; border-radius: 36px; overflow: clip; background: #29252c; box-shadow: 0 28px 48px -20px #29203145; backface-visibility: hidden; transition: transform 650ms cubic-bezier(.2,.7,.2,1), box-shadow 650ms ease; }
+.opening-phone { min-width: 0; border: 5px solid #29252c; border-radius: 36px; overflow: clip; background: #29252c; box-shadow: 0 28px 48px -20px #29203145; backface-visibility: hidden; transition: transform 900ms cubic-bezier(.22,.61,.36,1), box-shadow 900ms ease; }
 .opening-phone-front { transform: rotateY(12deg) rotateX(2deg) translateZ(28px); animation: opening-float-front 5.5s ease-in-out infinite; }
 .opening-phone-back { transform: rotateY(-12deg) rotateX(-2deg) translateZ(-16px); animation: opening-float-back 6.5s ease-in-out infinite; }
 .opening-phone img { display: block; width: 100%; height: auto; border-radius: 30px; }
 .opening-phone-back { margin-top: 88px; }
-@keyframes opening-float-front { 50% { transform: rotateY(8deg) rotateX(-1deg) translate3d(0, -18px, 36px); } }
-@keyframes opening-float-back { 50% { transform: rotateY(-8deg) rotateX(1deg) translate3d(0, 14px, -8px); } }
+/* Keep idle floating independent of hover transforms so entry and exit never reset it. */
+@keyframes opening-float-front { 0%, 100% { translate: 0 0 0; } 50% { translate: 0 -18px 8px; } }
+@keyframes opening-float-back { 0%, 100% { translate: 0 0 0; } 50% { translate: 0 14px 8px; } }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .opening-product:hover .opening-phone-front { animation: none; transform: rotateY(-5deg) rotateX(-2deg) translate3d(-8px, -20px, 48px); box-shadow: 0 38px 56px -22px #29203160; }
-  .opening-product:hover .opening-phone-back { animation: none; transform: rotateY(5deg) rotateX(2deg) translate3d(8px, 15px, 12px); box-shadow: 0 32px 48px -22px #29203150; }
+  .opening-product:hover .opening-phone-front { transform: rotateY(-5deg) rotateX(-2deg) translate3d(-8px, -20px, 48px); box-shadow: 0 38px 56px -22px #29203160; }
+  .opening-product:hover .opening-phone-back { transform: rotateY(5deg) rotateX(2deg) translate3d(8px, 15px, 12px); box-shadow: 0 32px 48px -22px #29203150; }
 }
 .people-interlude { padding: 104px 0; }
 .people-interlude-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(40px, 6vw, 88px); align-items: center; }

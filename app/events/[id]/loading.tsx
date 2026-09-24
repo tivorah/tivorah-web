@@ -1,0 +1,1 @@
+export default function Loading() { return <section className="page-shell event-state" aria-busy="true" aria-label="Loading event"><div className="event-placeholder" /><h1>Loading event…</h1></section>; }

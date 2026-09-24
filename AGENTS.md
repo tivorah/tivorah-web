@@ -221,3 +221,14 @@ For a normal web change:
    expired behavior as well as the success path.
 8. For legal/safety changes, verify the claimed behavior exists in API/mobile and note
    anything requiring legal review.
+
+## Public event tickets
+
+- `/events/[id]` renders published event details and guest ticket checkout, without
+  requiring an app install or account. It uses `/api/v1/public/events` on the API.
+- `/event-orders/[id]` is a private, non-indexed ticket/status page. Keep the access
+  token in the URL fragment/session storage and send it only as a Bearer header.
+- Ticket entry codes require a server-confirmed order. Never infer payment success
+  from a browser redirect or a Stripe session ID in a URL.
+- `/events/*` is included in the iOS association file; deploy association configuration
+  and the corresponding native build before claiming installed-app routing is live.

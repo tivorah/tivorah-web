@@ -1,14 +1,11 @@
 import { createAuthClient } from "better-auth/react";
 import { twoFactorClient, usernameClient } from "better-auth/client/plugins";
 
-const configuredBaseURL = process.env.NEXT_PUBLIC_API_URL;
-const authBaseURL = (() => {
-  if (!configuredBaseURL || typeof window === "undefined") return configuredBaseURL;
-  if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) return configuredBaseURL;
-  const url = new URL(configuredBaseURL);
-  url.hostname = window.location.hostname;
-  return url.origin;
-})();
+// Always uses NEXT_PUBLIC_API_URL as configured in .env — no implicit
+// rewriting based on where the browser thinks it's running. To point the
+// admin panel at a local tivorah-api during development, set
+// NEXT_PUBLIC_API_URL=http://localhost:6001 in .env directly.
+const authBaseURL = process.env.NEXT_PUBLIC_API_URL;
 
 export const adminAuthClient = createAuthClient({
   baseURL: authBaseURL || undefined,
