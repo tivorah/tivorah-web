@@ -24,7 +24,9 @@ surfaces, authentication, or shared styling changes.
 
 `tivorah-web` is Tivorah's public marketing, trust, legal, waitlist/contact, Stripe
 Connect return, and staff administration application. It is a Next.js App Router
-project deployed to Netlify. The public product domain is `https://tivorah.com`.
+project currently served on Railway. The public product domain is `https://tivorah.com`.
+The repository retains its previous Netlify configuration; do not assume it controls
+the active deployment.
 
 Primary stack:
 
@@ -157,9 +159,12 @@ Stripe Connect callback pages must validate/display server-derived onboarding st
 and provide a safe recovery route. They must not decide payout eligibility from query
 parameters alone.
 
-## Netlify deployment
+## Hosting and legacy Netlify configuration
 
-`netlify.toml` is the source-controlled deployment contract and uses the Netlify
+Railway is the current host. Verify its build/start settings before diagnosing
+hosting issues; do not change Railway settings without authorisation.
+
+For the previous Netlify deployment, `netlify.toml` uses the Netlify
 Next.js plugin. Do not add a generic single-page-app redirect to `index.html`; Next.js
 routes are handled by the plugin and such a rewrite can cause false 404s or broken
 server routes.
@@ -232,3 +237,6 @@ For a normal web change:
   from a browser redirect or a Stripe session ID in a URL.
 - `/events/*` is included in the iOS association file; deploy association configuration
   and the corresponding native build before claiming installed-app routing is live.
+
+- Keep homepage carousel cards visible in server-rendered HTML. JavaScript may
+  position the rail and enable buttons, but must not be required to reveal content.

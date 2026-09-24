@@ -19,7 +19,7 @@
   padding: 8px clamp(24px, 9vw, 150px) 38px;
   scroll-padding-inline: clamp(24px, 9vw, 150px);
 }
-#features .journey-track:not(.is-positioned) { visibility: hidden; }
+/* Server-rendered cards stay visible even before hydration or if scripts fail. */
 
 #features .journey-card {
   flex-basis: 356px;

@@ -21,7 +21,7 @@ export function JourneyRail({ steps, initialIndex = 0 }: { steps: JourneyStep[];
   const [progress, setProgress] = useState(0);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
-  const [positioned, setPositioned] = useState(initialIndex <= 0);
+  const [controlsReady, setControlsReady] = useState(false);
 
   useLayoutEffect(() => {
     const track = trackRef.current;
@@ -30,7 +30,7 @@ export function JourneyRail({ steps, initialIndex = 0 }: { steps: JourneyStep[];
       const stride = card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || "0");
       track.scrollLeft = Math.min(initialIndex, steps.length - 1) * stride;
     }
-    setPositioned(true);
+    setControlsReady(true);
   }, [initialIndex, steps.length]);
 
   const sync = useCallback(() => {
@@ -75,12 +75,12 @@ export function JourneyRail({ steps, initialIndex = 0 }: { steps: JourneyStep[];
           <span style={{ transform: `scaleX(${Math.max(0.06, progress || 0.06)})` }} />
         </div>
         <div className="journey-buttons">
-          <button type="button" aria-label="Previous step" onClick={() => nudge(-1)} disabled={atStart}>←</button>
-          <button type="button" aria-label="Next step" onClick={() => nudge(1)} disabled={atEnd}>→</button>
+          <button type="button" aria-label="Previous step" onClick={() => nudge(-1)} disabled={!controlsReady || atStart}>←</button>
+          <button type="button" aria-label="Next step" onClick={() => nudge(1)} disabled={!controlsReady || atEnd}>→</button>
         </div>
       </div>
 
-      <div className={`journey-track${positioned ? " is-positioned" : ""}`} ref={trackRef} aria-busy={!positioned}>
+      <div className="journey-track" ref={trackRef}>
         {steps.map((item, i) => (
           <article
             className={`journey-card${i === active ? " is-active" : ""}`}
@@ -109,6 +109,7 @@ export function JourneyRail({ steps, initialIndex = 0 }: { steps: JourneyStep[];
             type="button"
             key={item.title}
             className={i === active ? "is-active" : undefined}
+            disabled={!controlsReady}
             aria-label={`Step ${i + 1}: ${item.title}`}
             aria-current={i === active ? "step" : undefined}
             onClick={() => scrollToCard(i)}
