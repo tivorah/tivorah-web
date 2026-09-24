@@ -214,6 +214,20 @@
 .tour-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 600px) { .product-tour .phone-stage { min-height: 580px; } .product-tour .tour-phone { width: min(240px, 60%); } }
 @media (prefers-reduced-motion: reduce) {
-  .product-tour .tour-phone { transition: none; transform: none !important; box-shadow: 0 16px 30px #2b173f1a; }
-  .product-tour .tour-phone:not([data-position="current"]) { visibility: hidden; }
+  .product-tour .tour-phone { transition: none; }
+}
+
+/* Let the preview background span phones/tablets while text keeps its gutter. */
+@media (max-width: 900px) {
+  .product-tour { padding-inline: 0; }
+  .tour-heading { margin-inline: 24px; }
+  .tour-tabs { max-width: calc(100% - 48px); }
+  .tour-layout { border-radius: 0; }
+  .tour-copy { padding-inline: 64px; }
+  .product-tour .phone-stage { margin-inline: 0; }
+}
+@media (max-width: 600px) {
+  .tour-heading { margin-inline: 18px; }
+  .tour-tabs { max-width: calc(100% - 36px); }
+  .tour-copy { padding-inline: 42px; }
 }
