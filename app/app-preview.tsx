@@ -17,7 +17,7 @@ const previews = [
     kicker: "A first connection",
     title: "Someone worth saying hello to.",
     body: "Discover people nearby, find shared interests and send a connection request. Keep your friends and conversations close.",
-    image: "/app-screens/2026-09-22/discover.png",
+    image: "/preview-discover-current-ios.png",
     notes: ["People and public profiles", "Friends and connection requests", "Direct messages when you connect"],
   },
   {
@@ -53,7 +53,8 @@ export function AppPreview() {
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const selectTab = (index: number) => {
     setActiveIndex(index);
-    tabs.current[index]?.focus();
+    tabs.current[index]?.focus({ preventScroll: true });
+    tabs.current[index]?.scrollIntoView({ block: "nearest", inline: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   };
 
   return <section className="product-tour" id="preview">
@@ -73,7 +74,7 @@ export function AppPreview() {
         tabIndex={activeIndex === index ? 0 : -1}
         aria-selected={activeIndex === index}
         className={activeIndex === index ? "tour-tab active" : "tour-tab"}
-        onClick={() => setActiveIndex(index)}
+        onClick={() => selectTab(index)}
         onKeyDown={(event) => {
           const next = event.key === "ArrowRight" ? (index + 1) % previews.length
             : event.key === "ArrowLeft" ? (index + previews.length - 1) % previews.length
@@ -95,7 +96,6 @@ export function AppPreview() {
         <div className="iphone-frame" key={active.image}>
           <Image src={active.image} alt={`${active.label} screen in the Tivorah iPhone app`} width={1206} height={2622} sizes="(max-width: 600px) 65vw, 275px" />
         </div>
-        <p className="capture-caption">From the Tivorah app · Sample content</p>
       </div>
     </div>
   </section>;

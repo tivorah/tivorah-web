@@ -162,7 +162,6 @@
 
 .iphone-frame img { display: block; width: 100%; height: auto; border-radius: 31px; background: #fff; }
 
-.capture-caption { margin: 20px 16px 0; font-size: 12px; color: #62586c; text-align: center; }
 
 @keyframes tour-copy-in {
   from { opacity: 0; transform: translateY(12px); }
@@ -186,13 +185,20 @@
 @media (max-width: 600px) {
   .product-tour { padding: 64px 18px; }
   .tour-heading p { font-size: 16px; }
-  .tour-tabs { justify-content: flex-start; margin: 30px 0 22px; padding: 6px; }
-  .tour-tab { padding: 10px 14px; }
+  .tour-tabs { justify-content: safe center; gap: 2px; margin: 30px auto 22px; padding: 6px; }
+  .tour-tab { min-height: 44px; padding: 8px 10px; font-size: 14px; }
   .tour-layout { border-radius: 18px; }
   .iphone-frame { width: min(260px, 72%); }
   .tour-copy { padding: 28px 24px 8px; }
   .tour-copy h3 { font-size: 32px; }
   .tour-copy > p { font-size: 16px; }
+}
+
+@media (max-width: 360px) {
+  .tour-tabs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%; overflow: visible; border-radius: 20px; }
+  .tour-tab { justify-content: center; padding-inline: 4px; }
+  .tour-tab:nth-child(-n + 3) { grid-column: span 2; }
+  .tour-tab:nth-child(n + 4) { grid-column: span 3; }
 }
 
 @media (prefers-reduced-motion: reduce) {

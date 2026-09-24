@@ -38,7 +38,7 @@ const featureRail: JourneyStep[] = [
     step: "",
     title: "Discover people nearby",
     body: "A shared interest is a good place to start. Discover people near you and send a connection request.",
-    shot: "/app-screens/2026-09-22/discover.png",
+    shot: "/preview-discover-current-ios.png",
   },
   {
     step: "What holds it",
