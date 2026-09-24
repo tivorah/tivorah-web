@@ -205,3 +205,15 @@
   .tour-copy, .iphone-frame { animation: none; }
   .tour-tab { transition: none; }
 }
+
+/* A perspective carousel keeps neighbouring screens in depth during each turn. */
+.product-tour .phone-stage { perspective: 1100px; touch-action: pan-y pinch-zoom; cursor: grab; user-select: none; min-height: 700px; }
+.product-tour .phone-stage:active { cursor: grabbing; }
+.product-tour .tour-phone { grid-area: 1 / 1; width: min(275px, 60%); backface-visibility: hidden; animation: none; transform-style: preserve-3d; border: 1px solid #5b535e; box-shadow: 6px 4px 0 #39323e, 10px 7px 0 #211927, 12px 28px 36px -16px #21192755; transition: transform 1100ms cubic-bezier(.22,.61,.36,1), opacity 900ms ease; pointer-events: none; }
+.tour-phone-shadow { position: absolute; width: 230px; height: 28px; bottom: 28px; left: 50%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(ellipse, #21192730, transparent 70%); }
+.tour-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 600px) { .product-tour .phone-stage { min-height: 580px; } .product-tour .tour-phone { width: min(240px, 60%); } }
+@media (prefers-reduced-motion: reduce) {
+  .product-tour .tour-phone { transition: none; transform: none !important; box-shadow: 0 16px 30px #2b173f1a; }
+  .product-tour .tour-phone:not([data-position="current"]) { visibility: hidden; }
+}

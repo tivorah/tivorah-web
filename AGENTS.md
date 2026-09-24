@@ -92,7 +92,10 @@ source documents.
   and waitlist. Keep these sections distinct rather than repeating belonging copy.
 - Write public copy in plain, natural language. Avoid invented hyphenated phrases,
   vague slogans and stock-sounding promises; describe what people can actually do.
-- Homepage previews are user-controlled, with keyboard-accessible tabs.
+- Homepage previews support swipe, keyboard tabs and automatic rotation every seven
+  seconds. Pause offscreen, in background tabs, on keyboard focus and during gestures;
+  resume after swipes and pointer tab selection. Pause on keyboard focus; Space toggles rotation and Escape stops it on the panel.
+  Respect reduced motion. Hovering alone must not stop automatic rotation.
 - Reuse shared styles such as brand, centered-layout, hero/preview, product-tour,
   journey-polish, and legal styles rather than creating page-specific duplicates.
 - Mobile navigation must expose essential links through a familiar accessible menu;

@@ -416,3 +416,8 @@ footer {
     padding-top: 0;
   }
 }
+
+/* A compact phone header preserves room for the page and 44px touch targets. */
+@media (max-width: 600px) {
+  .nav { height: 64px; }
+}

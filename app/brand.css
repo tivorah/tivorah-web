@@ -90,8 +90,9 @@
   .site-nav-primary:focus-visible { background: #6032c4 !important; }
 }
 
-@media (max-width: 360px) {
-  .brand img { width: 116px; }
+@media (max-width: 600px) {
+  .nav .brand { min-height: 44px; }
+  .nav .brand img { width: 116px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

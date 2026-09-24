@@ -193,3 +193,20 @@ section[id] { scroll-margin-top: 100px; }
 #features .journey-dots button:focus-visible { outline: 2px solid #7650b7; outline-offset: -3px; }
 @media (max-width: 360px) { #features .journey-dots button { width: 34px; } }
 #features .journey-progress span { background: #7650b7; }
+
+/* Phone proportions: shorter opening, readable forms, and a compact footer. */
+@media (max-width: 600px) {
+  .home-opening { padding-top: 36px; padding-bottom: 56px; }
+  .opening-layout { gap: 32px; }
+  .opening-copy h1 { font-size: clamp(40px, 11vw, 52px); }
+  .home-page .waitlist-fields input { font-size: 16px; min-height: 48px; }
+  .home-page .waitlist-fields label { font-size: 14px; }
+  .home-page .waitlist-submit { min-height: 48px; font-size: 16px; }
+  .home-page .waitlist-form .consent { grid-template-columns: 22px 1fr; min-height: 44px; font-size: 14px; line-height: 1.5; }
+  .home-page .waitlist-form .consent input { width: 22px; height: 22px; }
+  .footer-logo { width: 116px; height: auto; }
+  .footer-links a { min-height: 44px; font-size: 14px; overflow-wrap: anywhere; }
+}
+@media (min-width: 360px) and (max-width: 600px) {
+  .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
+}

@@ -38,7 +38,7 @@ export function SiteHeader() {
             alt="Tivorah"
             width={708}
             height={226}
-            sizes="(max-width: 360px) 116px, (max-width: 850px) 146px, 154px"
+            sizes="(max-width: 600px) 116px, (max-width: 850px) 146px, 154px"
             priority
           />
         </Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const previews = [
   {
@@ -49,15 +49,60 @@ const previews = [
 export function AppPreview() {
   const [activeIndex, setActiveIndex] = useState(0);
   const active = previews[activeIndex];
+  const sectionRef = useRef<HTMLElement>(null);
+  const gesture = useRef<{ id: number; x: number; y: number } | null>(null);
+  const [paused, setPaused] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(true);
+  const [direction, setDirection] = useState(1);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotion = () => setReducedMotion(media.matches);
+    const updateVisibility = () => setPageVisible(!document.hidden);
+    updateMotion(); updateVisibility();
+    media.addEventListener("change", updateMotion);
+    document.addEventListener("visibilitychange", updateVisibility);
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0.15 });
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => {
+      media.removeEventListener("change", updateMotion);
+      document.removeEventListener("visibilitychange", updateVisibility);
+      observer.disconnect();
+    };
+  }, []);
+
+  const rotating = !paused && !focused && !dragging && visible && pageVisible && !reducedMotion;
+  useEffect(() => {
+    if (!rotating) return;
+    const timer = window.setTimeout(() => {
+      setDirection(1);
+      setActiveIndex(index => (index + 1) % previews.length);
+    }, 7000);
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, rotating]);
+
+  const move = (delta: number) => {
+    setDirection(delta);
+    setActiveIndex(index => (index + delta + previews.length) % previews.length);
+  };
 
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const selectTab = (index: number) => {
+    setDirection(index >= activeIndex ? 1 : -1);
     setActiveIndex(index);
     tabs.current[index]?.focus({ preventScroll: true });
     tabs.current[index]?.scrollIntoView({ block: "nearest", inline: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   };
 
-  return <section className="product-tour" id="preview">
+  return <section className="product-tour" id="preview" ref={sectionRef}
+    aria-label="Explore Tivorah app screens" aria-roledescription="carousel"
+    onFocusCapture={event => setFocused(event.target.matches(":focus-visible"))}
+    onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
+  >
     <div className="tour-heading">
       <div><span className="eyebrow">Take a look inside</span><h2>Meet your everyday app.</h2></div>
       <p>Your Hubs, plans, local finds and conversations. Explore the screens to see how it all fits together.</p>
@@ -84,7 +129,14 @@ export function AppPreview() {
       >{preview.label}</button>)}
     </div>
 
-    <div className="tour-layout" id="preview-panel" role="tabpanel" aria-labelledby={`preview-tab-${activeIndex}`} tabIndex={0}>
+    <div className="tour-layout" data-direction={direction > 0 ? "next" : "previous"} id="preview-panel" role="tabpanel" aria-labelledby={`preview-tab-${activeIndex}`} tabIndex={0}
+      aria-describedby="preview-motion-help"
+      onKeyDown={event => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === " ") { event.preventDefault(); setPaused(value => !value); }
+        if (event.key === "Escape") setPaused(true);
+      }}>
+      <span className="tour-sr-only" id="preview-motion-help">Swipe the phone to change screens. Automatic previews pause while using the keyboard. Press Space to toggle automatic rotation, or Escape to stop it.</span>
       <div className="tour-copy" key={`${active.label}-copy`}>
         <span className="tour-kicker">{active.kicker}</span>
         <h3>{active.title}</h3>
@@ -92,10 +144,40 @@ export function AppPreview() {
         <ul>{active.notes.map((note) => <li key={note}><span aria-hidden="true">✓</span>{note}</li>)}</ul>
       </div>
 
-      <div className="phone-stage">
-        <div className="iphone-frame" key={active.image}>
-          <Image src={active.image} alt={`${active.label} screen in the Tivorah iPhone app`} width={1206} height={2622} sizes="(max-width: 600px) 65vw, 275px" />
-        </div>
+      <div className="phone-stage"
+        onPointerDown={event => {
+          if (!event.isPrimary || event.button !== 0 || (event.target as HTMLElement).closest("button")) return;
+          gesture.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+          event.currentTarget.setPointerCapture(event.pointerId);
+          setDragging(true);
+        }}
+        onPointerUp={event => {
+          const start = gesture.current;
+          gesture.current = null;
+          setDragging(false);
+          if (!start || start.id !== event.pointerId) return;
+          const dx = event.clientX - start.x;
+          const dy = event.clientY - start.y;
+          if (Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy) * 1.3) move(dx < 0 ? 1 : -1);
+        }}
+        onPointerCancel={() => { gesture.current = null; setDragging(false); }}
+        onLostPointerCapture={() => { gesture.current = null; setDragging(false); }}
+        onDragStart={event => event.preventDefault()}
+      >
+        <div className="tour-phone-shadow" aria-hidden="true" />
+        {previews.map((preview, index) => {
+          const offset = (index - activeIndex + previews.length + 2) % previews.length - 2;
+          return <div className="iphone-frame tour-phone" key={preview.image}
+            data-position={offset === 0 ? "current" : offset < 0 ? "left" : "right"}
+            aria-hidden={offset !== 0}
+            style={{
+              transform: `translate3d(${offset * 205}px, ${offset === 0 ? -8 : 22}px, ${offset === 0 ? 65 : -150 * Math.abs(offset)}px) rotateY(${offset === 0 ? -6 : offset < 0 ? 48 : -48}deg)`,
+              opacity: Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : 0.48,
+              zIndex: offset === 0 ? 3 : 1,
+            }}>
+            <Image draggable={false} src={preview.image} alt={offset === 0 ? `${preview.label} screen in the Tivorah iPhone app` : ""} width={1206} height={2622} sizes="(max-width: 600px) 60vw, 275px" />
+          </div>;
+        })}
       </div>
     </div>
   </section>;
