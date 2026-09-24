@@ -171,11 +171,11 @@ export function AppPreview() {
             data-position={offset === 0 ? "current" : offset < 0 ? "left" : "right"}
             aria-hidden={offset !== 0}
             style={{
-              transform: `translate3d(${offset * 205}px, ${offset === 0 ? -8 : 22}px, ${offset === 0 ? 65 : -150 * Math.abs(offset)}px) rotateY(${offset === 0 ? -6 : offset < 0 ? 48 : -48}deg)`,
-              opacity: Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : 0.48,
+              transform: `translate3d(calc(${offset} * var(--tour-phone-spacing, 205px)), ${offset === 0 ? -8 : 22}px, ${offset === 0 ? "65px" : `calc(${Math.abs(offset)} * var(--tour-side-depth, -150px))`}) rotateY(${offset === 0 ? "-6deg" : `calc(${offset < 0 ? 1 : -1} * var(--tour-side-angle, 48deg))`})`,
+              opacity: Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : "var(--tour-side-opacity, 0.48)",
               zIndex: offset === 0 ? 3 : 1,
             }}>
-            <Image draggable={false} src={preview.image} alt={offset === 0 ? `${preview.label} screen in the Tivorah iPhone app` : ""} width={1206} height={2622} sizes="(max-width: 600px) 60vw, 275px" />
+            <Image draggable={false} src={preview.image} alt={offset === 0 ? `${preview.label} screen in the Tivorah iPhone app` : ""} width={1206} height={2622} sizes="(max-width: 600px) 54vw, 275px" />
           </div>;
         })}
       </div>
