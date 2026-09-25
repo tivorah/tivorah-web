@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -8,6 +8,7 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
+  const menuButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 12);
@@ -20,7 +21,7 @@ export function SiteHeader() {
     if (!menuOpen) return;
 
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") { setMenuOpen(false); menuButton.current?.focus(); }
     };
 
     window.addEventListener("keydown", closeOnEscape);
@@ -43,6 +44,7 @@ export function SiteHeader() {
           />
         </Link>
         <button
+          ref={menuButton}
           className="nav-menu-button"
           type="button"
           aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}

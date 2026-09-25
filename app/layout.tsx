@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { indexingDisabled, siteOrigin, socialImage } from "../lib/site";
 import Link from "next/link";
 import Image from "next/image";
 import "./styles.css";
@@ -11,12 +12,15 @@ import "./home-polish.css";
 import { SiteHeader } from "./site-header";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tivorah.com"),
+  metadataBase: new URL(siteOrigin),
   title: { default: "Tivorah — Your community, wherever you are in Australia", template: "%s | Tivorah" },
   description:
     "Join Hubs, find or offer services, create or book events, and buy or sell new and used local items. Tivorah is a community app based in Adelaide, Australia.",
+  robots: indexingDisabled ? { index: false, follow: false } : undefined,
+  twitter: { card: "summary_large_image", images: [socialImage] },
   icons: { icon: "/tivorah-mark.png", apple: "/tivorah-mark.png" },
   openGraph: {
+    images: [socialImage],
     type: "website",
     siteName: "Tivorah",
     locale: "en_AU",
@@ -32,8 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <a className="skip-link" href="#main-content">Skip to content</a>
         <SiteHeader />
-        <main>{children}</main>
+        <main id="main-content" tabIndex={-1}>{children}</main>
         <footer>
           <div className="page-shell footer-inner">
             <div>

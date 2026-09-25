@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Terms of Use",
-  description: "The terms that apply when using Tivorah.",
-};
+export const metadata = pageMetadata("Terms of Use", "The terms that apply when using Tivorah.", "/terms");
 
 export default function Terms() {
   return (

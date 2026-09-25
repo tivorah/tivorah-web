@@ -1,5 +1,6 @@
 import { NewsletterForm } from "./newsletter-form";
 import type { Metadata } from "next";
+import { socialImage } from "../lib/site";
 import Image from "next/image";
 import { AppPreview } from "./app-preview";
 import { JourneyRail, type JourneyStep } from "./journey-rail";
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
   description: appDescription,
   alternates: { canonical: "/" },
   openGraph: {
+    images: [socialImage],
     type: "website", url: "/", siteName: "Tivorah", locale: "en_AU",
     title: "Tivorah | Australian Community App", description: appDescription,
   },

@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Safety Centre",
-  description: "Report harm, block an account and find urgent safety support on Tivorah.",
-};
+export const metadata = pageMetadata("Safety Centre", "Report harm, block an account and find urgent safety support on Tivorah.", "/safety");
 
 export default function SafetyCentre() {
   return (

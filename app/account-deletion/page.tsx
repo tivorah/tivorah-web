@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Delete Your Account",
-  description: "How to request deletion of a Tivorah account and data.",
-};
+export const metadata = pageMetadata("Delete Your Account", "How to request deletion of a Tivorah account and data.", "/account-deletion");
 
 export default function AccountDeletion() {
   return (

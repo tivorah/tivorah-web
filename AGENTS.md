@@ -251,3 +251,19 @@ For a normal web change:
   street address, residential postcode, coordinates or a residential directory link.
 - Keep homepage Organization/WebSite structured data consistent with visible copy.
   Do not represent Tivorah as a property or a physical storefront.
+
+## Search and recovery conventions
+
+- `lib/site.ts` centralizes public metadata, canonical origin and social preview defaults.
+  Use `pageMetadata` for public pages. Private account/transaction routes stay noindex.
+- Set server-only `SITE_NOINDEX=true` in Railway preview/staging environments.
+- Root not-found, error, global-error and loading boundaries reuse the public shell.
+- Contact, waitlist and unsubscribe use the Tivorah API, not legacy Netlify Forms.
+  Contact delivery uses the API's existing configured email sender; failed delivery must
+  preserve input and offer support email. No success state before API confirmation.
+
+- Admin Features and Payments use `feature-manager.tsx` and `pricing-manager.tsx`.
+  Keep availability choices explicit and pricing edits in per-feature rule lists.
+- Admin identity checks use `/api/v1/user/identity`; a permission denial or transient
+  API failure must not destroy a valid staff session. Aggregate duplicate audience
+  labels before chart rendering. Participant labels can overlap.

@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
+import { siteOrigin, indexingDisabled } from "../lib/site";
 
 export default function robots(): MetadataRoute.Robots {
-  const siteOrigin = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tivorah.com").origin;
 
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/admin", "/connect"] }],
+    rules: indexingDisabled ? [{ userAgent: "*", disallow: "/" }] : [{ userAgent: "*", allow: "/", disallow: ["/admin", "/connect", "/event-orders/"] }],
     sitemap: new URL("/sitemap.xml", siteOrigin).toString(),
   };
 }

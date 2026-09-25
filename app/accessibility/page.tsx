@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Accessibility",
-  description: "Tivorah's accessibility commitment and feedback channel.",
-};
+export const metadata = pageMetadata("Accessibility", "Tivorah's accessibility commitment and feedback channel.", "/accessibility");
 
 export default function Accessibility() {
   return (

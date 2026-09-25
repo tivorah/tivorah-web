@@ -16,24 +16,39 @@ export function ContactForm() {
 
     const form = event.currentTarget;
     const data = new FormData(form);
-    const body = new URLSearchParams({
-      "form-name": "tivorah-contact",
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+    const body = {
       name: String(data.get("name") ?? "").trim(),
       email: String(data.get("email") ?? "").trim(),
       topic: String(data.get("topic") ?? ""),
       subject: String(data.get("subject") ?? "").trim(),
       message: String(data.get("message") ?? "").trim(),
       website: String(data.get("website") ?? ""),
-      source: "website-contact",
-    });
+    };
 
     try {
-      const response = await fetch("/forms.html", {
+      if (!apiUrl) throw new Error("Contact unavailable");
+      const response = await fetch(`${apiUrl}/api/v1/public/contact`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
+        signal: AbortSignal.timeout(15000),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error("Your message could not be sent.");
+      if (!response.ok) {
+        if (response.status === 422) {
+          const result = await response.json();
+          const fields = Object.keys(result.fields ?? {}).filter(field => field !== "website");
+          setState("error");
+          setMessage(`Please check ${fields.join(", ") || "your details"} and try again.`);
+          return;
+        }
+        if (response.status === 429) {
+          setState("error");
+          setMessage("Too many attempts. Please wait before trying again or email support@tivorah.com.");
+          return;
+        }
+        throw new Error("Contact unavailable");
+      }
       setState("success");
       setMessage("Thanks — your message has been sent to Tivorah.");
       form.reset();
@@ -48,8 +63,6 @@ export function ContactForm() {
       className="contact-form"
       name="tivorah-contact"
       method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="website"
       onSubmit={submit}
       aria-busy={state === "loading"}
     >

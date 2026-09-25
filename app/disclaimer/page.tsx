@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Important Disclaimer",
-  description: "Important limits on information and member activity on Tivorah.",
-};
+export const metadata = pageMetadata("Important Disclaimer", "Important limits on information and member activity on Tivorah.", "/disclaimer");
 
 export default function Disclaimer() {
   return (

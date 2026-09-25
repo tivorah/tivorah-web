@@ -15,7 +15,7 @@ export function OpenAppButton({ username, downloadUrl, iosUrl, androidUrl }: Pro
     <div className="profile-store-links" aria-label="Download Tivorah">
       {iosUrl ? <a href={iosUrl}>Download for iPhone</a> : null}
       {androidUrl ? <a href={androidUrl}>Download for Android</a> : null}
-      {!iosUrl && !androidUrl ? <a href={downloadUrl}>Download Tivorah</a> : null}
+      {!iosUrl && !androidUrl ? <a href={downloadUrl}>Get Tivorah updates</a> : null}
     </div>
   </div>;
 }

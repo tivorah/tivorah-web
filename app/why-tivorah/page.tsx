@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "Why Tivorah", description: "Why Tivorah brings community, local discovery and practical opportunities into connected Hubs.", alternates: { canonical: "/why-tivorah" } };
+export const metadata = pageMetadata("Why Tivorah", "Why Tivorah brings community, local discovery and practical opportunities into connected Hubs.", "/why-tivorah");
 
 export default function WhyTivorah() {
   return <article className="content">

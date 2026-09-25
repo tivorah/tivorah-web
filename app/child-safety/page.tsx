@@ -1,12 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Child Safety Standards",
-  description:
-    "Tivorah’s standards against child sexual abuse and exploitation, including how to report a concern.",
-};
+export const metadata = pageMetadata("Child Safety Standards", "Tivorah’s standards against child sexual abuse and exploitation, including how to report a concern.", "/child-safety");
 
 export default function ChildSafetyStandards() {
   return (

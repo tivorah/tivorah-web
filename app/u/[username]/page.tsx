@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { cache } from "react";
+import { notFound } from "next/navigation";
+import { pageMetadata, socialImage } from "../../../lib/site";
 import Image from "next/image";
-import Link from "next/link";
 import { OpenAppButton } from "./open-app-button";
 import "./profile.css";
 
@@ -21,12 +23,13 @@ const decodeUsername = (value: string) => {
   try { return decodeURIComponent(value); } catch { return ""; }
 };
 
-async function getProfile(username: string): Promise<ProfileResult> {
+const getProfile = cache(async (username: string): Promise<ProfileResult> => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-  if (!apiUrl || !/^[a-zA-Z0-9._-]{3,40}$/.test(username)) return { profile: null, unavailable: false };
+  if (!/^[a-zA-Z0-9._-]{3,40}$/.test(username)) return { profile: null, unavailable: false };
+  if (!apiUrl) return { profile: null, unavailable: true };
 
   try {
-    const response = await fetch(`${apiUrl}/api/v1/public/profiles/${encodeURIComponent(username)}`, { next: { revalidate: 60 } });
+    const response = await fetch(`${apiUrl}/api/v1/public/profiles/${encodeURIComponent(username)}`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(10000) });
     if (response.status === 404 || response.status === 400) return { profile: null, unavailable: false };
     if (!response.ok) return { profile: null, unavailable: true };
     const payload = await response.json() as { data?: { profile?: PublicProfile } };
@@ -34,7 +37,7 @@ async function getProfile(username: string): Promise<ProfileResult> {
   } catch {
     return { profile: null, unavailable: true };
   }
-}
+});
 
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
   const { username: rawUsername } = await params;
@@ -43,12 +46,13 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   if (!profile) return { title: "Tivorah profile", robots: { index: false, follow: false } };
   const name = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || `@${profile.username}`;
   const description = profile.bio?.trim() || `View ${name}'s public profile on Tivorah.`;
+  const metadata = pageMetadata(`${name} on Tivorah`, description, `/u/${encodeURIComponent(profile.username)}`);
+  const images = profile.photo?.url ? [{ url: profile.photo.url, alt: name }] : [socialImage];
   return {
-    title: `${name} on Tivorah`,
-    description,
+    ...metadata,
     robots: { index: false, follow: false },
-    alternates: { canonical: `/u/${encodeURIComponent(profile.username)}` },
-    openGraph: { type: "profile", title: `${name} on Tivorah`, description, images: profile.photo?.url ? [{ url: profile.photo.url, alt: name }] : undefined },
+    openGraph: { ...metadata.openGraph, type: "profile", images },
+    twitter: { ...metadata.twitter, images },
   };
 }
 
@@ -57,12 +61,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const username = decodeUsername(rawUsername);
   const { profile, unavailable } = await getProfile(username);
 
+  if (!profile && !unavailable) notFound();
   if (!profile) {
     return <section className="profile-page profile-state">
       <div className="profile-state-mark" aria-hidden="true">T</div>
       <h1>{unavailable ? "Profile temporarily unavailable" : "Profile not found"}</h1>
       <p>{unavailable ? "Tivorah could not load this profile just now. Please try again shortly." : "This link may be incorrect, or the account is no longer available."}</p>
-      <Link className="button" href={unavailable ? `/u/${encodeURIComponent(username)}` : "/"}>{unavailable ? "Try again" : "Go to Tivorah"}</Link>
+      <a className="button" href={`/u/${encodeURIComponent(username)}`}>Try again</a>
     </section>;
   }
 

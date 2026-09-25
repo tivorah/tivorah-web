@@ -8,6 +8,8 @@ const mediaCdnHost = process.env.NEXT_PUBLIC_MEDIA_CDN_HOST?.trim();
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   outputFileTracingRoot: root,
+  productionBrowserSourceMaps: false,
+  compiler: { removeConsole: { exclude: ["error", "warn"] } },
   images: {
     // Reuse optimised responses instead of regenerating them on each visit.
     minimumCacheTTL: 86400,

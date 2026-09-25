@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Community Guidelines",
-  description: "The conduct and safety standards for Tivorah communities.",
-};
+export const metadata = pageMetadata("Community Guidelines", "The conduct and safety standards for Tivorah communities.", "/community-guidelines");
 
 export default function Guidelines() {
   return (

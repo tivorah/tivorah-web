@@ -14,6 +14,7 @@ export function NewsletterForm() {
 
   useEffect(() => {
     if (!showSuccess) return;
+    const submitButton = submitRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const focusable = () => Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button, a[href]') ?? []);
@@ -32,7 +33,7 @@ export function NewsletterForm() {
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKeyDown);
-      submitRef.current?.focus();
+      submitButton?.focus();
     };
   }, [showSuccess]);
 
@@ -44,45 +45,23 @@ export function NewsletterForm() {
     const data = new FormData(form);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
-    const submitToNetlify = async () => {
-      const body = new URLSearchParams({
-        "form-name": "tivorah-waitlist",
-        name: String(data.get("name") ?? ""),
-        email: String(data.get("email") ?? ""),
-        consent: data.get("consent") === "on" ? "yes" : "no",
-        source: "website-waitlist",
-        website: String(data.get("website") ?? ""),
-      });
-      const response = await fetch("/forms.html", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-      });
-      if (!response.ok) throw new Error("The waiting-list request could not be submitted.");
-    };
-
     try {
-      if (apiUrl) {
-        try {
-          const response = await fetch(`${apiUrl}/api/v1/public/waitlist`, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              name: data.get("name"),
-              email: data.get("email"),
-              consent: data.get("consent") === "on",
-              website: data.get("website"),
-              source: "website-waitlist",
-            }),
-          });
-          const result = await response.json();
-          if (!response.ok) throw new Error(result.message || "Please check your details.");
-        } catch {
-          await submitToNetlify();
-        }
-      } else {
-        await submitToNetlify();
-      }
+      if (!apiUrl) throw new Error("The waitlist is temporarily unavailable. Please try again later or email hello@tivorah.com.");
+      const response = await fetch(`${apiUrl}/api/v1/public/waitlist`, {
+        method: "POST",
+        signal: AbortSignal.timeout(15000),
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: String(data.get("name") ?? "").trim(),
+          email: String(data.get("email") ?? "").trim(),
+          consent: data.get("consent") === "on",
+          website: data.get("website"),
+          source: "website-waitlist",
+        }),
+      });
+      if (!response.ok) throw new Error(response.status === 429
+        ? "Too many attempts. Please wait before trying again."
+        : "We couldn’t join the waitlist. Check your name, email and consent, then try again.");
       setState("success");
       setMessage("You’re on the Tivorah waitlist. We’ll email you with launch news.");
       setShowSuccess(true);
@@ -90,7 +69,7 @@ export function NewsletterForm() {
     } catch (error) {
       setState("error");
       setMessage(
-        error instanceof Error ? error.message : "Something went wrong.",
+        error instanceof Error && error.name === "Error" ? error.message : "We couldn’t reach Tivorah. Check your connection and try again.",
       );
     }
   }
@@ -101,8 +80,7 @@ export function NewsletterForm() {
       className="form waitlist-form"
       name="tivorah-waitlist"
       method="POST"
-      data-netlify="true"
-      data-netlify-honeypot="website"
+      aria-busy={state === "loading"}
     >
       <input type="hidden" name="form-name" value="tivorah-waitlist" />
       <input type="hidden" name="source" value="website-waitlist" />
@@ -111,6 +89,7 @@ export function NewsletterForm() {
         tabIndex={-1}
         autoComplete="off"
         className="honey"
+        aria-hidden="true"
       />
       <div className="waitlist-fields">
         <label htmlFor="newsletter-name">

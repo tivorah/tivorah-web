@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = { title: "Hub Organiser Rules", description: "Rules and legal responsibilities for Tivorah Hub creators, administrators, moderators and event organisers." };
+export const metadata = pageMetadata("Hub Organiser Rules", "Rules and legal responsibilities for Tivorah Hub creators, administrators, moderators and event organisers.", "/hub-organisers");
 
 export default function HubOrganisers() {
   return <article className="content">

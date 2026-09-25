@@ -1,13 +1,9 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 import { ContactForm } from "./contact-form";
 
-export const metadata: Metadata = {
-  title: "Contact & Complaints",
-  description: "Contact Tivorah support, privacy and safety teams or make a complaint.",
-  alternates: { canonical: "/contact" },
-};
+export const metadata = pageMetadata("Contact & Complaints", "Contact Tivorah support, privacy and safety teams or make a complaint.", "/contact");
 
 export default function Contact() {
   return (

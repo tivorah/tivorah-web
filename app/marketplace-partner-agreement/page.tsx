@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Marketplace Partner Agreement",
-  description: "Payment, payout and customer obligations for Tivorah organisers, providers and sellers.",
-};
+export const metadata = pageMetadata("Marketplace Partner Agreement", "Payment, payout and customer obligations for Tivorah organisers, providers and sellers.", "/marketplace-partner-agreement");
 
 export default function MarketplacePartnerAgreement() {
   return <article className="content">

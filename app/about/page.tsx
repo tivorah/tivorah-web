@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "About Tivorah", description: "Tivorah is an Australian community app operated by TIVORAH PTY LTD, based in Adelaide, Australia. Join Hubs, find or offer services, create or book events, and buy or sell new and used local items.", alternates: { canonical: "/about" } };
+export const metadata = pageMetadata("About Tivorah", "Tivorah is an Australian community app operated by TIVORAH PTY LTD, based in Adelaide, Australia. Join Hubs, find or offer services, create or book events, and buy or sell new and used local items.", "/about");
 
 export default function About() {
   return <article className="content">

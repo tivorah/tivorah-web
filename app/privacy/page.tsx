@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "How Tivorah collects, uses and protects personal information.",
-};
+export const metadata = pageMetadata("Privacy Policy", "How Tivorah collects, uses and protects personal information.", "/privacy");
 
 export default function Privacy() {
   return (

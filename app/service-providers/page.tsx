@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import Link from "next/link";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = { title: "Service Provider Listing Rules", description: "Rules and legal responsibilities for businesses and service providers listing on Tivorah." };
+export const metadata = pageMetadata("Service Provider Listing Rules", "Rules and legal responsibilities for businesses and service providers listing on Tivorah.", "/service-providers");
 
 export default function ServiceProviders() {
   return <article className="content">

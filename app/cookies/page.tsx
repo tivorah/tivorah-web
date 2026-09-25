@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "../../lib/site";
 import { LegalNavigation } from "../legal-navigation";
 
-export const metadata: Metadata = {
-  title: "Cookie Notice",
-  description: "How Tivorah uses cookies and similar browser storage.",
-};
+export const metadata = pageMetadata("Cookie Notice", "How Tivorah uses cookies and similar browser storage.", "/cookies");
 
 export default function Cookies() {
   return (

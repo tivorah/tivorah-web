@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { siteOrigin, indexingDisabled } from "../lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteOrigin = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://tivorah.com").origin;
+  if (indexingDisabled) return [];
   const paths = [
     "/",
     "/about",
