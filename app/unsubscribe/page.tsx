@@ -8,7 +8,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function Unsubscribe() {
+// Waitlist emails link here with ?email= so the address is prefilled for a one-step opt-out.
+export default async function Unsubscribe({ searchParams }: { searchParams: Promise<{ email?: string | string[] }> }) {
+  const { email } = await searchParams;
+  const defaultEmail = typeof email === "string" && email.length <= 254 ? email : "";
   return (
     <article className="content content-form-page">
       <span className="eyebrow">Email preferences</span>
@@ -18,7 +21,7 @@ export default function Unsubscribe() {
         will stop those messages without closing a Tivorah account or stopping
         essential account, security, ticket or safety communications.
       </p>
-      <UnsubscribeForm />
+      <UnsubscribeForm defaultEmail={defaultEmail} />
       <p>
         You can also email <a href="mailto:privacy@tivorah.com?subject=Unsubscribe">privacy@tivorah.com</a> from
         the affected address. We action valid marketing opt-outs within five

@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 19 September 2026
+        <strong>Last updated:</strong> 26 September 2026
       </p>
 
       <p>
@@ -78,7 +78,8 @@ export default function Privacy() {
         </li>
         <li>
           <strong>Events, tickets and payments:</strong> events, bookings,
-          ticket and QR identifiers, attendance and check-in records, order
+          ticket and QR identifiers, attendance and check-in records (including
+          the time a ticket is scanned or its entry code is entered), order
           totals, payment status, refunds and Stripe customer, checkout or
           connected-account identifiers where paid features are enabled.
           Stripe may collect identity, beneficial-owner, business, tax and bank
@@ -108,10 +109,12 @@ export default function Privacy() {
           or delivery information.
         </li>
         <li>
-          <strong>Support, feedback and newsletter information:</strong> your
+          <strong>Support, feedback, waitlist and newsletter information:</strong> your
           correspondence with us, feedback rating and category, support
-          requests, newsletter name and email, consent record and subscription
-          source.
+          requests, and, when you join the waitlist, your name, email address,
+          the consent you gave and when you gave it, the form you used, and
+          whether and when you unsubscribed. We also process the IP address of
+          the request to limit repeated or automated sign-ups.
         </li>
       </ul>
 
@@ -177,6 +180,21 @@ export default function Privacy() {
         addresses, financial information or anything you do not want the
         relevant audience to see.
       </p>
+      <p>
+        <strong>Event organisers</strong> can see an attendee list for their own
+        event. For each booking it shows the booking name, ticket type, number
+        of tickets, amount paid, booking time, whether the booking was refunded
+        or cancelled, and how many tickets have been checked in. The attendee
+        list does not show your email address. Organisers use it to manage entry
+        and support their event, and must handle it under our{" "}
+        <Link href="/marketplace-partner-agreement">Marketplace Partner Agreement</Link>.
+      </p>
+      <p>
+        <strong>Service providers</strong> can see the bookings made for their
+        own services, including the appointment time, booking status and
+        amount. <strong>Sellers</strong> receive the enquiries you send about
+        their items or services.
+      </p>
       <h2>Messages and end-to-end encryption</h2>
       <p>
         Tivorah distinguishes personal one-to-one private chats from community
@@ -226,6 +244,10 @@ export default function Privacy() {
         Tivorah may request location, camera, microphone, photo/media library
         and notification permissions. These support nearby discovery, uploads,
         photos or video, voice messages or calls, saving media and push alerts.
+        Event organisers may also use the camera to scan attendees&apos;
+        ticket QR codes at check-in. The camera image is processed on the
+        organiser&apos;s device to read the code; only the ticket code is sent to
+        Tivorah, and the camera image is not stored or uploaded.
         Permissions are optional and can be withdrawn in iOS or Android
         settings, although the related feature may then be unavailable. Tivorah
         does not access your address book merely because you connect with
@@ -268,14 +290,22 @@ export default function Privacy() {
         You can manage push categories and optional marketing notifications in
         Tivorah settings and device settings. Essential account, transaction,
         policy and safety communications may still be sent where necessary to
-        provide or protect the service.
+        provide or protect the service. If you receive payments through
+        Tivorah, we may show an in-app notice that you need to acknowledge when
+        we change the availability of a payment feature or a Tivorah platform
+        fee that affects you. We record when you acknowledge it.
       </p>
       <p>
-        Website newsletter subscribers receive Tivorah news and app updates
-        based on the consent given with the subscription form. Every marketing
-        email will provide an unsubscribe method. You may also ask us to stop
-        direct marketing by contacting us. Unsubscribing from marketing does
-        not delete a Tivorah account or stop essential service messages.
+        You can only join the website waitlist after ticking the consent box.
+        When you join, we send one confirmation email to the address you gave.
+        After that, waitlist members receive Tivorah launch news and app
+        updates based on that consent. Waitlist emails are sent through our
+        email provider, Resend. Every marketing email identifies Tivorah and
+        includes a link to unsubscribe, and we action opt-outs within five
+        working days, in line with the <em>Spam Act 2003</em> (Cth). You can
+        also unsubscribe on our <Link href="/unsubscribe">unsubscribe page</Link> or
+        ask us to stop by contacting us. Unsubscribing from marketing does not
+        delete a Tivorah account or stop essential service messages.
       </p>
 
       <h2>When we share information</h2>
@@ -358,6 +388,15 @@ export default function Privacy() {
         purposes described above, including service delivery, legal and tax
         obligations, fraud prevention, safety, backups and dispute resolution.
         Retention periods differ by record type.
+      </p>
+      <p>
+        We keep waitlist details while you remain subscribed and for as long as
+        they are needed for launch communications. If you unsubscribe, we keep
+        your email address and the date you opted out so we do not email you
+        again; you can ask us to delete the rest. When you delete an event or
+        listing, it is removed from Tivorah and from your creations, but related
+        booking, ticket, payment, refund and audit records are kept for the
+        purposes above.
       </p>
       <p>
         For eligible end-to-end encrypted chats, encrypted delivery envelopes

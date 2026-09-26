@@ -10,7 +10,7 @@ export default function Terms() {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 19 September 2026
+        <strong>Last updated:</strong> 26 September 2026
       </p>
 
       <div className="legal-callout">
@@ -187,6 +187,15 @@ export default function Terms() {
         Attendees must follow venue, organiser and lawful safety requirements.
         Tivorah may provide booking, QR check-in and payment tools but does not
         control every event.
+      </p>
+      <p>
+        Organisers can see an attendee list and check-in status for their own
+        events, as described in our <Link href="/privacy">Privacy Policy</Link>, and may use it
+        only to run and support that event. An organiser can publish an event,
+        move it back to draft, cancel it or delete it. An event that people
+        already hold tickets for cannot be moved to draft or deleted; it must be
+        cancelled, which notifies ticket holders and starts any refunds that
+        apply.
       </p>
       <p>
         Where paid tickets are enabled, the total customer price, any customer-paid Tivorah fee,

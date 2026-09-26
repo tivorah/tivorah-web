@@ -196,7 +196,13 @@ footer {
   to { transform: rotate(360deg); }
 }
 
+/* Disabled until consent is ticked; "wait" only while the request is in flight. */
 .waitlist-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.waitlist-form[aria-busy="true"] .waitlist-submit:disabled {
   cursor: wait;
   opacity: 0.65;
 }

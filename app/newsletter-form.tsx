@@ -9,6 +9,8 @@ export function NewsletterForm() {
   );
   const [message, setMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  // Marketing consent must be given before the form can be submitted (Spam Act 2003 / APP 7).
+  const [consented, setConsented] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const submitRef = useRef<HTMLButtonElement>(null);
 
@@ -40,6 +42,11 @@ export function NewsletterForm() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    if (!consented) {
+      setState("error");
+      setMessage("Tick the consent box to join the waitlist.");
+      return;
+    }
     setState("loading");
     setMessage("");
     const data = new FormData(form);
@@ -54,8 +61,8 @@ export function NewsletterForm() {
         body: JSON.stringify({
           name: String(data.get("name") ?? "").trim(),
           email: String(data.get("email") ?? "").trim(),
-          consent: data.get("consent") === "on",
-          website: data.get("website"),
+          consent: consented,
+          website: String(data.get("tv_hp_check") ?? ""),
           source: "website-waitlist",
         }),
       });
@@ -63,9 +70,10 @@ export function NewsletterForm() {
         ? "Too many attempts. Please wait before trying again."
         : "We couldn’t join the waitlist. Check your name, email and consent, then try again.");
       setState("success");
-      setMessage("You’re on the Tivorah waitlist. We’ll email you with launch news.");
+      setMessage("You’re on the Tivorah waitlist. We’ve sent a confirmation to your email.");
       setShowSuccess(true);
       form.reset();
+      setConsented(false);
     } catch (error) {
       setState("error");
       setMessage(
@@ -84,8 +92,9 @@ export function NewsletterForm() {
     >
       <input type="hidden" name="form-name" value="tivorah-waitlist" />
       <input type="hidden" name="source" value="website-waitlist" />
+      {/* Spam trap. Named so browser autofill won't recognise it and fill it for real people. */}
       <input
-        name="website"
+        name="tv_hp_check"
         tabIndex={-1}
         autoComplete="off"
         className="honey"
@@ -117,16 +126,17 @@ export function NewsletterForm() {
           />
         </label>
       </div>
-      <button ref={submitRef} className="waitlist-submit" disabled={state === "loading"}>
-        {state === "loading" ? <><span className="waitlist-spinner" aria-hidden="true"/>Joining…</> : "Join the waitlist"}
-      </button>
       <label className="consent">
-        <input name="consent" type="checkbox" required />
+        <input name="consent" type="checkbox" required checked={consented} onChange={(event) => setConsented(event.target.checked)} aria-describedby="waitlist-consent-hint" />
         <span>
           I agree to receive Tivorah launch news and app updates. I can unsubscribe
           anytime. See our <Link href="/privacy">Privacy Policy</Link>.
         </span>
       </label>
+      <button ref={submitRef} className="waitlist-submit" disabled={state === "loading" || !consented} aria-disabled={state === "loading" || !consented}>
+        {state === "loading" ? <><span className="waitlist-spinner" aria-hidden="true"/>Joining…</> : "Join the waitlist"}
+      </button>
+      {!consented ? <p id="waitlist-consent-hint" className="form-fine-print">Tick the box above to join the waitlist.</p> : null}
       <p className="form-fine-print">
         Already subscribed? <Link href="/unsubscribe">Unsubscribe here</Link>.
       </p>

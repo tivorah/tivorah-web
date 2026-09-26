@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 
-export function UnsubscribeForm() {
+export function UnsubscribeForm({ defaultEmail = "" }: { defaultEmail?: string }) {
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
@@ -13,7 +13,7 @@ export function UnsubscribeForm() {
     const form = event.currentTarget;
     const data = new FormData(form);
     const email = String(data.get("email") ?? "").trim().toLowerCase();
-    const website = String(data.get("website") ?? "");
+    const website = String(data.get("tv_hp_check") ?? "");
     const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
     try {
@@ -44,11 +44,11 @@ export function UnsubscribeForm() {
     >
       <input type="hidden" name="form-name" value="tivorah-unsubscribe" />
       <label className="honey" aria-hidden="true">
-        Leave this field empty <input name="website" tabIndex={-1} autoComplete="off" />
+        Leave this field empty <input name="tv_hp_check" tabIndex={-1} autoComplete="off" />
       </label>
       <label htmlFor="unsubscribe-email">
         Email address
-        <input id="unsubscribe-email" name="email" type="email" autoComplete="email" required />
+        <input id="unsubscribe-email" name="email" type="email" autoComplete="email" required defaultValue={defaultEmail} />
       </label>
       <button disabled={state === "loading"}>
         {state === "loading" ? "Submitting…" : "Unsubscribe"}
