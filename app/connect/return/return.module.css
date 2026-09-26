@@ -1,0 +1,86 @@
+/* A bounded task screen within the existing light public-site shell. */
+.page {
+  width: min(calc(100% - 48px), 440px);
+  margin-inline: auto;
+  padding-block: clamp(32px, 7vh, 72px) 48px;
+  color: var(--ink);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: var(--soft);
+  color: #7036b5;
+  margin-bottom: 24px;
+}
+
+.label {
+  color: #625a6d;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.title {
+  font-size: clamp(30px, 6vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -.04em;
+  margin: 10px 0 16px;
+}
+
+.intro, .note p, .help p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #564e60;
+  margin: 0;
+}
+
+.page .open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 28px;
+  background: #7036b5;
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.open:hover { background: #5e2c99; }
+.open:active { background: #4c237c; }
+.open:focus-visible, .help summary:focus-visible {
+  outline: 3px solid #7036b5;
+  outline-offset: 4px;
+}
+
+.destination {
+  margin: 12px 0 28px;
+  color: #625a6d;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.note {
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.note strong { display: block; font-size: 16px; margin-bottom: 8px; }
+.help { margin-top: 12px; }
+.help summary {
+  min-height: 44px;
+  padding-block: 12px;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 650;
+  cursor: pointer;
+}
+.help p { padding-block: 4px 12px; }

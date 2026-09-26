@@ -6,6 +6,7 @@ import Image from "next/image";
 import "./admin.css";
 import { BrandedQrCode } from "../branded-qr-code";
 import { adminAuthClient } from "./auth-client";
+import { adminApiBase } from "./api-base";
 
 type Flag = {
   id: number;
@@ -207,9 +208,8 @@ function humanize(value: string) {
     .replaceAll("_", " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
-const API = process.env.NEXT_PUBLIC_API_URL ?? "";
 async function request(path: string, init: RequestInit = {}) {
-  const response = await fetch(`${API}${path}`, {
+  const response = await fetch(`${adminApiBase()}${path}`, {
     ...init,
     credentials: "include",
     headers: { "content-type": "application/json", ...init.headers },
