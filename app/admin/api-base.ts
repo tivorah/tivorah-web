@@ -16,7 +16,10 @@ const isLocalDevHost = (hostname: string) =>
 // reach the API through the same hostname the page was opened on. Production
 // URLs are never rewritten.
 export function adminApiBase() {
-  if (!configured || typeof window === "undefined") return configured;
+  if (typeof window === "undefined") {
+    return process.env.API_INTERNAL_URL?.replace(/\/$/, "") || configured;
+  }
+  if (!configured) return configured;
   try {
     const url = new URL(configured);
     const pageHost = window.location.hostname;

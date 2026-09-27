@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { usePreviewSwipe } from "../hooks/use-preview-swipe";
 
 const previews = [
   {
@@ -50,14 +51,17 @@ export function AppPreview() {
   const [activeIndex, setActiveIndex] = useState(0);
   const active = previews[activeIndex];
   const sectionRef = useRef<HTMLElement>(null);
-  const gesture = useRef<{ id: number; x: number; y: number } | null>(null);
   const [paused, setPaused] = useState(false);
   const [focused, setFocused] = useState(false);
-  const [dragging, setDragging] = useState(false);
   const [visible, setVisible] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [direction, setDirection] = useState(1);
+  const move = (delta: number) => {
+    setDirection(delta);
+    setActiveIndex(index => (index + delta + previews.length) % previews.length);
+  };
+  const swipe = usePreviewSwipe(move);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -75,7 +79,7 @@ export function AppPreview() {
     };
   }, []);
 
-  const rotating = !paused && !focused && !dragging && visible && pageVisible && !reducedMotion;
+  const rotating = !paused && !focused && !swipe.dragging && visible && pageVisible && !reducedMotion;
   useEffect(() => {
     if (!rotating) return;
     const timer = window.setTimeout(() => {
@@ -84,11 +88,6 @@ export function AppPreview() {
     }, 7000);
     return () => window.clearTimeout(timer);
   }, [activeIndex, rotating]);
-
-  const move = (delta: number) => {
-    setDirection(delta);
-    setActiveIndex(index => (index + delta + previews.length) % previews.length);
-  };
 
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const selectTab = (index: number) => {
@@ -145,23 +144,8 @@ export function AppPreview() {
       </div>
 
       <div className="phone-stage"
-        onPointerDown={event => {
-          if (!event.isPrimary || event.button !== 0 || (event.target as HTMLElement).closest("button")) return;
-          gesture.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
-          event.currentTarget.setPointerCapture(event.pointerId);
-          setDragging(true);
-        }}
-        onPointerUp={event => {
-          const start = gesture.current;
-          gesture.current = null;
-          setDragging(false);
-          if (!start || start.id !== event.pointerId) return;
-          const dx = event.clientX - start.x;
-          const dy = event.clientY - start.y;
-          if (Math.abs(dx) >= 45 && Math.abs(dx) > Math.abs(dy) * 1.3) move(dx < 0 ? 1 : -1);
-        }}
-        onPointerCancel={() => { gesture.current = null; setDragging(false); }}
-        onLostPointerCapture={() => { gesture.current = null; setDragging(false); }}
+        {...swipe.handlers}
+        data-dragging={swipe.dragging}
         onDragStart={event => event.preventDefault()}
       >
         <div className="tour-phone-shadow" aria-hidden="true" />
@@ -171,13 +155,18 @@ export function AppPreview() {
             data-position={offset === 0 ? "current" : offset < 0 ? "left" : "right"}
             aria-hidden={offset !== 0}
             style={{
-              transform: `translate3d(calc(${offset} * var(--tour-phone-spacing, 205px)), ${offset === 0 ? -8 : 22}px, ${offset === 0 ? "65px" : `calc(${Math.abs(offset)} * var(--tour-side-depth, -150px))`}) rotateY(${offset === 0 ? "-6deg" : `calc(${offset < 0 ? 1 : -1} * var(--tour-side-angle, 48deg))`})`,
+              transform: `translate3d(calc(${offset} * var(--tour-phone-spacing, 205px) + ${reducedMotion ? 0 : swipe.offset}px), ${offset === 0 ? -8 : 22}px, ${offset === 0 ? "65px" : `calc(${Math.abs(offset)} * var(--tour-side-depth, -150px))`}) rotateY(${offset === 0 ? "-6deg" : `calc(${offset < 0 ? 1 : -1} * var(--tour-side-angle, 48deg))`})`,
               opacity: Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : "var(--tour-side-opacity, 0.48)",
               zIndex: offset === 0 ? 3 : 1,
             }}>
             <Image draggable={false} src={preview.image} alt={offset === 0 ? `${preview.label} screen in the Tivorah iPhone app` : ""} width={1206} height={2622} sizes="(max-width: 600px) 54vw, 275px" />
           </div>;
         })}
+      </div>
+      <div className="tour-controls">
+        <button type="button" aria-label="Previous app screen" onClick={() => move(-1)}>←</button>
+        <span aria-live={rotating ? "off" : "polite"} aria-atomic="true">{active.label} · {activeIndex + 1} / {previews.length}</span>
+        <button type="button" aria-label="Next app screen" onClick={() => move(1)}>→</button>
       </div>
     </div>
   </section>;

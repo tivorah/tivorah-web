@@ -81,7 +81,9 @@ source documents.
   user explicitly requests a theme change.
 - Preserve the established logo, typography, spacing, centered content widths, and
   mobile navigation patterns in shared styles/components.
-- Public content uses a centered 1280px maximum-width shell at every zoom level.
+- Public content defaults to a centered 1280px maximum-width shell. The homepage
+  uses the approved 1536px shell, including its header, footer and app tour, with
+  40px desktop gutters and established phone spacing.
   Decorative sections use overflow clipping without becoming hidden scroll containers,
   so search-engine text-fragment links cannot shift the hero sideways.
 - The homepage uses a spacious split invitation/product opening in `home-polish.css`,
@@ -96,6 +98,10 @@ source documents.
   seconds. Pause offscreen, in background tabs, on keyboard focus and during gestures;
   resume after swipes and pointer tab selection. Pause on keyboard focus; Space toggles rotation and Escape stops it on the panel.
   Respect reduced motion. Hovering alone must not stop automatic rotation.
+- The “Meet your everyday app” phone carousel uses `hooks/use-preview-swipe.ts`
+  for horizontal gesture feedback while preserving vertical scrolling and pinch
+  zoom. Keep its 44px previous/next controls and keyboard rotation shortcuts;
+  cancelled gestures must not change the selected screen.
 - Reuse shared styles such as brand, centered-layout, hero/preview, product-tour,
   journey-polish, and legal styles rather than creating page-specific duplicates.
 - Mobile navigation must expose essential links through a familiar accessible menu;
@@ -148,6 +154,9 @@ Public browser variables are bundled and are never secret. Important environment
 values include:
 
 - `NEXT_PUBLIC_API_URL` — Tivorah API origin/base used by browser requests
+- `API_INTERNAL_URL` — optional server-only API origin for server-rendered pages;
+  defaults to the public API origin. Local development may use loopback here while
+  browsers on phones use the configured LAN address.
 - `NEXT_PUBLIC_SITE_URL` — canonical web origin, normally `https://tivorah.com`
 - Public App Store and Play Store URLs where configured
 - `APPLE_TEAM_ID` and `APPLE_APP_BUNDLE_IDENTIFIER` — server-only iOS Universal Link verification
@@ -232,8 +241,9 @@ For a normal web change:
 
 ## Public event tickets
 
-- `/events/[id]` renders published event details and guest ticket checkout, without
-  requiring an app install or account. It uses `/api/v1/public/events` on the API.
+- `/events/[id]` renders published event details without login. New bookings require
+  a member session and use `/api/v1/web/account/events/:id/orders`. Existing guest
+  order, transfer and ticket links retain their private token access.
 - `/event-orders/[id]` is a private, non-indexed ticket/status page. Keep the access
   token in the URL fragment/session storage and send it only as a Bearer header.
 - Ticket entry codes require a server-confirmed order. Never infer payment success
@@ -267,3 +277,86 @@ For a normal web change:
 - Admin identity checks use `/api/v1/user/identity`; a permission denial or transient
   API failure must not destroy a valid staff session. Aggregate duplicate audience
   labels before chart rendering. Participant labels can overlap.
+
+
+## Web discovery and business workspace
+
+- Public directories: `/events`, `/shop`, `/services`, `/hubs`. Public API projections
+  live under `/api/v1/public/discovery`; never use authenticated Hub/member reads
+  as a shortcut for public discovery. Hub-distributed listings are excluded.
+- `/auth/*` uses the shared Better Auth cookies. `/account/*` and `/business/*`
+  require `AccountGate`; private child state remounts on account changes. Do not
+  persist account records or session credentials in Zustand or browser storage.
+- `components/discovery/features.tsx` reads effective web bootstrap flags. Hidden
+  features have no discovery navigation; API checks remain authoritative.
+- `lib/api/client.ts` owns credentialed, uncached, bounded requests and safe errors.
+  `hooks/` own request lifecycles; `stores/discovery-store.ts` holds only filters.
+- Bookable service pages use authenticated availability and canonical market
+  booking APIs. Payment retries use the same booking and Stripe idempotency key.
+  Item enquiries and private conversations continue in mobile.
+- `components/motion/` contains lazy React Three Fiber artwork. It renders on
+  demand, skips phones and reduced-motion users, and has a static fallback.
+- Preserve the existing homepage hero, content and visual design. The shared
+  header now exposes feature-gated Events, Shop, Services and Hubs on every page,
+  including the homepage. Sign in becomes Your account for an authenticated
+  session. About, Why Tivorah, Features and the waitlist remain in the footer.
+- `app/product.css` extends the existing light brand and 1280px public shell,
+  including phone navigation. Match the approved homepage and event ticket look.
+- Product pages now use a user-requested 1536px maximum width with 40px desktop
+  gutters and 18px phone gutters; the product header aligns to that width. The homepage shares that desktop width; other marketing pages
+  keep their original shell. Discovery uses a compact heading, one search bar and
+  matching card/skeleton grids (four wide, three medium, two tablet, one phone).
+- Social sign-in uses Better Auth `signIn.social`, public availability booleans
+  from `/public/auth/providers` and a same-origin `/auth/complete` callback. Keep
+  provider credentials on the API. Unconfigured providers remain disabled; email
+  sign-in stays available. Age confirmation uses the existing server endpoint.
+- Existing listing photos include Pexels `/photos/**`; keep that bounded host/path
+  allowed in Next image configuration along with the configured media CDN.
+- `components/ui/loading-state.tsx` reuses the shared `tivorah-shimmer` treatment
+  for initial discovery, auth, account and business loads. Retain existing content
+  during refreshes; reduced-motion users receive static placeholders.
+- Account tickets reuse the event-pass CSS and ticket image exporter. Ticket
+  mutations require server-confirmed management permission and recoverable forms.
+- Showcase video uses private review, a transcript and timed WebVTT captions.
+  Public asset responses must never contain moderation notes or private paths.
+- `npm run test:e2e` runs Playwright against an already-running localhost:7456 web
+  server. It does not start servers. API responses are mocked; passing tests do
+  not establish live checkout, upload, email or mobile-link readiness.
+- See `../docs/web-app-implementation-status.md` for incomplete plan items.
+
+- Discovery search applies after 350ms idle, respects IME composition, and replaces
+  URL history. Each mounted browser holds up to 40 public response pages for 30s
+  in memory; no private records or persistent cache. Retry bypasses the cache.
+  Changes abort obsolete requests and clear results from unrelated searches.
+- Sign-in and registration share the responsive `auth-layout`, existing brand
+  typography and existing community photography. Desktop has an introductory panel; phones focus on
+  the form. OAuth availability and server age checks remain authoritative.
+- Homepage invites discovery directly; the former waitlist form is an optional
+  news subscription using the existing `/public/waitlist` endpoint and unsubscribe
+  flow, with source `website-newsletter`. Consent remains explicit and unchecked.
+- Search honours `Retry-After` on 429/503 (30s fallback), blocks uncached requests
+  during cooldown, and disables retry with remaining time. There is no automatic
+  retry loop. Keyboard focus remains visible around each rounded search field.
+
+- Account forms use fully rounded inputs/buttons. Email sign-in is first; compact Google and Apple buttons appear side by side
+  below it, disabled with a short explanation when unconfigured. Availability failures remain retryable.
+
+- Web discovery uses the same API-owned Australian-localities JSON as mobile via
+  `/public/discovery/locations`; no duplicate multi-megabyte browser dataset.
+  Native suburb/postcode suggestions are debounced, abortable and memory-cached.
+- `components/discovery/filters.tsx` provides categories, event date windows,
+  item condition, item/service AUD price bounds and selected-suburb distance.
+  Hub interests come from `/public/discovery/interests`. Category lists in
+  `lib/discovery-categories.json` mirror mobile constants; update them together.
+  Filters are URL-backed and included in cache keys; reset clears the entire query.
+  Radius uses suburb centres, not a device location; online services stay included.
+
+- Discovery filters use `FilterSelect` (searchable category/interest popovers,
+  keyboard selection, Escape/outside dismissal and selection marks) and native
+  `FilterDialog` (focus containment, scroll lock and focus restoration). Advanced
+  fields open in a desktop dialog/phone bottom sheet; drafts apply only on submit.
+  `app/discovery-filters.css` owns these styles. Applied filters have removable chips.
+
+- The filter dialog includes a suburb/postcode picker with visible suggestions.
+  Location and radius are drafts until Apply; editing a selected suburb clears its
+  coordinates, and distance stays disabled until a valid suggestion is selected.

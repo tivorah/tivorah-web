@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { adminApiBase } from "./admin/api-base";
 
 export function NewsletterForm() {
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">(
@@ -41,19 +42,20 @@ export function NewsletterForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (state === "loading") return;
     const form = event.currentTarget;
     if (!consented) {
       setState("error");
-      setMessage("Tick the consent box to join the waitlist.");
+      setMessage("Tick the consent box to subscribe.");
       return;
     }
     setState("loading");
     setMessage("");
     const data = new FormData(form);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+    const apiUrl = adminApiBase();
 
     try {
-      if (!apiUrl) throw new Error("The waitlist is temporarily unavailable. Please try again later or email hello@tivorah.com.");
+      if (!apiUrl) throw new Error("Subscriptions are temporarily unavailable. Please try again later or email hello@tivorah.com.");
       const response = await fetch(`${apiUrl}/api/v1/public/waitlist`, {
         method: "POST",
         signal: AbortSignal.timeout(15000),
@@ -63,14 +65,14 @@ export function NewsletterForm() {
           email: String(data.get("email") ?? "").trim(),
           consent: consented,
           website: String(data.get("tv_hp_check") ?? ""),
-          source: "website-waitlist",
+          source: "website-newsletter",
         }),
       });
       if (!response.ok) throw new Error(response.status === 429
         ? "Too many attempts. Please wait before trying again."
-        : "We couldn’t join the waitlist. Check your name, email and consent, then try again.");
+        : "We couldn’t subscribe. Check your name, email and consent, then try again.");
       setState("success");
-      setMessage("You’re on the Tivorah waitlist. We’ve sent a confirmation to your email.");
+      setMessage("You’re subscribed to Tivorah news and app updates.");
       setShowSuccess(true);
       form.reset();
       setConsented(false);
@@ -86,12 +88,12 @@ export function NewsletterForm() {
     <form
       onSubmit={submit}
       className="form waitlist-form"
-      name="tivorah-waitlist"
+      name="tivorah-newsletter"
       method="POST"
       aria-busy={state === "loading"}
     >
-      <input type="hidden" name="form-name" value="tivorah-waitlist" />
-      <input type="hidden" name="source" value="website-waitlist" />
+      <input type="hidden" name="form-name" value="tivorah-newsletter" />
+      <input type="hidden" name="source" value="website-newsletter" />
       {/* Spam trap. Named so browser autofill won't recognise it and fill it for real people. */}
       <input
         name="tv_hp_check"
@@ -129,14 +131,14 @@ export function NewsletterForm() {
       <label className="consent">
         <input name="consent" type="checkbox" required checked={consented} onChange={(event) => setConsented(event.target.checked)} aria-describedby="waitlist-consent-hint" />
         <span>
-          I agree to receive Tivorah launch news and app updates. I can unsubscribe
+          I agree to receive Tivorah news and app updates. I can unsubscribe
           anytime. See our <Link href="/privacy">Privacy Policy</Link>.
         </span>
       </label>
       <button ref={submitRef} className="waitlist-submit" disabled={state === "loading" || !consented} aria-disabled={state === "loading" || !consented}>
-        {state === "loading" ? <><span className="waitlist-spinner" aria-hidden="true"/>Joining…</> : "Join the waitlist"}
+        {state === "loading" ? <><span className="waitlist-spinner" aria-hidden="true"/>Subscribing…</> : "Subscribe"}
       </button>
-      {!consented ? <p id="waitlist-consent-hint" className="form-fine-print">Tick the box above to join the waitlist.</p> : null}
+      {!consented ? <p id="waitlist-consent-hint" className="form-fine-print">Tick the box above to subscribe.</p> : null}
       <p className="form-fine-print">
         Already subscribed? <Link href="/unsubscribe">Unsubscribe here</Link>.
       </p>
@@ -151,11 +153,11 @@ export function NewsletterForm() {
             <div className="success-signal" aria-hidden="true"><i /><i /><i /><span>✓</span></div>
             <button className="success-close" type="button" aria-label="Close confirmation" onClick={() => setShowSuccess(false)}>×</button>
             <div className="success-copy">
-              <span className="success-kicker">Your place is saved</span>
-              <h3 id="waitlist-success-title">You&apos;re on the list.</h3>
-              <p>We&apos;ll let you know when Tivorah is ready. Until then, take a closer look at the Hubs, people and local plans we&apos;re bringing together.</p>
+              <span className="success-kicker">Thanks for subscribing</span>
+              <h3 id="waitlist-success-title">You&apos;re subscribed.</h3>
+              <p>We&apos;ll send you Tivorah news and app updates. You can unsubscribe at any time.</p>
             </div>
-            <a className="success-action" href="#preview" onClick={() => setShowSuccess(false)}>Explore Tivorah <span aria-hidden="true">↓</span></a>
+            <Link className="success-action" href="/events" onClick={() => setShowSuccess(false)}>Explore Tivorah <span aria-hidden="true">→</span></Link>
           </div>
         </div>
       ) : null}

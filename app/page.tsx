@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
 import type { Metadata } from "next";
 import { socialImage } from "../lib/site";
@@ -92,10 +93,10 @@ export default async function Home() {
             <h1 id="home-title">A new place.<br />Your kind of<br /><em>people.</em></h1>
             <p className="opening-intro">Meet people through Hubs, find or offer services, create or book events, and buy or sell new and used local items on Tivorah.</p>
             <div className="opening-actions">
-              <a className="button opening-primary" href="#updates">Join the waitlist <span aria-hidden="true">→</span></a>
+              <Link className="button opening-primary" href="/events">Explore Tivorah <span aria-hidden="true">→</span></Link>
               <a className="opening-tour-link" href="#preview">Take a look inside <span aria-hidden="true">↓</span></a>
             </div>
-            <p className="opening-note">Coming soon across Australia · For adults 18+</p>
+            <p className="opening-note">Built for life in Australia · For adults 18+</p>
           </div>
           <div className="opening-product">
             <div className="opening-phones">
@@ -183,11 +184,11 @@ export default async function Home() {
       <section className="waitlist" id="updates">
         <div className="page-shell waitlist-layout">
           <div>
-            <span className="launch-status"><i />Coming soon</span>
-            <h2>Your next hello could start here.</h2>
+            <span className="eyebrow">Tivorah updates</span>
+            <h2>A little news from your neighbourhood.</h2>
             <p>
-              Join the waitlist for launch news and early access updates.
-              We will let you know when Tivorah is ready in Australia.
+              Subscribe for Tivorah news and app updates.
+              Unsubscribe whenever you like.
             </p>
           </div>
           <NewsletterForm />

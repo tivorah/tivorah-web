@@ -1,3 +1,7 @@
+import "./product.css";
+import "./discovery-filters.css";
+import { DiscoveryFeatures } from "../components/discovery/features";
+import { MobileProductNav } from "../components/discovery/mobile-nav";
 import type { Metadata } from "next";
 import { indexingDisabled, siteOrigin, socialImage } from "../lib/site";
 import Link from "next/link";
@@ -13,7 +17,10 @@ import { SiteHeader } from "./site-header";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
-  title: { default: "Tivorah — Your community, wherever you are in Australia", template: "%s | Tivorah" },
+  title: {
+    default: "Tivorah — Your community, wherever you are in Australia",
+    template: "%s | Tivorah",
+  },
   description:
     "Join Hubs, find or offer services, create or book events, and buy or sell new and used local items. Tivorah is a community app based in Adelaide, Australia.",
   robots: indexingDisabled ? { index: false, follow: false } : undefined,
@@ -36,57 +43,73 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <a className="skip-link" href="#main-content">Skip to content</a>
-        <SiteHeader />
-        <main id="main-content" tabIndex={-1}>{children}</main>
-        <footer>
-          <div className="page-shell footer-inner">
-            <div>
-              <Image
-                className="footer-logo"
-                src="/tivorah-logo.png"
-                alt="Tivorah"
-                width={708}
-                height={226}
-              />
-              <p>Community, opportunity and belonging in one place.</p>
+        <DiscoveryFeatures>
+          <a className="skip-link" href="#main-content">
+            Skip to content
+          </a>
+          <SiteHeader />
+          <MobileProductNav />
+          <main id="main-content" tabIndex={-1}>
+            {children}
+          </main>
+          <footer>
+            <div className="page-shell footer-inner">
+              <div>
+                <Image
+                  className="footer-logo"
+                  src="/tivorah-logo.png"
+                  alt="Tivorah"
+                  width={708}
+                  height={226}
+                />
+                <p>Community, opportunity and belonging in one place.</p>
+              </div>
+              <div className="footer-links">
+                <nav aria-label="Tivorah">
+                  <strong>Company</strong>
+                  <Link href="/about">About</Link>
+                  <Link href="/why-tivorah">Why Tivorah</Link>
+                  <Link href="/#features">Features</Link>
+                  <Link href="/hub-organisers">Hub organisers</Link>
+                  <Link href="/service-providers">Service providers</Link>
+                  <Link href="/contact">Contact us</Link>
+                  <Link href="/#updates">Subscribe to updates</Link>
+                </nav>
+                <nav aria-label="Legal and trust">
+                  <strong>Legal &amp; trust</strong>
+                  <Link href="/legal">Legal centre</Link>
+                  <Link href="/privacy">Privacy</Link>
+                  <Link href="/terms">Terms</Link>
+                  <Link href="/community-guidelines">Community guidelines</Link>
+                  <Link href="/safety">Safety centre</Link>
+                  <Link href="/child-safety">Child safety</Link>
+                  <Link href="/hub-organisers">Organiser rules</Link>
+                  <Link href="/service-providers">Provider rules</Link>
+                </nav>
+                <nav aria-label="Account and access">
+                  <strong>Account &amp; access</strong>
+                  <Link href="/account-deletion">Delete account</Link>
+                  <Link href="/unsubscribe">Unsubscribe</Link>
+                  <Link href="/cookies">Cookies</Link>
+                  <Link href="/accessibility">Accessibility</Link>
+                  <Link href="/disclaimer">Important disclaimer</Link>
+                </nav>
+              </div>
             </div>
-            <div className="footer-links">
-              <nav aria-label="Tivorah">
-                <strong>Company</strong>
-                <Link href="/about">About</Link>
-                <Link href="/why-tivorah">Why Tivorah</Link>
-                <Link href="/hub-organisers">Hub organisers</Link>
-                <Link href="/service-providers">Service providers</Link>
-                <Link href="/contact">Contact us</Link>
-                <Link href="/#updates">Join the waitlist</Link>
-              </nav>
-              <nav aria-label="Legal and trust">
-                <strong>Legal &amp; trust</strong>
-                <Link href="/legal">Legal centre</Link>
-                <Link href="/privacy">Privacy</Link>
-                <Link href="/terms">Terms</Link>
-                <Link href="/community-guidelines">Community guidelines</Link>
-                <Link href="/safety">Safety centre</Link>
-                <Link href="/child-safety">Child safety</Link>
-                <Link href="/hub-organisers">Organiser rules</Link>
-                <Link href="/service-providers">Provider rules</Link>
-              </nav>
-              <nav aria-label="Account and access">
-                <strong>Account &amp; access</strong>
-                <Link href="/account-deletion">Delete account</Link>
-                <Link href="/unsubscribe">Unsubscribe</Link>
-                <Link href="/cookies">Cookies</Link>
-                <Link href="/accessibility">Accessibility</Link>
-                <Link href="/disclaimer">Important disclaimer</Link>
-              </nav>
+            <div className="page-shell footer-bottom">
+              <div className="footer-business">
+                <strong>TIVORAH PTY LTD</strong>
+                <span>ABN 94 702 094 844</span>
+                <span>ACN 702 094 844</span>
+                <span>Adelaide, South Australia, Australia</span>
+              </div>
+              <div className="footer-hometown">
+                <span>Proudly built in Adelaide, South Australia.</span>
+                <span>Made for belonging across Australia.</span>
+              </div>
             </div>
-          </div>
-          <div className="page-shell footer-bottom">
-            <div className="footer-business"><strong>TIVORAH PTY LTD</strong><span>ABN 94 702 094 844</span><span>Adelaide, South Australia, Australia</span></div>
-            <div className="footer-hometown"><span>Proudly built in Adelaide, South Australia.</span><span>Made for belonging across Australia.</span></div>
-          </div>
-        </footer>
+          </footer>
+        </DiscoveryFeatures>
       </body>
     </html>
   );

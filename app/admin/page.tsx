@@ -1,5 +1,6 @@
 "use client";
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { ShowcaseMediaReview } from "./showcase-media-review";
 import PricingManager from "./pricing-manager";
 import FeatureManager from "./feature-manager";
 import Image from "next/image";
@@ -1373,7 +1374,7 @@ export default function AdminPage() {
             </section>
           )}
           {section === "moderation" && (
-            <section className="panel">
+            <><ShowcaseMediaReview request={request}/><section className="panel">
               <h3>Moderation queue</h3>
               {reports.length === 0 ? (
                 <p>No open reports.</p>
@@ -1398,7 +1399,7 @@ export default function AdminPage() {
                   </div>
                 ))
               )}
-            </section>
+            </section></>
           )}
           {section === "notifications" && (
             <>

@@ -1,3 +1,9 @@
+/* Homepage shares the 1536px product shell; retain established phone gutters. */
+body:has(.home-page) { --site-shell-max: 1536px; }
+@media (min-width: 601px) {
+  body:has(.home-page) { --site-shell-gutters: 80px; --tour-gutter: 40px; }
+}
+
 /* Clip decoration without creating a hidden scroll container. Text-fragment
    links from search engines must never pan these sections sideways. */
 #features,
@@ -51,7 +57,7 @@ section[id] { scroll-margin-top: 100px; }
 
 /* Homepage: one opening composition, with the invitation and product together. */
 .home-opening { overflow: clip; background: #fbf9f5; padding: clamp(72px, 7vw, 112px) 0 104px; }
-/* Keep the existing 1280px shell; open space belongs between the two columns. */
+/* Keep readable copy widths within the wider shell. */
 .opening-layout { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1fr); gap: clamp(48px, 6vw, 96px); align-items: center; }
 .opening-copy { min-width: 0; padding-block: 16px; }
 .opening-origin { display: block; color: #635b69; font-size: 14px; line-height: 1.6; font-weight: 500; }
