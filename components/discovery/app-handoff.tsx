@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { BrandedQrCode } from "../../app/branded-qr-code";
-import { siteOrigin } from "../../lib/site";
+import { OpenInApp } from "../ui/open-in-app";
 export function AppHandoff({
   appPath,
-  webPath,
+  // The QR for desktop visitors now lives in the Open Tivorah button itself.
+  webPath: _webPath,
   title = "Continue in Tivorah",
 }: {
   appPath: string;
@@ -18,9 +18,7 @@ export function AppHandoff({
     <aside className="app-handoff">
       <h2>{title}</h2>
       <p>Connections, conversations and Hub participation happen in the app.</p>
-      <a className="product-primary" href={`tivorah://${appPath}`}>
-        Open Tivorah
-      </a>
+      <OpenInApp className="product-primary press-fx" appPath={appPath}>Open Tivorah</OpenInApp>
       <div className="account-actions">
         {safeStore(ios) ? <a href={ios}>Download for iPhone</a> : null}
         {safeStore(android) ? <a href={android}>Download for Android</a> : null}
@@ -28,17 +26,6 @@ export function AppHandoff({
           <Link href="/#updates">Get app availability updates</Link>
         ) : null}
       </div>
-      <details>
-        <summary>Open this page on your phone</summary>
-        <BrandedQrCode
-          value={new URL(webPath, siteOrigin).href}
-          ariaLabel="Scan to open this page on your phone"
-        />
-        <p>
-          Scan, then choose Open Tivorah. If you need to install the app, keep
-          this link to return here.
-        </p>
-      </details>
     </aside>
   );
 }

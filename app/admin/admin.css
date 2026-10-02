@@ -47,3 +47,24 @@ body:has(.admin-dashboard)>.nav,body:has(.admin-dashboard)>footer{display:none}
 @media(max-width:600px){.workspace-intro,.workspace-list-heading,.pricing-rule{flex-direction:column}.pricing-fields,.workspace-filters{grid-template-columns:1fr}.feature-summary{gap:8px}.feature-summary>div{padding:12px}.feature-summary strong{font-size:18px}.feature-summary span{font-size:12px}.workspace-tabs{gap:8px}.workspace-tabs button{min-width:90px;padding:12px}.pricing-rule,.pricing-editor,.feature-control-card{padding:18px}.workspace-list-heading>button{width:100%}}
 
 @media(max-width:600px){.feature-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.feature-summary>div:last-child{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}}
+
+/* Staff sign-in follows the public Tivorah account card without changing the staff auth flow. */
+.admin-auth-page { display: grid; place-items: start center; min-height: 100dvh; padding: clamp(32px, 5vw, 72px) 18px 64px; background: #fbf9f6; }
+.admin-auth-page .admin-signin { width: min(100%, 480px); min-height: 0; max-width: none; margin: 0; padding: 0; }
+.admin-auth-page .admin-security { width: min(100%, 760px); min-height: 0; margin: 0; padding: 0; }
+.admin-auth-brand { display: flex; justify-content: center; margin-bottom: 28px; }
+.admin-auth-brand img { display: block; width: 154px; height: auto; }
+.admin-auth-home { display: flex; width: max-content; min-height: 44px; align-items: center; justify-content: center; margin: 20px auto 0; padding: 8px 12px; color: #62546b; font-size: 14px; font-weight: 650; text-decoration: none; }
+.admin-auth-home:hover { color: #563580; text-decoration: underline; }
+.admin-auth-home:focus-visible { outline: 3px solid #8050b3; outline-offset: 3px; border-radius: 8px; }
+.admin-auth-page .admin-signin-form { gap: 0; margin: 0; padding: clamp(24px, 4vw, 40px); border: 1px solid #e4dce9; border-radius: 24px; box-shadow: 0 16px 48px #291a360d; }
+.admin-auth-page .admin-signin-form .eyebrow { color: #74687d; font-size: 12px; font-weight: 800; letter-spacing: .12em; }
+.admin-auth-page .admin-signin-form h1 { margin: 22px 0 8px; color: #211927; font-size: clamp(30px, 4vw, 38px); line-height: 1.12; letter-spacing: -.04em; }
+.admin-auth-page .admin-signin-form .admin-signin-intro { margin: 0 0 22px; color: #62546b; font-size: 16px; line-height: 1.55; }
+.admin-auth-page .admin-signin-form label { margin: 0 0 8px; color: #332a3b; font-size: 14px; }
+.admin-auth-page .admin-signin-form input { min-height: 50px; height: 50px; margin: 0 0 20px; padding: 0 20px; border-radius: 999px; background: #fff; }
+.admin-auth-page .admin-signin-form .password-input { margin-bottom: 20px; }
+.admin-auth-page .admin-signin-form .password-input input { margin-bottom: 0; }
+.admin-auth-page .admin-signin-form>button { min-height: 52px; width: 100%; margin: 2px 0 0; border-radius: 999px; }
+.admin-auth-page .admin-signin-form .login-security-note { margin: 18px 0 0 !important; text-align: left; }
+@media (max-width: 600px) { .admin-auth-page { padding-top: 24px; } .admin-auth-page .admin-signin-form { padding: 24px 20px; } }

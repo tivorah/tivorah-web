@@ -4,20 +4,28 @@ export type DiscoveryItem = {
   title: string;
   description: string | null;
   image: string | null;
+  coverImage?: string | null;
   images?: string[];
   category?: string | null;
   locality: string | null;
   state: string | null;
   startsAt?: string | null;
   locationType?: string;
-  priceCents?: number;
+  priceCents?: number | null;
+  externalTicketUrl?: string | null;
+  hasPaidTickets?: boolean;
   priceType?: string;
   condition?: string;
   businessName?: string | null;
   sellerUsername?: string;
+  /** False when the seller has taken their shop offline. */
+  sellerShopOnline?: boolean;
   bookingEnabled?: boolean;
   serviceMode?: string;
   guidelines?: { key: string; text: string }[];
+  creatorUsername?: string;
+  memberCount?: number;
+  interests?: string[];
 };
 export type DiscoveryPage = { items: DiscoveryItem[]; nextSkip: number | null };
 export const sections = {

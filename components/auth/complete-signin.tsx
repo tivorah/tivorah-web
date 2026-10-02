@@ -6,6 +6,8 @@ import { memberAuth } from "../../lib/auth/client";
 import { safeReturnPath } from "../../lib/auth/return-path";
 import { api } from "../../lib/api/client";
 import { LoadingState } from "../ui/loading-state";
+import { DateField } from "../ui/date-field";
+import { birthDateProps } from "./birth-date";
 export function CompleteSignIn() {
   const params = useSearchParams();
   const returnTo = safeReturnPath(params.get("returnTo"));
@@ -80,13 +82,7 @@ export function CompleteSignIn() {
       <form onSubmit={confirm}>
         <label>
           Date of birth
-          <input
-            name="dateOfBirth"
-            type="date"
-            autoComplete="bday"
-            required
-            disabled={busy}
-          />
+          <DateField name="dateOfBirth" required disabled={busy} {...birthDateProps()} />
         </label>
         <label className="product-checkbox">
           <input type="checkbox" required disabled={busy} />I confirm I am at

@@ -4,10 +4,14 @@ import { ShowcaseMediaReview } from "./showcase-media-review";
 import PricingManager from "./pricing-manager";
 import FeatureManager from "./feature-manager";
 import Image from "next/image";
+import Link from "next/link";
 import "./admin.css";
 import { BrandedQrCode } from "../branded-qr-code";
 import { adminAuthClient } from "./auth-client";
 import { adminApiBase } from "./api-base";
+import { PasswordInput } from "../../components/ui/password-input";
+import { PAGE_SIZE, Pagination, usePagedList } from "../../components/ui/pagination";
+import { SelectField } from "../../components/ui/select-field";
 
 type Flag = {
   id: number;
@@ -269,7 +273,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [userPagination, setUserPagination] = useState<UserPagination>({
     page: 1,
-    pageSize: 20,
+    pageSize: PAGE_SIZE,
     total: 0,
     totalPages: 1,
     hasMore: false,
@@ -291,6 +295,11 @@ export default function AdminPage() {
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
+  // Admin lists page at 10, the shared web list size.
+  const reportPages = usePagedList(reports);
+  const templatePages = usePagedList(templates);
+  const broadcastPages = usePagedList(broadcasts);
+  const deliveryPages = usePagedList(deliveries);
   const [featureBusy, setFeatureBusy] = useState<number | null>(null);
   const [featureHistory, setFeatureHistory] = useState<Record<number, any[]>>(
     {},
@@ -342,7 +351,7 @@ export default function AdminPage() {
       setError("");
       const params = new URLSearchParams({
         page: String(userPage),
-        pageSize: "20",
+        pageSize: String(PAGE_SIZE),
       });
       if (userQuery.trim()) params.set("query", userQuery.trim());
       if (userSegment !== "all") params.set("segment", userSegment);
@@ -666,8 +675,9 @@ export default function AdminPage() {
   const visibleError = error || sectionErrors[section];
   if (recoveryCodes.length)
     return (
-      <main className="admin">
+      <main className="admin admin-auth-page">
         <div className="content admin-security">
+          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
           <span className="eyebrow">Security complete</span>
           <h1>Save your recovery codes</h1>
           <p className="admin-signin-intro">
@@ -714,13 +724,15 @@ export default function AdminPage() {
               </p>
             )}
           </section>
+          <Link className="admin-auth-home" href="/">Return to Tivorah home</Link>
         </div>
       </main>
     );
   if (mfaChallenge)
     return (
-      <main className="admin">
+      <main className="admin admin-auth-page">
         <div className="content admin-signin">
+          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
           <span className="eyebrow">Identity check</span>
           <h1>
             {useRecoveryCode
@@ -786,13 +798,15 @@ export default function AdminPage() {
             is available, an authorised server administrator must reset MFA
             before a new QR code can be issued.
           </p>
+          <Link className="admin-auth-home" href="/">Return to Tivorah home</Link>
         </div>
       </main>
     );
   if (enrollment)
     return (
-      <main className="admin">
+      <main className="admin admin-auth-page">
         <div className="content admin-security">
+          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
           <span className="eyebrow">One-time setup</span>
           <h1>Protect your account</h1>
           <p className="admin-signin-intro">
@@ -873,13 +887,15 @@ export default function AdminPage() {
               </p>
             )}
           </form>
+          <Link className="admin-auth-home" href="/">Return to Tivorah home</Link>
         </div>
       </main>
     );
   if (!sessionReady)
     return (
-      <main className="admin">
+      <main className="admin admin-auth-page">
         <div className="content admin-signin">
+          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
           <div className="admin-session-loading" role="status">
             <span />
             <p>Checking your secure session…</p>
@@ -889,35 +905,32 @@ export default function AdminPage() {
     );
   if (!signedIn)
     return (
-      <main className="admin">
+      <main className="admin admin-auth-page">
         <div className="content admin-signin">
-          <span className="eyebrow">Staff only</span>
-          <h1>Admin sign in</h1>
-          <p className="admin-signin-intro">
-            Manage Tivorah features and community operations.
-          </p>
+          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
           <form
             className="panel admin-signin-form"
             onSubmit={login}
             aria-busy={loginBusy}
           >
+            <span className="eyebrow">TIVORAH STAFF</span>
+            <h1>Welcome back.</h1>
+            <p className="admin-signin-intro">Sign in to your staff workspace.</p>
             <label htmlFor="admin-email">Email address</label>
             <input
               id="admin-email"
               name="email"
               type="email"
               autoComplete="username"
-              placeholder="Admin email"
               autoFocus
               required
             />
             <label htmlFor="admin-password">Password</label>
-            <input
+            <PasswordInput
               id="admin-password"
+              fieldLabel="Password"
               name="password"
-              type="password"
               autoComplete="current-password"
-              placeholder="Password"
               required
             />
             <button disabled={loginBusy}>
@@ -937,6 +950,7 @@ export default function AdminPage() {
               accounts.
             </p>
           </form>
+          <Link className="admin-auth-home" href="/">Return to Tivorah home</Link>
         </div>
       </main>
     );
@@ -1243,34 +1257,39 @@ export default function AdminPage() {
                 </label>
                 <label>
                   <span>Account type</span>
-                  <select
+                  <SelectField
+                    label="Account type"
                     value={userSegment}
-                    onChange={(e) => {
-                      setUserSegment(e.target.value);
+                    onChange={(value) => {
+                      setUserSegment(value);
                       setUserPage(1);
                     }}
-                  >
-                    <option value="all">All account types</option>
-                    <option value="member">Member accounts</option><option value="participant_none">Neither organiser nor provider</option>
-                    <option value="service_provider">Service providers</option>
-                    <option value="organizer">Event organisers</option>
-                    <option value="business">Business sellers</option>
-                    <option value="company">Companies</option>
-                  </select>
+                    options={[
+                      { value: "all", label: "All account types" },
+                      { value: "member", label: "Member accounts" },
+                      { value: "participant_none", label: "Neither organiser nor provider" },
+                      { value: "service_provider", label: "Service providers" },
+                      { value: "organizer", label: "Event organisers" },
+                      { value: "business", label: "Business sellers" },
+                      { value: "company", label: "Companies" },
+                    ]}
+                  />
                 </label>
                 <label>
                   <span>Status</span>
-                  <select
+                  <SelectField
+                    label="Status"
                     value={userStatus}
-                    onChange={(e) => {
-                      setUserStatus(e.target.value);
+                    onChange={(value) => {
+                      setUserStatus(value);
                       setUserPage(1);
                     }}
-                  >
-                    <option value="all">All statuses</option>
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
-                  </select>
+                    options={[
+                      { value: "all", label: "All statuses" },
+                      { value: "active", label: "Active" },
+                      { value: "suspended", label: "Suspended" },
+                    ]}
+                  />
                 </label>
               </div>
               {usersBusy && !users.length ? (
@@ -1314,29 +1333,14 @@ export default function AdminPage() {
                       <small>
                         {user.itemCount} items · {user.serviceCount} services
                       </small>
-                      <select
-                        aria-label={`Role for ${user.username}`}
+                      <SelectField
+                        label={`Role for ${user.username}`}
                         disabled={staffUserId === null || user.id === staffUserId}
                         title={user.id === staffUserId ? "Another administrator must change your role" : undefined}
                         value={user.role}
-                        onChange={(e) =>
-                          updateUser(user, { role: e.target.value })
-                        }
-                      >
-                        {[
-                          "user",
-                          "tester",
-                          "moderator",
-                          "support",
-                          "finance",
-                          "event_operations",
-                          "analyst",
-                          "admin",
-                          "owner",
-                        ].map((role) => (
-                          <option key={role}>{role}</option>
-                        ))}
-                      </select>
+                        onChange={(role) => updateUser(user, { role })}
+                        options={["user", "tester", "moderator", "support", "finance", "event_operations", "analyst", "admin", "owner"].map((role) => ({ value: role, label: role }))}
+                      />
                       <button
                         disabled={staffUserId === null || user.id === staffUserId}
                         title={user.id === staffUserId ? "You cannot suspend your own account" : undefined}
@@ -1379,7 +1383,7 @@ export default function AdminPage() {
               {reports.length === 0 ? (
                 <p>No open reports.</p>
               ) : (
-                reports.map((report) => (
+                reportPages.visible.map((report) => (
                   <div className="feature" key={report.id}>
                     <div>
                       <strong>{report.reason}</strong>
@@ -1399,6 +1403,7 @@ export default function AdminPage() {
                   </div>
                 ))
               )}
+              <Pagination page={reportPages.page} pageCount={reportPages.pageCount} label="Report" onChange={reportPages.setPage} />
             </section></>
           )}
           {section === "notifications" && (
@@ -1416,19 +1421,7 @@ export default function AdminPage() {
                     <input name="name" placeholder="Template name" required />
                   </p>
                   <p>
-                    <select name="category">
-                      {[
-                        "activity",
-                        "chat",
-                        "communities",
-                        "events",
-                        "marketplace",
-                        "safety",
-                        "marketing",
-                      ].map((value) => (
-                        <option key={value}>{value}</option>
-                      ))}
-                    </select>
+                    <SelectField name="category" label="Category" defaultValue="activity" options={["activity", "chat", "communities", "events", "marketplace", "safety", "marketing"].map((value) => ({ value, label: value }))} />
                   </p>
                   <p>
                     <input name="title" placeholder="Title" required />
@@ -1444,7 +1437,7 @@ export default function AdminPage() {
                   </p>
                   <button>Save template</button>
                 </form>
-                {templates.map((item) => (
+                {templatePages.visible.map((item) => (
                   <div className="feature" key={item.id}>
                     <div>
                       <strong>{item.name}</strong>
@@ -1456,6 +1449,7 @@ export default function AdminPage() {
                     <span>{item.active ? "Active" : "Inactive"}</span>
                   </div>
                 ))}
+                <Pagination page={templatePages.page} pageCount={templatePages.pageCount} label="Template" onChange={templatePages.setPage} />
               </section>
               <section className="panel">
                 <h3>Queue broadcast</h3>
@@ -1477,19 +1471,7 @@ export default function AdminPage() {
                     />
                   </p>
                   <p>
-                    <select name="category" defaultValue="activity">
-                      {[
-                        "activity",
-                        "chat",
-                        "communities",
-                        "events",
-                        "marketplace",
-                        "safety",
-                        "marketing",
-                      ].map((value) => (
-                        <option key={value}>{value}</option>
-                      ))}
-                    </select>
+                    <SelectField name="category" label="Category" defaultValue="activity" options={["activity", "chat", "communities", "events", "marketplace", "safety", "marketing"].map((value) => ({ value, label: value }))} />
                   </p>
                   <p>
                     <input
@@ -1521,7 +1503,7 @@ export default function AdminPage() {
               </section>
               <section className="panel">
                 <h3>Broadcast history</h3>
-                {broadcasts.map((item) => (
+                {broadcastPages.visible.map((item) => (
                   <div className="feature" key={item.id}>
                     <div>
                       <strong>{item.title}</strong>
@@ -1538,10 +1520,11 @@ export default function AdminPage() {
                     </span>
                   </div>
                 ))}
+                <Pagination page={broadcastPages.page} pageCount={broadcastPages.pageCount} label="Broadcast" onChange={broadcastPages.setPage} />
               </section>
               <section className="panel">
                 <h3>Recent delivery attempts</h3>
-                {deliveries.slice(0, 50).map((item) => (
+                {deliveryPages.visible.map((item) => (
                   <div className="feature" key={item.id}>
                     <span>{item.status}</span>
                     <small>
@@ -1550,6 +1533,7 @@ export default function AdminPage() {
                     <small>{new Date(item.attemptedAt).toLocaleString()}</small>
                   </div>
                 ))}
+                <Pagination page={deliveryPages.page} pageCount={deliveryPages.pageCount} label="Delivery" onChange={deliveryPages.setPage} />
               </section>
             </>
           )}

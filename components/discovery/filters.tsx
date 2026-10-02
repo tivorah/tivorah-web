@@ -13,6 +13,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
   const path = usePathname();
   const [draftLocation, setDraftLocation] = useState<Locality | null>(null);
   const [locationText, setLocationText] = useState("");
+  const [postcodeText, setPostcodeText] = useState("");
   const [locationEdited, setLocationEdited] = useState(false);
   const [radius, setRadius] = useState("");
   const [open, setOpen] = useState(false);
@@ -67,6 +68,11 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
       return;
     }
     const data = new FormData(event.currentTarget);
+    const postcode = String(data.get("postcode") || "").trim();
+    if (postcode && !/^\d{4}$/.test(postcode)) {
+      setFormError("Enter a four-digit Australian postcode.");
+      return;
+    }
     const min = String(data.get("minPrice") || "");
     const max = String(data.get("maxPrice") || "");
     if (min && max && Number(min) > Number(max)) {
@@ -78,6 +84,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
       condition: String(data.get("condition") || ""),
       minPrice: min ? String(Math.round(Number(min) * 100)) : "",
       maxPrice: max ? String(Math.round(Number(max) * 100)) : "",
+      postcode,
       radiusKm:
         draftLocation?.latitude != null && draftLocation.longitude != null
           ? radius
@@ -86,7 +93,6 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
         ? {
             locality: draftLocation?.suburb || "",
             state: draftLocation?.state || "",
-            postcode: draftLocation?.postcode || "",
             latitude:
               draftLocation?.latitude != null
                 ? String(draftLocation.latitude)
@@ -163,7 +169,23 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
     params.get("radiusKm")
       ? {
           label: `Within ${params.get("radiusKm")} km`,
-          clear: { radiusKm: "" },
+          clear: {
+            radiusKm: "",
+          },
+        }
+      : null,
+    params.get("postcode")
+      ? { label: `Postcode ${params.get("postcode")}`, clear: { postcode: "" } }
+      : null,
+    params.get("locality") && !params.get("radiusKm")
+      ? {
+          label: params.get("locality")!,
+          clear: {
+            locality: "",
+            state: "",
+            latitude: "",
+            longitude: "",
+          },
         }
       : null,
   ].filter((item): item is NonNullable<typeof item> => !!item);
@@ -206,6 +228,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
           onClick={() => {
             setFormError("");
             setLocationText(params.get("locality") || "");
+            setPostcodeText(params.get("postcode") || "");
             setLocationEdited(false);
             setRadius(params.get("radiusKm") || "");
             setDraftLocation(
@@ -287,7 +310,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
                 }}
                 onSelect={(place) => {
                   setLocationText(
-                    `${place.suburb}, ${place.state} ${place.postcode}`,
+                    `${place.suburb}, ${place.state}`,
                   );
                   setDraftLocation(place);
                   setLocationEdited(true);
@@ -295,10 +318,25 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
                   setFormError("");
                 }}
               />
+              <label className="filter-postcode-field">
+                Postcode
+                <input
+                  name="postcode"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
+                  placeholder="Any postcode"
+                  value={postcodeText}
+                  onChange={(event) => setPostcodeText(event.target.value.replace(/\D/g, "").slice(0, 4))}
+                />
+              </label>
               <p>
                 {draftLocation
                   ? "Choose how far you want to look."
-                  : "Select a suggested suburb to enable distance filtering."}
+                  : locationText.trim()
+                    ? "Choose this suburb from the suggestions to enable distance filtering."
+                    : "Select a suggested suburb to enable distance filtering."}
               </p>
               <FilterSelect
                 label="Distance"

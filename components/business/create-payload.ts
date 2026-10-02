@@ -6,6 +6,7 @@ export function creationPayload(
   locality: Locality | null,
   images: string[],
   idempotencyKey: string,
+  tickets?: { name: string; priceCents: number; quantity: number; maxTicketsPerBuyer: number }[],
 ) {
   const text = (name: string) => String(form.get(name) || "").trim();
   const online = text("mode") === "online";
@@ -19,6 +20,7 @@ export function creationPayload(
     ...(locality || {}),
   };
   if (kind === "event") {
+    if (!images.length) throw new Error("Add an event cover photo.");
     const start = new Date(text("startsAt"));
     const end = new Date(text("endsAt"));
     if (
@@ -27,6 +29,9 @@ export function creationPayload(
       end <= start
     )
       throw new Error("Choose an end time after the event starts.");
+    if (!tickets?.length) throw new Error("Add at least one ticket package.");
+    // Capacity is the total of every package.
+    const quantity = tickets.reduce((sum, ticket) => sum + ticket.quantity, 0);
     return {
       ...common,
       img: images[0],
@@ -38,12 +43,10 @@ export function creationPayload(
       address: text("address"),
       ...(online && text("onlineUrl") ? { onlineUrl: text("onlineUrl") } : {}),
       status: "draft",
-      ticket: {
-        name: text("ticketName") || "General admission",
-        priceCents: Math.round(Number(text("price")) * 100),
-        quantity: Number(text("quantity")),
-        maxTicketsPerBuyer: 4,
-      },
+      capacity: quantity,
+      messagePrompts: [text("prompt1"), text("prompt2"), text("prompt3")].filter(Boolean),
+      tickets,
+      allowGroupBookings: form.get("allowGroupBookings") === "on",
     };
   }
   if (!images.length)
@@ -56,11 +59,13 @@ export function creationPayload(
     priceCents: Math.round(Number(text("price")) * 100),
     priceType: text("priceType") || "fixed",
     condition: text("condition") || "used_good",
+    messagePrompts: [text("prompt1"), text("prompt2"), text("prompt3")].filter(Boolean),
+    ...(text("pickupNotes") ? { pickupNotes: text("pickupNotes") } : {}),
     ...(kind === "service"
       ? {
-          serviceMode: online ? "online" : "at_provider",
-          availableOnline: online,
-          bookingEnabled: false,
+          serviceMode: text("mode") || "at_provider",
+          availableOnline: online || text("mode") === "flexible",
+          ...(text("serviceAreaKm") ? { serviceAreaKm: Number(text("serviceAreaKm")) } : {}),
         }
       : {}),
   };

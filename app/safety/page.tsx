@@ -9,7 +9,7 @@ export default function SafetyCentre() {
     <article className="content">
       <span className="eyebrow">Safety centre</span>
       <h1>Help when something goes wrong.</h1>
-      <p className="legal-meta"><strong>Last updated:</strong> 15 September 2026</p>
+      <p className="legal-meta"><strong>Last updated:</strong> 2 October 2026</p>
 
       <div className="legal-alert">
         <strong>Immediate danger</strong>
@@ -29,7 +29,8 @@ export default function SafetyCentre() {
         <li>Submit the report. Preserve evidence outside Tivorah if you may need to contact police or another authority.</li>
       </ol>
       <p>
-        If you cannot access the item or do not have an account, email <a href="mailto:support@tivorah.com?subject=Safety%20report"><strong>support@tivorah.com</strong></a> with
+        On the website, use the <strong>Report a concern</strong> link on the item, service, Hub or
+        shop page. If you cannot access the item or do not have an account, email <a href="mailto:support@tivorah.com?subject=Safety%20report"><strong>support@tivorah.com</strong></a> with
         the subject “Safety report”. Include the relevant username, link or approximate time.
         Do not send passwords, verification codes, identity documents or intimate images.
       </p>

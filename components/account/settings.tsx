@@ -1,6 +1,8 @@
 "use client";
 import { LoadingState } from "../ui/loading-state";
+import { AccountSurfaceLoading } from "./surface-loading";
 import Link from "next/link";
+import { PasswordInput } from "../ui/password-input";
 import { FormEvent, useState } from "react";
 import { AccountGate } from "./gate";
 import { usePrivateResource } from "../../hooks/use-private-resource";
@@ -79,6 +81,7 @@ function Settings() {
       setBusy(false);
     }
   }
+  if (loading && !data) return <AccountSurfaceLoading embedded />;
   return (
     <>
       <Link className="product-secondary" href="/account">
@@ -132,26 +135,28 @@ function Settings() {
       <section className="product-form business-create">
         <h2>Password & access</h2>
         <form onSubmit={password}>
-          <label>
-            Current password
-            <input
+          <div className="account-password-field">
+            <label htmlFor="account-current-password">Current password</label>
+            <PasswordInput
+              id="account-current-password"
+              fieldLabel="Current password"
               name="current"
-              type="password"
               autoComplete="current-password"
               required
             />
-          </label>
-          <label>
-            New password
-            <input
+          </div>
+          <div className="account-password-field">
+            <label htmlFor="account-new-password">New password</label>
+            <PasswordInput
+              id="account-new-password"
+              fieldLabel="New password"
               name="password"
-              type="password"
               autoComplete="new-password"
               minLength={8}
               maxLength={128}
               required
             />
-          </label>
+          </div>
           <button className="product-primary" disabled={busy}>
             {busy ? "Updating…" : "Change password"}
           </button>
@@ -171,15 +176,16 @@ function Settings() {
         <details>
           <summary>Continue to account deletion</summary>
           <form onSubmit={remove}>
-            <label>
-              Confirm your password
-              <input
+            <div className="account-password-field">
+              <label htmlFor="account-delete-password">Confirm your password</label>
+              <PasswordInput
+                id="account-delete-password"
+                fieldLabel="Confirm your password"
                 name="password"
-                type="password"
                 autoComplete="current-password"
                 required
               />
-            </label>
+            </div>
             <label className="product-checkbox">
               <input type="checkbox" required />
               <span>I understand this permanently closes my account.</span>

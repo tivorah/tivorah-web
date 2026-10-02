@@ -13,11 +13,11 @@ const destinations = [
 export function MobileProductNav() {
   const path = usePathname();
   const { enabled } = useDiscoveryFeatures();
+  if (path.startsWith("/auth") || path.startsWith("/admin")) return null;
   if (
     !destinations.some(
       ([href]) => path === href || path.startsWith(`${href}/`),
     ) &&
-    !path.startsWith("/auth") &&
     !path.startsWith("/business") &&
     !path.startsWith("/shops/")
   )

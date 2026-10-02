@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { DiscoveryLoading } from "./loading";
 import { DiscoveryKind, sections } from "../../lib/api/discovery";
 import { DiscoveryBrowser } from "./browser";
+import { CreatePromo } from "./create-promo";
 export function DiscoveryPageView({ kind }: { kind: DiscoveryKind }) {
   const section = sections[kind];
   return (
@@ -13,6 +14,7 @@ export function DiscoveryPageView({ kind }: { kind: DiscoveryKind }) {
           </p>
           <h1>{section.title}</h1>
           <p>{section.description}</p>
+          {kind !== "hubs" ? <CreatePromo kind={kind} /> : null}
         </div>
       </section>
       <Suspense

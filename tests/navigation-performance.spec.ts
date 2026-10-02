@@ -1,0 +1,30 @@
+import { expect, test } from "@playwright/test";
+
+test("business tabs reuse session data and refresh mutations without replacing content", async ({ page }) => {
+  let accountReads = 0, eventReads = 0, listingReads = 0;
+  let status = "draft";
+  await page.route("**/api/auth/get-session**", route => route.fulfill({ json: { session: { id: "navigation-session", userId: "1", expiresAt: new Date(Date.now() + 3600000).toISOString() }, user: { id: "1", email: "member@example.test", name: "Member" } } }));
+  await page.route("**/api/v1/web/account", route => { accountReads++; expect(route.request().headers()["content-type"]).toBeUndefined(); return route.fulfill({ json: { data: { id: 1, firstName: "Member" } } }); });
+  await page.route("**/api/v1/events/mine?**", route => { eventReads++; return route.fulfill({ json: { data: { events: [{ id: 42, title: "Garden gathering", status }], pagination: { isMoreData: false } } } }); });
+  await page.route("**/api/v1/market/products/mine?**", route => { listingReads++; return route.fulfill({ json: { data: { products: [], pagination: { isMoreData: false } } } }); });
+  await page.route("**/api/v1/events/42/business-summary", route => route.fulfill({ json: { data: { ticketsBooked: 0, bookings: 0, enquiries: 0, messages: 0, latestEnquiryId: null } } }));
+  await page.route("**/api/v1/events/42/publish", route => { status = "published"; return route.fulfill({ json: { data: {} } }); });
+  await page.goto("/business?view=events");
+  await expect(page.getByRole("button", { name: "Publish event", exact: true })).toBeVisible();
+  const navigation = page.getByRole("navigation", { name: "Manage business", exact: true });
+  await navigation.getByRole("link", { name: "Listings", exact: true }).click();
+  await expect(page.getByText("Your items and services will appear here.")).toBeVisible();
+  await navigation.getByRole("link", { name: "Events", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Publish event", exact: true })).toBeVisible();
+  expect(accountReads).toBe(1);
+  expect(eventReads).toBe(1);
+  expect(listingReads).toBe(1);
+  await page.getByRole("button", { name: "Publish event", exact: true }).click();
+  await expect(page.getByRole("link", { name: "Manage event", exact: true })).toBeVisible();
+  expect(eventReads).toBe(2);
+  await page.getByRole("link", { name: /Your account/ }).last().click();
+  await expect(page.getByRole("heading", { name: "Hello, Member." })).toBeVisible();
+  await page.getByRole("link", { name: /Manage your business/ }).click();
+  await expect(page.getByRole("heading", { name: "Your listings" })).toBeVisible();
+  expect(accountReads).toBe(1);
+});

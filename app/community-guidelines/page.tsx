@@ -10,7 +10,7 @@ export default function Guidelines() {
       <span className="eyebrow">Safety</span>
       <h1>Community Guidelines</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 15 September 2026
+        <strong>Last updated:</strong> 2 October 2026
       </p>
 
       <p>
@@ -86,6 +86,25 @@ export default function Guidelines() {
         gambling, adult services and other age-restricted categories are not
         permitted unless Tivorah has expressly enabled the category with
         appropriate legal and safety controls.
+      </p>
+
+      <h2>Shops, photos and videos</h2>
+      <p>
+        Your shop, listings and media must show what you genuinely offer. Only
+        upload photos, videos, music, logos and text you own or have permission
+        to use. Get agreement from anyone who can be identified, and never show
+        an identifiable child without their parent or guardian&apos;s consent.
+        Fake reviews, testimonials, before-and-after results or endorsements
+        you cannot support are not allowed. Media that is sexual, graphic,
+        hateful or misleading will be removed.
+      </p>
+
+      <h2>Tickets</h2>
+      <p>
+        Only send tickets to people who expect them. Do not resell tickets for
+        more than you paid, use bots to buy tickets, or sell fake or duplicate
+        tickets. Organisers must describe events honestly and must not pressure
+        people to pay outside Tivorah.
       </p>
 
       <h2>Respect each Hub</h2>

@@ -2,6 +2,8 @@ type TicketImage = {
   title: string; date: string; location: string; admission: string;
   position: number; count: number; code: string; orderId: number;
   qrSvg: string | null; status: string;
+  /** Who the ticket belongs to: the name on the ticket, else the account holder. */
+  holderName?: string | null;
 };
 
 // Export only the selected pass, with the same layout and QR artwork as the page.
@@ -26,11 +28,12 @@ export async function ticketImage(ticket: TicketImage): Promise<File> {
   };
   const title = lines(ticket.title, 'bold 44px Arial');
   const admission = lines(ticket.admission, '28px Arial');
+  const holder = ticket.holderName?.trim() ? lines(`Ticket holder: ${ticket.holderName.trim()}`, 'bold 28px Arial') : [];
   const details = [ticket.date, ticket.location].flatMap(value => lines(value, '28px Arial'));
   const numbers = lines(`Ticket #${ticket.orderId}-${ticket.code}`, 'bold 30px Arial');
   const numberHeight = numbers.length * 38 + 20;
   const codes = lines(ticket.code, 'bold 36px monospace');
-  const entryY = 100 + 48 + title.length * 54 + 12 + admission.length * 38 + 32;
+  const entryY = 100 + 48 + title.length * 54 + 12 + admission.length * 38 + (holder.length ? 10 + holder.length * 38 : 0) + 32;
   const footerY = entryY + 680 + numberHeight + codes.length * 44;
   canvas.width = width;
   canvas.height = footerY + 48 + details.length * 40 + 90;
@@ -46,6 +49,10 @@ export async function ticketImage(ticket: TicketImage): Promise<File> {
   for (const line of title) { context.fillText(line, padding, y); y += 54; }
   y += 12; context.font = '28px Arial'; context.fillStyle = '#655c70';
   for (const line of admission) { context.fillText(line, padding, y); y += 38; }
+  if (holder.length) {
+    y += 10; context.font = 'bold 28px Arial'; context.fillStyle = '#211a29';
+    for (const line of holder) { context.fillText(line, padding, y); y += 38; }
+  }
   const divider = (at: number) => { context.beginPath(); context.setLineDash([6, 5]); context.strokeStyle = '#dcd2e6'; context.moveTo(0, at); context.lineTo(width, at); context.stroke(); context.setLineDash([]); };
   divider(entryY);
   context.textAlign = 'center'; context.font = 'bold 26px Arial'; context.fillStyle = '#563580';

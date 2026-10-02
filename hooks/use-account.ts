@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { createContext, createElement, useContext, useEffect, useState, type ReactNode } from "react";
+import { PrivateResourceProvider } from "./use-private-resource";
 import { ApiError, api } from "../lib/api/client";
 import { memberAuth } from "../lib/auth/client";
 export type Account = {
@@ -9,7 +10,7 @@ export type Account = {
   firstName: string;
   lastName: string | null;
 };
-export function useAccount() {
+function useAccountSource() {
   const {
     data: session,
     isPending,
@@ -17,12 +18,21 @@ export function useAccount() {
     refetch,
   } = memberAuth.useSession();
   const userId = session?.user.id;
+  const sessionKey = session ? `${session.user.id}:${session.session.id}` : "signed-out";
   const [result, setResult] = useState<{
     forUser: string;
     account?: Account;
     error?: string;
   } | null>(null);
   const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const refreshProfile = (event: Event) => {
+      const path = (event as CustomEvent<string>).detail;
+      if (path === "/web/account/profile") setAttempt(value => value + 1);
+    };
+    window.addEventListener("tivorah:mutation", refreshProfile);
+    return () => window.removeEventListener("tivorah:mutation", refreshProfile);
+  }, []);
   useEffect(() => {
     if (!userId) return;
     const controller = new AbortController();
@@ -31,13 +41,13 @@ export function useAccount() {
         if (!controller.signal.aborted) {
           if (String(account.id) !== String(userId))
             throw new Error("Your session changed. Please sign in again.");
-          setResult({ forUser: userId, account });
+          setResult({ forUser: sessionKey, account });
         }
       })
       .catch((cause) => {
         if (!controller.signal.aborted)
           setResult({
-            forUser: userId,
+            forUser: sessionKey,
             error:
               cause instanceof ApiError
                 ? cause.message
@@ -45,11 +55,12 @@ export function useAccount() {
           });
       });
     return () => controller.abort();
-  }, [userId, attempt]);
+  }, [userId, sessionKey, attempt]);
   // Never return a previous user's data during account switches or session revalidation.
   const current =
-    !isPending && userId && result?.forUser === userId ? result : null;
+    !isPending && userId && result?.forUser === sessionKey ? result : null;
   return {
+    sessionKey,
     account: current?.account ?? null,
     loading: isPending || (!!userId && !current),
     signedOut: !isPending && !session && !sessionError,
@@ -61,4 +72,16 @@ export function useAccount() {
       setAttempt((value) => value + 1);
     },
   };
+}
+
+const AccountContext = createContext<ReturnType<typeof useAccountSource> | null>(null);
+export function AccountProvider({ children }: { children: ReactNode }) {
+  const value = useAccountSource();
+  return createElement(AccountContext.Provider, { value },
+    createElement(PrivateResourceProvider, { scope: value.sessionKey }, children));
+}
+export function useAccount() {
+  const value = useContext(AccountContext);
+  if (!value) throw new Error("useAccount requires AccountProvider");
+  return value;
 }

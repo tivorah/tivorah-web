@@ -47,6 +47,56 @@
   font-weight: 800;
 }
 
+.site-nav { gap: 8px; }
+
+/* Route-change placeholders stay invisible for the first 350 ms, so quick page
+   changes show no flash; slower ones still get a loading state. Not motion, so
+   it also applies with reduced motion. */
+.route-loading {
+  animation: route-loading-reveal 0s 350ms both;
+}
+
+@keyframes route-loading-reveal {
+  from { visibility: hidden; }
+  to { visibility: visible; }
+}
+
+/* Space-holders shown while feature checks load. */
+.site-nav .nav-placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* While the session check runs, show the button matching the remembered
+   sign-in hint (set before paint by the root layout). */
+html[data-signed-in] .site-nav .nav-when-signed-out,
+html:not([data-signed-in]) .site-nav .nav-when-signed-in {
+  display: none;
+}
+
+.site-nav a:not(.site-nav-primary) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.site-nav a[aria-current="page"] {
+  background: transparent;
+  color: #5d329d;
+  text-decoration: underline;
+  text-decoration-color: #7446d8;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+
+.site-nav a:not(.site-nav-primary):hover {
+  background: var(--soft);
+}
+
 @media (max-width: 850px) {
   .brand img { width: clamp(124px, 38vw, 146px); }
   .nav-menu-button { display: grid; }
@@ -74,6 +124,12 @@
     border-radius: 12px;
     font-size: 15px;
     font-weight: 700;
+  }
+
+  .site-nav a:not(.site-nav-primary) {
+    justify-content: flex-start;
+    min-height: 48px;
+    border-radius: 12px;
   }
 
   .site-nav a:hover,

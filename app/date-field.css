@@ -1,0 +1,181 @@
+/* Tivorah date picker (components/ui/date-field.tsx). */
+.date-field { position: relative; display: block; width: 100%; }
+
+.date-field .date-field-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border: 1px solid #d7ccdf;
+  border-radius: 999px;
+  background: #fff;
+  color: #28212f;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.date-field .date-field-trigger svg { flex: none; color: #6b5a78; }
+.date-field .date-field-trigger:hover:not(:disabled) { border-color: #b9a6cc; }
+.date-field .date-field-trigger:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; border-color: #7650b7; }
+.date-field .date-field-trigger[aria-expanded="true"] { border-color: #7650b7; box-shadow: 0 0 0 3px #efe6fb; }
+.date-field .date-field-trigger:disabled { background: #f2eff4; color: #756b7d; cursor: not-allowed; }
+.date-field-placeholder { color: #6f6377; font-weight: 400; }
+.date-field.is-invalid .date-field-trigger { border-color: #b3261e; }
+.date-field-error { display: block; margin-top: 6px; color: #b3261e; font-size: 14px; font-weight: 600; }
+
+/* The real form input: present for FormData and validation, never seen. */
+.date-field .date-field-proxy,
+.auth-form form .date-field .date-field-proxy {
+  position: absolute !important;
+  bottom: 0;
+  left: 20px;
+  width: 1px !important;
+  min-height: 0 !important;
+  height: 1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.date-field-backdrop { display: none; }
+
+.date-field-panel {
+  --rdp-accent-color: #7446d8;
+  --rdp-accent-background-color: #f4efff;
+  --rdp-today-color: #7446d8;
+  --rdp-day-height: 42px;
+  --rdp-day-width: 42px;
+  --rdp-day_button-height: 40px;
+  --rdp-day_button-width: 40px;
+  --rdp-day_button-border-radius: 999px;
+  --rdp-selected-border: 2px solid #7446d8;
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 16px;
+  border: 1px solid #e4dce9;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(39, 27, 52, .18);
+  color: #28212f;
+  font-weight: 500;
+  animation: date-field-in .14s ease-out;
+}
+@keyframes date-field-in { from { opacity: 0; transform: translateY(-4px); } }
+
+.date-field-panel .rdp-root { margin: 0; }
+.date-field-panel .rdp-month_caption { font-size: 16px; font-weight: 750; padding-inline: 6px; }
+.date-field-panel .rdp-weekday { color: #6f6377; font-size: 13px; font-weight: 650; }
+.date-field-panel .rdp-day_button { font-size: 15px; font-weight: 550; }
+.date-field-panel .rdp-day_button:hover:not(:disabled) { background: #f4efff; }
+.date-field-panel .rdp-selected .rdp-day_button { background: #7446d8; border-color: #7446d8; color: #fff; }
+.date-field-panel .rdp-today:not(.rdp-selected) .rdp-day_button { font-weight: 800; }
+.date-field-panel .rdp-day_button:focus-visible,
+.date-field-panel .rdp-button_previous:focus-visible,
+.date-field-panel .rdp-button_next:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 1px; }
+.date-field-panel .rdp-button_previous,
+.date-field-panel .rdp-button_next { width: 40px; height: 40px; border-radius: 999px; }
+.date-field-panel .rdp-button_previous:hover,
+.date-field-panel .rdp-button_next:hover { background: #f4efff; }
+.date-field-panel .rdp-chevron { fill: #5d329d; }
+/* Our own header replaces the calendar's caption and arrows. */
+.date-field-panel .rdp-month_caption { display: none; }
+.date-field-panel .rdp-months { max-width: none; }
+
+.date-field-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; margin-bottom: 8px; }
+.date-field-caption {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px;
+  border: 0; border-radius: 999px; background: transparent; color: #28212f;
+  font: inherit; font-size: 16px; font-weight: 750; cursor: pointer;
+}
+.date-field-caption:hover { background: #f4efff; }
+.date-field-caption svg { color: #5d329d; transition: transform .16s ease; }
+.date-field-caption svg.is-open { transform: rotate(180deg); }
+.date-field-steppers { display: flex; gap: 4px; }
+.date-field-steppers button {
+  display: grid; width: 44px; height: 44px; place-items: center; padding: 0;
+  border: 0; border-radius: 999px; background: transparent; color: #5d329d; cursor: pointer;
+}
+.date-field-steppers button:hover:not(:disabled) { background: #f4efff; }
+.date-field-steppers button:disabled { color: #c9bfd2; cursor: default; }
+
+/* Year, month, hour and minute grids. */
+.date-field-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.date-field-years { width: 296px; max-height: 296px; overflow-y: auto; padding: 4px; overscroll-behavior: contain; }
+.date-field-months { width: 296px; padding: 4px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.date-field-grid button {
+  min-height: 44px; border: 0; border-radius: 999px; background: transparent; color: #28212f;
+  font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.date-field-months button { min-height: 52px; }
+.date-field-grid button:hover:not(:disabled) { background: #f4efff; }
+.date-field-grid button[aria-current="true"]:not(.is-selected) { box-shadow: inset 0 0 0 2px #d9c8f3; }
+.date-field-grid button.is-selected { background: #7446d8; color: #fff; }
+.date-field-grid button:disabled { color: #c9bfd2; cursor: default; }
+.date-field-grid button:focus-visible,
+.date-field-caption:focus-visible,
+.date-field-steppers button:focus-visible,
+.date-field-time-button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 1px; }
+
+/* Date + time: a time row under the calendar, opening hour/minute grids. */
+.date-field-time {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 12px; padding-top: 14px; border-top: 1px solid #eee8f3;
+  color: #4f4558; font-size: 15px; font-weight: 650;
+}
+.date-field-time-button {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px;
+  border: 1px solid #d7ccdf; border-radius: 999px; background: #fff; color: #28212f;
+  font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.date-field-time-button svg { color: #5d329d; }
+.date-field-clock { width: 296px; padding: 0 4px; }
+.date-field-grid-title { margin: 6px 0 8px; color: #6f6377; font-size: 13px; font-weight: 700; }
+.date-field-clock .date-field-grid + .date-field-grid-title { margin-top: 14px; }
+.date-field-meridiem { display: flex; margin-top: 16px; padding: 3px; border-radius: 999px; background: #f2eef6; }
+.date-field-meridiem button { flex: 1; min-height: 40px; border: 0; border-radius: 999px; background: transparent; color: #5c4f66; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.date-field-meridiem button[aria-checked="true"] { background: #fff; color: #5d329d; box-shadow: 0 1px 4px rgba(39, 27, 52, .14); }
+.date-field-meridiem button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+
+.date-field-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.date-field-actions button { min-height: 44px; padding: 0 20px; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.date-field-done { border: 0; background: #7446d8; color: #fff; }
+.date-field-done:hover { background: #6032c4; }
+.date-field-clear { border: 1px solid #d7ccdf; background: #fff; color: #4f3a63; }
+.date-field-actions button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+
+/* Phones: a bottom sheet instead of a dropdown. */
+@media (max-width: 600px) {
+  .date-field-backdrop { position: fixed; inset: 0; z-index: 39; display: block; background: rgba(23, 19, 31, .35); }
+  .date-field-panel {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    max-width: none;
+    max-height: 90dvh;
+    overflow: auto;
+    padding: 20px 16px calc(16px + env(safe-area-inset-bottom));
+    border-radius: 24px 24px 0 0;
+    animation-name: date-field-sheet-in;
+  }
+  .date-field-panel .rdp-root { display: flex; justify-content: center; }
+  .date-field-years, .date-field-months, .date-field-clock { width: auto; }
+  .date-field-years { max-height: 50dvh; }
+  @keyframes date-field-sheet-in { from { transform: translateY(24px); opacity: 0; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .date-field-panel { animation: none; }
+}

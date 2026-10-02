@@ -1,5 +1,7 @@
 "use client";
+import { SelectField } from "../ui/select-field";
 export type ServiceSettingsValue = {
+  availabilityTimezone?: string | null;
   bookingEnabled: boolean;
   paymentRequired: boolean;
   slotDurationMinutes: number;
@@ -17,6 +19,21 @@ export const defaultServiceSettings: ServiceSettingsValue = {
   bookingNoticeHours: 24,
   weeklyAvailability: [],
 };
+const serviceTimezones = ["Australia/Sydney", "Australia/Melbourne", "Australia/Brisbane", "Australia/Adelaide", "Australia/Perth", "Australia/Darwin", "Australia/Hobart", "Australia/Broken_Hill", "Australia/Lord_Howe", "Australia/Eucla"];
+export function serviceTimezoneForState(state?: string | null) {
+  return ({ ACT: "Australia/Sydney", NSW: "Australia/Sydney", VIC: "Australia/Melbourne", QLD: "Australia/Brisbane", SA: "Australia/Adelaide", WA: "Australia/Perth", NT: "Australia/Darwin", TAS: "Australia/Hobart" } as Record<string, string>)[state ?? ""] ?? "Australia/Sydney";
+}
+// Quarter-hour choices for opening hours, plus any existing value off that grid.
+const timeLabel = (value: string) => {
+  const [h, m] = value.split(":").map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "pm" : "am"}`;
+};
+const quarterHours = Array.from({ length: 96 }, (_, i) => `${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}`);
+const timeOptions = (current?: string) => {
+  const extra = current && /^\d{2}:\d{2}/.test(current) && !quarterHours.includes(current.slice(0, 5)) ? [current.slice(0, 5)] : [];
+  return [...quarterHours, ...extra].sort().map((value) => ({ value, label: timeLabel(value) }));
+};
+
 const days = [
   "Sunday",
   "Monday",
@@ -29,16 +46,20 @@ const days = [
 export function ServiceSettings({
   value,
   onChange,
+  localityState,
 }: {
+  localityState?: string | null;
   value: ServiceSettingsValue;
   onChange: (v: ServiceSettingsValue) => void;
 }) {
+  const timezone = value.availabilityTimezone || serviceTimezoneForState(localityState);
+  const zones = serviceTimezones.includes(timezone) ? serviceTimezones : [...serviceTimezones, timezone];
   const update = (patch: Partial<ServiceSettingsValue>) =>
     onChange({ ...value, ...patch });
   return (
-    <fieldset>
-      <legend>Appointments</legend>
-      <label className="product-checkbox">
+    <fieldset className="service-settings">
+      <legend className="sr-only">Appointment settings</legend>
+      <label className="showcase-switch service-booking-toggle">
         <input
           type="checkbox"
           checked={value.bookingEnabled}
@@ -49,12 +70,14 @@ export function ServiceSettings({
             })
           }
         />
-        <span>Let customers book appointments online</span>
+        <span className="showcase-switch-track" aria-hidden="true" />
+        <span><strong>Accept online bookings</strong><small>Customers can choose an available appointment time on your service page.</small></span>
       </label>
       {value.bookingEnabled ? (
         <>
+          <div className="service-settings-section"><div className="service-settings-section-head"><h3>Booking rules</h3><p>Set the length of each appointment and how soon someone can book.</p></div><div className="service-settings-rules">
           <label>
-            Duration (minutes)
+            Appointment length
             <input
               type="number"
               min={15}
@@ -67,7 +90,7 @@ export function ServiceSettings({
             />
           </label>
           <label>
-            Advance notice (hours)
+            Minimum notice (hours)
             <input
               type="number"
               min={0}
@@ -79,73 +102,77 @@ export function ServiceSettings({
               required
             />
           </label>
-          <p>
-            Weekly times use the time zone of your service’s Australian
-            locality. Online services without a locality use Sydney time.
-          </p>
+          <label className="service-settings-timezone">
+            Appointment time zone
+            <SelectField label="Appointment time zone" value={timezone} onChange={zone => update({ availabilityTimezone: zone })} options={zones.map(zone => ({ value: zone, label: `${zone.replace("Australia/", "").replaceAll("_", " ")} (${zone})` }))} />
+          </label>
+          </div><p className="service-settings-note">Your weekly hours use {timezone}. Existing appointments keep their booked time if you change this setting.</p></div>
+          <div className="service-settings-section"><div className="service-settings-section-head"><h3>Weekly availability</h3><p>Add the days and times you normally work. You can add more than one period per day.</p></div>
+          {value.weeklyAvailability.length === 0 ? <p className="service-settings-empty">Add at least one time period before saving online bookings.</p> : null}
           {value.weeklyAvailability.map((period, index) => (
             <div className="availability-period" key={index}>
               <label>
                 Day
-                <select
-                  value={period.dayOfWeek}
-                  onChange={(e) =>
+                <SelectField
+                  label={`Day for period ${index + 1}`}
+                  value={String(period.dayOfWeek)}
+                  onChange={(day) =>
                     update({
                       weeklyAvailability: value.weeklyAvailability.map(
                         (row, i) =>
                           i === index
-                            ? { ...row, dayOfWeek: Number(e.target.value) }
+                            ? { ...row, dayOfWeek: Number(day) }
                             : row,
                       ),
                     })
                   }
-                >
-                  {days.map((day, i) => (
-                    <option value={i} key={day}>
-                      {day}
-                    </option>
-                  ))}
-                </select>
+                  options={days.map((day, i) => ({ value: String(i), label: day }))}
+                />
               </label>
               <label>
                 From
-                <input
-                  type="time"
+                <SelectField
+                  label={`From time for period ${index + 1}`}
                   required
-                  value={period.startTime}
-                  onChange={(e) =>
+                  placeholder="Choose a time"
+                  value={period.startTime?.slice(0, 5) ?? ""}
+                  onChange={(time) =>
                     update({
                       weeklyAvailability: value.weeklyAvailability.map(
                         (row, i) =>
                           i === index
-                            ? { ...row, startTime: e.target.value }
+                            ? { ...row, startTime: time }
                             : row,
                       ),
                     })
                   }
+                  options={timeOptions(period.startTime)}
                 />
               </label>
               <label>
                 Until
-                <input
-                  type="time"
+                <SelectField
+                  label={`Until time for period ${index + 1}`}
                   required
-                  value={period.endTime}
-                  onChange={(e) =>
+                  placeholder="Choose a time"
+                  value={period.endTime?.slice(0, 5) ?? ""}
+                  onChange={(time) =>
                     update({
                       weeklyAvailability: value.weeklyAvailability.map(
                         (row, i) =>
                           i === index
-                            ? { ...row, endTime: e.target.value }
+                            ? { ...row, endTime: time }
                             : row,
                       ),
                     })
                   }
+                  options={timeOptions(period.endTime)}
                 />
               </label>
               <button
-                className="product-secondary"
+                className="service-settings-remove"
                 type="button"
+                aria-label={`Remove ${days[period.dayOfWeek]} ${timeLabel(period.startTime)} to ${timeLabel(period.endTime)}`}
                 onClick={() =>
                   update({
                     weeklyAvailability: value.weeklyAvailability.filter(
@@ -154,13 +181,13 @@ export function ServiceSettings({
                   })
                 }
               >
-                Remove period {index + 1}
+                Remove
               </button>
             </div>
           ))}
           <button
             type="button"
-            className="product-secondary"
+            className="product-secondary service-settings-add"
             disabled={value.weeklyAvailability.length >= 14}
             onClick={() =>
               update({
@@ -171,20 +198,19 @@ export function ServiceSettings({
               })
             }
           >
-            Add availability
+            + Add time period
           </button>
-          <label className="product-checkbox">
+          </div>
+          <div className="service-settings-section service-settings-payment"><div className="service-settings-section-head"><h3>Payment</h3></div><label className="showcase-switch">
             <input
               type="checkbox"
               checked={value.paymentRequired}
               onChange={(e) => update({ paymentRequired: e.target.checked })}
             />
-            <span>Collect payment when booking</span>
+            <span className="showcase-switch-track" aria-hidden="true" />
+            <span><strong>Collect payment at booking</strong><small>Otherwise, customers reserve a time without paying now.</small></span>
           </label>
-          <p>
-            Online payment requires fixed or hourly pricing and completed payout
-            setup. Otherwise, customers book without paying now.
-          </p>
+          {value.paymentRequired ? <p className="service-settings-note">Requires fixed or hourly pricing and completed payout setup.</p> : null}</div>
         </>
       ) : null}
     </fieldset>

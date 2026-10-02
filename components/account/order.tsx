@@ -1,5 +1,6 @@
 "use client";
 import { LoadingState } from "../ui/loading-state";
+import { AccountSurfaceLoading } from "./surface-loading";
 import Link from "next/link";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { money } from "../../lib/api/discovery";
@@ -12,6 +13,7 @@ function Order({ id }: { id: string }) {
   const checkout = data?.checkoutUrl?.startsWith("https://checkout.stripe.com/")
     ? data.checkoutUrl
     : null;
+  if (loading && !data) return <AccountSurfaceLoading embedded />;
   return (
     <>
       <h1>Your event booking</h1>

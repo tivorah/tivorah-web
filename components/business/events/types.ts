@@ -6,9 +6,21 @@ export type TicketType = {
   quantity: number;
   sold: number;
   maxTicketsPerBuyer: number;
+  salesStartAt?: string | null;
+  salesEndAt?: string | null;
+  active?: boolean;
+  kind?: "standard" | "group";
+  groupSize?: number;
+  regularPriceCents?: number | null;
+  hidden?: boolean;
+  hasAccessCode?: boolean;
+  releaseAfterTicketTypeId?: number | null;
 };
 export type ManagedEvent = {
   id: number;
+  /** Hubs this event is shared to (only returned to the organiser). */
+  communityIds?: number[];
+  allowGroupBookings?: boolean;
   organizerId: number;
   title: string;
   description: string | null;
@@ -24,6 +36,7 @@ export type ManagedEvent = {
   postcode: string | null;
   status: string;
   images: string[];
+  img: string | null;
   ticketTypes: TicketType[];
 };
 export function localDate(value: string | null) {

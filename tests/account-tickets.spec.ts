@@ -22,7 +22,7 @@ test("account ticket uses the established pass, downloads and preserves input af
   await page.getByRole("button", { name: "Name on ticket" }).click();
   await page.getByLabel("Name on ticket", { exact: true }).fill("Alex Member");
   await page.getByRole("button", { name: "Save name" }).click();
-  await expect(page.getByText("General admission · Alex Member")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Selected ticket preview" }).getByText("General admission · Alex Member")).toBeVisible();
   await page.getByRole("button", { name: "Send to a friend" }).click();
   await page.getByLabel("Friend’s email").fill("friend@example.test");
   await page.getByRole("button", { name: "Send invitation" }).click();

@@ -37,15 +37,21 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
   const locality = params.get("locality") || "";
   const [store] = useState(() => createDiscoveryStore(query, locality));
   const filters = useStore(store);
+  const [locationInput, setLocationInput] = useState(locality);
   useEffect(() => {
     store.setState({ query, locality });
   }, [store, query, locality]);
+  useEffect(() => setLocationInput(locality), [locality]);
   const { data, loading, error, cooldown, retry, loadMore } = useDiscovery(
     kind,
     query,
     locality,
     params.toString(),
   );
+  // "Explore more" fills the next rows with card-shaped placeholders while the
+  // next batch loads; a new search keeps the "Updating…" treatment instead.
+  const [loadingMore, setLoadingMore] = useState(false);
+  useEffect(() => { if (!loading) setLoadingMore(false); }, [loading]);
   const cards = useMemo(
     () =>
       data?.items.map((item) => (
@@ -81,15 +87,18 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
             placeholder={`Search ${sections[kind].label.toLowerCase()}`}
           />
         </label>
-        <LocationSearch value={filters.locality} onChange={value => {
-          filters.setLocality(value);
+        <LocationSearch value={locationInput} onChange={value => {
+          setLocationInput(value);
+          if (value.trim()) return;
+          store.setState({ locality: "" });
           const next = new URLSearchParams(window.location.search);
-          ["state", "postcode", "latitude", "longitude", "radiusKm"].forEach(key => next.delete(key));
-          window.history.replaceState(null, "", `${pathname}?${next}`);
+          ["locality", "state", "latitude", "longitude", "radiusKm"].forEach(key => next.delete(key));
+          window.history.replaceState(null, "", `${pathname}${next.size ? `?${next}` : ""}`);
         }} onSelect={place => {
+          setLocationInput(place.suburb);
           store.setState({ locality: place.suburb });
           const next = new URLSearchParams(window.location.search);
-          next.set("locality", place.suburb); next.set("state", place.state); next.set("postcode", place.postcode);
+          next.set("locality", place.suburb); next.set("state", place.state);
           if (place.latitude != null && place.longitude != null) {
             next.set("latitude", String(place.latitude)); next.set("longitude", String(place.longitude)); next.set("radiusKm", "10");
           } else ["latitude", "longitude", "radiusKm"].forEach(key => next.delete(key));
@@ -124,7 +133,20 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
       ) : null}
       <div className="discover-grid" aria-busy={loading}>
         {cards}
+        {loadingMore && loading ? Array.from({ length: 8 }, (_, index) => (
+          <div key={`more-${index}`} className={`discover-card discover-card-skeleton${kind === "hubs" ? " discover-card-hub" : ""}`} aria-hidden="true">
+            <div className="discover-card-image tivorah-shimmer" />
+            <div className="discover-card-copy">
+              <span className="tivorah-shimmer discover-skeleton-meta" />
+              <span className="tivorah-shimmer discover-skeleton-title" />
+              <span className="tivorah-shimmer discover-skeleton-title short" />
+              <span className="tivorah-shimmer discover-skeleton-line" />
+              <div className="discover-card-bottom"><span className="tivorah-shimmer discover-skeleton-price" /></div>
+            </div>
+          </div>
+        )) : null}
       </div>
+      {loadingMore && loading ? <p className="product-sr-only" role="status">Loading more {sections[kind].label.toLowerCase()}…</p> : null}
       {!loading && !error && data?.items.length === 0 ? (
         <div className="product-empty">
           <span aria-hidden="true">⌕</span>
@@ -137,9 +159,9 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
           <button
             className="product-secondary"
             disabled={loading || pending}
-            onClick={loadMore}
+            onClick={() => { setLoadingMore(true); loadMore(); }}
           >
-            {loading ? "Loading…" : "Explore more"}
+            {loadingMore && loading ? "Loading more…" : "Explore more"}
           </button>
         </div>
       ) : null}

@@ -38,6 +38,11 @@ export function LocationSearch({
       setMessage("");
       return;
     }
+    if (/^\d+$/.test(value.trim())) {
+      setPlaces([]);
+      setMessage("Use the postcode field in More filters.");
+      return;
+    }
     const key = value.trim().toLowerCase();
     const cached = cache.current.get(key);
     if (cached) {
@@ -66,7 +71,7 @@ export function LocationSearch({
           setMessage(
             result.localities.length
               ? ""
-              : "No matching suburbs. Try a suburb or postcode.",
+              : "No matching suburbs. Try another suburb.",
           );
         })
         .catch((cause) => {
@@ -110,7 +115,7 @@ export function LocationSearch({
     >
       <label>
         <span className="search-field-label">
-          {inline ? "Suburb or postcode" : "Where?"}
+          Suburb
         </span>
         <svg
           className="search-field-icon"
@@ -131,7 +136,7 @@ export function LocationSearch({
           list={inline ? undefined : id}
           onFocus={() => setSuggestionsOpen(true)}
           maxLength={100}
-          placeholder="Suburb or postcode"
+          placeholder="Search suburb"
           autoComplete="off"
           aria-describedby={`${id}-status`}
           onChange={(event) => {

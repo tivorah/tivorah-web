@@ -7,11 +7,13 @@ import { useAccount } from "../../hooks/use-account";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { api } from "../../lib/api/client";
 import { money } from "../../lib/api/discovery";
+import { SelectField } from "../ui/select-field";
 
 type Availability = {
   slots: { startsAt: string; endsAt: string }[];
   timezone: string;
   paymentRequired: boolean;
+  paymentAvailable: boolean;
   quote: {
     subtotalCents: number;
     buyerTotalCents: number;
@@ -20,11 +22,69 @@ type Availability = {
   };
 };
 
+const AU_TIMEZONES = [
+  ["Australia/Perth", "Perth"], ["Australia/Darwin", "Darwin"],
+  ["Australia/Adelaide", "Adelaide"], ["Australia/Brisbane", "Brisbane"],
+  ["Australia/Sydney", "Sydney"], ["Australia/Melbourne", "Melbourne"],
+  ["Australia/Hobart", "Hobart"], ["Australia/Lord_Howe", "Lord Howe Island"],
+] as const;
+
+function dateKey(value: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-AU", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(value);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
+function monthKey(key: string) { return key.slice(0, 7); }
+function shiftMonth(key: string, amount: number) {
+  const [year, month] = key.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1 + amount, 1)).toISOString().slice(0, 7);
+}
+
+function CalendarPicker({ slots, timeZone, selectedDate, selected, onSelectDate, onSelect }: { slots: Availability["slots"]; timeZone: string; selectedDate: string; selected: string; onSelectDate: (value: string) => void; onSelect: (value: string) => void }) {
+  const byDate = new Map<string, Availability["slots"]>();
+  for (const slot of slots) {
+    const key = dateKey(new Date(slot.startsAt), timeZone);
+    byDate.set(key, [...(byDate.get(key) ?? []), slot]);
+  }
+  const first = [...byDate.keys()].sort()[0];
+  const last = [...byDate.keys()].sort().at(-1);
+  const [month, setMonth] = useState(() => monthKey(first));
+  const activeMonth = month < monthKey(first) ? monthKey(first) : month > monthKey(last!) ? monthKey(last!) : month;
+  const activeDate = selectedDate && byDate.has(selectedDate) ? selectedDate : "";
+  const [year, monthNumber] = activeMonth.split("-").map(Number);
+  const firstWeekday = (new Date(Date.UTC(year, monthNumber - 1, 1)).getUTCDay() + 6) % 7;
+  const days = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+  const monthLabel = new Intl.DateTimeFormat("en-AU", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(year, monthNumber - 1, 1)));
+  const times = activeDate ? byDate.get(activeDate) ?? [] : [];
+  return <div className="appointment-picker">
+    <div className="appointment-month-nav">
+      <h3>{monthLabel}</h3>
+      <div><button type="button" aria-label="Previous month" disabled={activeMonth <= monthKey(first)} onClick={() => setMonth(shiftMonth(activeMonth, -1))}>‹</button><button type="button" aria-label="Next month" disabled={activeMonth >= monthKey(last!)} onClick={() => setMonth(shiftMonth(activeMonth, 1))}>›</button></div>
+    </div>
+    <div className="appointment-calendar" role="group" aria-label={`Available dates in ${monthLabel}`}>
+      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span className="appointment-weekday" key={day}>{day}</span>)}
+      {Array.from({ length: firstWeekday }, (_, index) => <span key={`gap-${index}`} />)}
+      {Array.from({ length: days }, (_, index) => {
+        const key = `${activeMonth}-${String(index + 1).padStart(2, "0")}`;
+        const count = byDate.get(key)?.length ?? 0;
+        return <button key={key} type="button" className={key === activeDate ? "selected" : ""} disabled={!count} aria-pressed={key === activeDate} aria-label={`${new Intl.DateTimeFormat("en-AU", { dateStyle: "full", timeZone: "UTC" }).format(new Date(`${key}T12:00:00Z`))}${count ? `, ${count} available ${count === 1 ? "time" : "times"}` : ", unavailable"}`} onClick={() => onSelectDate(key)}><span>{index + 1}</span>{count ? <i aria-hidden="true" /> : null}</button>;
+      })}
+    </div>
+    <div className="appointment-times" aria-live="polite">
+      <h3>{activeDate ? new Intl.DateTimeFormat("en-AU", { weekday: "long", day: "numeric", month: "long", timeZone }).format(new Date(times[0].startsAt)) : "Choose an available day"}</h3>
+      {activeDate ? <div className="appointment-time-grid">{times.map((item) => <button type="button" key={item.startsAt} className={selected === item.startsAt ? "selected" : ""} aria-pressed={selected === item.startsAt} onClick={() => onSelect(item.startsAt)}>{new Intl.DateTimeFormat("en-AU", { timeStyle: "short", timeZone }).format(new Date(item.startsAt))}</button>)}</div> : <p>Days with a dot have available appointments.</p>}
+    </div>
+  </div>;
+}
+
 function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
   const { data, loading, error, retry } = usePrivateResource<Availability>(
     `/web/account/services/${id}/availability`,
   );
   const [selected, setSelected] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [timeZone, setTimeZone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Sydney");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const lock = useRef(false);
@@ -33,7 +93,7 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!slot || !data || error || lock.current) return;
+    if (!slot || !data || error || !data.paymentAvailable || lock.current) return;
     lock.current = true;
     setBusy(true);
     setNotice("");
@@ -97,7 +157,7 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
   }
 
   return (
-    <section className="product-form">
+    <section className="product-form product-detail-booking">
       <h2>Book an appointment</h2>
       {loading ? <LoadingState label="Loading available times…" variant="compact" refreshing={!!data} /> : null}
       {error ? (
@@ -111,27 +171,9 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
       {data && !error ? (
         data.slots.length ? (
           <form onSubmit={submit}>
-            <label>
-              Appointment time
-              <select
-                value={selected}
-                disabled={busy}
-                onChange={(event) => setSelected(event.target.value)}
-                required
-              >
-                <option value="">Choose a time</option>
-                {data.slots.map((item) => (
-                  <option key={item.startsAt} value={item.startsAt}>
-                    {new Intl.DateTimeFormat("en-AU", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                      timeZone: data.timezone,
-                    }).format(new Date(item.startsAt))}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p>Times shown in {data.timezone.replaceAll("_", " ")}.</p>
+            <div className="appointment-zone-row"><div><h3>Choose a date and time</h3><p>Provider time zone: {data.timezone.replaceAll("_", " ")}</p></div><label htmlFor="appointment-timezone">Show times in<SelectField id="appointment-timezone" label="Show times in" value={timeZone} disabled={busy} onChange={(zone) => { setTimeZone(zone); setSelectedDate(""); setSelected(""); }} options={[{ value: data.timezone, label: `Provider time (${data.timezone.replace("Australia/", "")})` }, ...(timeZone !== data.timezone && !AU_TIMEZONES.some(([zone]) => zone === timeZone) ? [{ value: timeZone, label: `My time zone (${timeZone})` }] : []), ...AU_TIMEZONES.filter(([zone]) => zone !== data.timezone).map(([zone, city]) => ({ value: zone, label: city }))]} /></label></div>
+            <fieldset disabled={busy} className="appointment-picker-fieldset"><legend className="product-sr-only">Available appointment dates and times</legend><CalendarPicker slots={data.slots} timeZone={timeZone} selectedDate={selectedDate} selected={selected} onSelectDate={(date) => { setSelectedDate(date); setSelected(""); }} onSelect={setSelected} /></fieldset>
+            {slot ? <p className="appointment-selection" role="status">Selected: <strong>{new Intl.DateTimeFormat("en-AU", { dateStyle: "full", timeStyle: "short", timeZone }).format(new Date(slot.startsAt))}</strong> ({timeZone.replaceAll("_", " ")})</p> : null}
             {data.paymentRequired ? (
               <div>
                 <p>Service: {money(data.quote.subtotalCents)}</p>
@@ -149,7 +191,9 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
                 the provider.
               </p>
             )}
-            <button
+            {data.paymentRequired && !data.paymentAvailable ? (
+              <p role="status">The provider is finishing payment setup. You can enquire about this service while online booking is unavailable.</p>
+            ) : <button
               className="product-primary"
               disabled={!slot || busy || loading}
             >
@@ -158,7 +202,7 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
                 : data.paymentRequired && data.quote.buyerTotalCents > 0
                   ? "Continue to payment"
                   : "Book appointment"}
-            </button>
+            </button>}
           </form>
         ) : (
           <>
@@ -183,7 +227,7 @@ export function ServiceBooking({ id }: { id: number }) {
   if (loading) return <LoadingState label="Checking your account…" variant="compact" />;
   if (signedOut)
     return (
-      <section className="product-form">
+      <section className="product-form product-detail-booking">
         <h2>Book an appointment</h2>
         <p>
           Sign in to see available times and keep your booking in your account.

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { SelectField } from "../../components/ui/select-field";
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
@@ -76,16 +77,15 @@ export function ContactForm() {
       </div>
 
       <label htmlFor="contact-topic">What can we help with?
-        <select id="contact-topic" name="topic" defaultValue="" required>
-          <option value="" disabled>Select a topic</option>
-          <option value="general">General enquiry</option>
-          <option value="support">Account or app support</option>
-          <option value="events">Events and ticketing</option>
-          <option value="providers">Service provider or partnership</option>
-          <option value="privacy">Privacy request</option>
-          <option value="safety">Safety report</option>
-          <option value="complaint">Complaint</option>
-        </select>
+        <SelectField id="contact-topic" name="topic" label="What can we help with?" required placeholder="Select a topic" requiredMessage="Choose a topic." options={[
+          { value: "general", label: "General enquiry" },
+          { value: "support", label: "Account or app support" },
+          { value: "events", label: "Events and ticketing" },
+          { value: "providers", label: "Service provider or partnership" },
+          { value: "privacy", label: "Privacy request" },
+          { value: "safety", label: "Safety report" },
+          { value: "complaint", label: "Complaint" },
+        ]} />
       </label>
 
       <label htmlFor="contact-subject">Subject<input id="contact-subject" name="subject" required minLength={3} maxLength={140} /></label>

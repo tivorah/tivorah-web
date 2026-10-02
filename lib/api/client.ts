@@ -25,7 +25,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       ? AbortSignal.any([init.signal, timeout])
       : timeout,
     headers: {
-      ...(init.body instanceof FormData
+      ...(!init.body || init.body instanceof FormData
         ? {}
         : { "Content-Type": "application/json" }),
       ...init.headers,
@@ -49,6 +49,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
         return Number.isFinite(seconds) ? Math.max(0, seconds) : Math.max(0, Math.ceil((Date.parse(header) - Date.now()) / 1000)) || 0;
       })(),
     );
+  }
+  if (typeof window !== "undefined" && !/^\/chat\/.*\/read$/.test(path) && init.method && !["GET", "HEAD"].includes(init.method.toUpperCase())) {
+    window.dispatchEvent(new CustomEvent("tivorah:mutation", { detail: path }));
   }
   return body?.data as T;
 }

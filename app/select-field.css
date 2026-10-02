@@ -1,0 +1,109 @@
+/* Tivorah form dropdown (components/ui/select-field.tsx). Matches the date picker. */
+.select-field { position: relative; display: block; width: 100%; min-width: 0; }
+
+.select-field .select-field-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 18px 11px 20px;
+  border: 1px solid #d7ccdf;
+  border-radius: 999px;
+  background: #fff;
+  color: #28212f;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.select-field .select-field-trigger > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.select-field .select-field-trigger svg { flex: none; color: #5d329d; transition: transform .16s ease; }
+.select-field .select-field-trigger svg.is-open { transform: rotate(180deg); }
+.select-field .select-field-trigger:hover:not(:disabled) { border-color: #b9a6cc; }
+.select-field .select-field-trigger:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; border-color: #7650b7; }
+.select-field .select-field-trigger[aria-expanded="true"] { border-color: #7650b7; box-shadow: 0 0 0 3px #efe6fb; }
+.select-field .select-field-trigger:disabled { background: #f2eff4; color: #756b7d; cursor: not-allowed; }
+.select-field-placeholder { color: #6f6377; font-weight: 400; }
+.select-field.is-invalid .select-field-trigger { border-color: #b3261e; }
+.select-field-error { display: block; margin-top: 6px; color: #b3261e; font-size: 14px; font-weight: 600; }
+
+.select-field .select-field-proxy,
+.product-form .select-field .select-field-proxy,
+.auth-form form .select-field .select-field-proxy {
+  position: absolute !important;
+  bottom: 0;
+  left: 20px;
+  width: 1px !important;
+  min-height: 0 !important;
+  height: 1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.select-field-backdrop { display: none; }
+.select-field-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  min-width: 240px;
+  max-width: calc(100vw - 32px);
+  padding: 8px;
+  border: 1px solid #e4dce9;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(39, 27, 52, .18);
+  animation: select-field-in .14s ease-out;
+}
+@keyframes select-field-in { from { opacity: 0; transform: translateY(-4px); } }
+.select-field-title { display: none; }
+
+.select-field-search { position: relative; margin: 4px 4px 8px; }
+.select-field-search svg { position: absolute; top: 50%; left: 16px; transform: translateY(-50%); color: #6b5a78; pointer-events: none; }
+.select-field-panel .select-field-search input {
+  width: 100%; min-height: 44px; padding: 0 16px 0 44px;
+  border: 1px solid #e4dce9; border-radius: 999px; background: #f7f4fa;
+  color: #28212f; font: inherit; font-size: 16px;
+}
+.select-field-search input:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 1px; background: #fff; }
+
+.select-field-options { display: grid; gap: 2px; max-height: min(320px, 50vh); overflow-y: auto; overscroll-behavior: contain; }
+.select-field-options [role="option"] {
+  display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 0 14px; border: 0; border-radius: 14px; background: transparent;
+  color: #28212f; font: inherit; font-size: 15px; font-weight: 550; text-align: left; cursor: pointer;
+}
+.select-field-options [role="option"]:hover:not(:disabled),
+.select-field-options [role="option"]:focus-visible { background: #f4efff; outline: none; }
+.select-field-options [role="option"]:focus-visible { box-shadow: inset 0 0 0 2px #c8a7f5; }
+.select-field-options [role="option"][aria-selected="true"] { background: #f4efff; color: #5d329d; font-weight: 750; }
+.select-field-options [role="option"] svg { flex: none; color: #7446d8; }
+.select-field-options [role="option"]:disabled { color: #b7adbf; cursor: not-allowed; }
+.select-field-empty { margin: 0; padding: 14px; color: #6f6377; font-size: 14px; text-align: center; }
+
+/* Phones: a bottom sheet with a title instead of a dropdown. */
+@media (max-width: 600px) {
+  .select-field-backdrop { position: fixed; inset: 0; z-index: 39; display: block; background: rgba(23, 19, 31, .35); }
+  .select-field-panel {
+    position: fixed; top: auto; right: 0; bottom: 0; left: 0;
+    width: auto; min-width: 0; max-width: none; max-height: 80dvh; overflow: auto;
+    padding: 18px 12px calc(14px + env(safe-area-inset-bottom));
+    border-radius: 24px 24px 0 0;
+    animation-name: select-field-sheet-in;
+  }
+  .select-field-title { display: block; margin: 0 8px 10px; color: #28212f; font-size: 17px; font-weight: 800; }
+  .select-field-options { max-height: 60dvh; }
+  .select-field-options [role="option"] { min-height: 48px; font-size: 16px; }
+  @keyframes select-field-sheet-in { from { transform: translateY(24px); opacity: 0; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select-field-panel { animation: none; }
+  .select-field-trigger svg { transition: none; }
+}

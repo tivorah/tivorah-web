@@ -75,6 +75,8 @@ for (const width of [390, 768, 1440]) {
                 locality: "Adelaide",
                 state: "SA",
                 startsAt: "2026-10-18T01:00:00Z",
+                priceCents: 0,
+                hasPaidTickets: true,
               },
             ],
             nextSkip: null,
@@ -83,9 +85,13 @@ for (const width of [390, 768, 1440]) {
       }),
     );
     await page.goto("/events");
+    if (width < 850) await page.getByRole("button", { name: "Open navigation menu" }).click();
+    await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Events" })).toHaveAttribute("aria-current", "page");
+    if (width < 850) await page.getByRole("button", { name: "Close navigation menu" }).click();
     await expect(
       page.getByRole("heading", { name: "Sunday makers gathering" }),
     ).toBeVisible();
+    await expect(page.getByRole("link", { name: /Sunday makers gathering/ })).toContainText("Free & paid");
     await expect(
       page.getByRole("heading", { name: "Make room for a good time." }),
     ).toBeVisible();
@@ -221,7 +227,7 @@ test("narrow dark layout supports reduced motion and keyboard focus", async ({
   await expect(page.locator(".discover-artwork canvas")).toHaveCount(0);
   await page.getByLabel("What are you looking for?").focus();
   await page.keyboard.press("Tab");
-  await expect(page.getByLabel("Where?")).toBeFocused();
+  await expect(page.getByRole("combobox", { name: "Suburb" })).toBeFocused();
   await page.screenshot({ path: "/tmp/tivorah-dark-320.png", fullPage: true });
 });
 
@@ -297,11 +303,12 @@ test("mobile filters preserve search and selected locality through API requests"
   await page.goto('/shop?query=chair');
   await page.getByRole('combobox', { name: 'Category', exact: true }).click();
   await page.getByRole('option', { name: 'Furniture & home', exact: true }).click();
-  const location = page.getByLabel('Where?', { exact: true });
+  const location = page.getByLabel('Suburb', { exact: true });
   await location.fill('Ade');
   await expect(page.locator('datalist option')).toHaveCount(1);
   await location.fill('Adelaide, SA 5000');
-  await expect(page).toHaveURL(/postcode=5000/);
+  await expect(page).toHaveURL(/locality=Adelaide/);
+  expect(new URL(page.url()).searchParams.has('postcode')).toBe(false);
   await page.getByText('More filters', { exact: false }).click();
   await page.getByRole('combobox', { name: 'Condition', exact: true }).click();
   await page.getByRole('option', { name: 'Used — good', exact: true }).click();
@@ -362,7 +369,7 @@ test("location can be selected inside the filter modal and only applies on submi
   const dialog = page.getByRole('dialog');
   const distance = dialog.getByRole('combobox', { name: 'Distance' });
   await expect(distance).toBeDisabled();
-  await dialog.getByLabel('Suburb or postcode', { exact: true }).fill('5000');
+  await dialog.getByLabel('Suburb', { exact: true }).fill('Adelaide');
   await dialog.getByRole('option', { name: 'Adelaide SA 5000' }).click();
   await expect(distance).toBeEnabled();
   await distance.click();
@@ -371,10 +378,39 @@ test("location can be selected inside the filter modal and only applies on submi
   await dialog.screenshot({ path: '/tmp/tivorah-modal-location.png' });
   await dialog.getByRole('button', { name: 'Apply filters' }).click();
   await expect(page).toHaveURL(/radiusKm=25/);
-  await expect(page).toHaveURL(/postcode=5000/);
+  expect(new URL(page.url()).searchParams.has('postcode')).toBe(false);
   await page.getByRole('button', { name: /More filters/ }).click();
   await expect(distance).toHaveText('Within 25 km');
-  await dialog.getByLabel('Suburb or postcode', { exact: true }).fill('Sydney');
+  await dialog.getByLabel('Suburb', { exact: true }).fill('Sydney');
   await dialog.getByRole('button', { name: 'Close filters' }).click();
-  await expect(page).toHaveURL(/postcode=5000/);
+  await expect(page).toHaveURL(/locality=Adelaide/);
+  await page.getByRole('button', { name: 'Remove Within 25 km' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.has('radiusKm')).toBe(false);
+  expect(new URL(page.url()).searchParams.get('locality')).toBe('Adelaide');
+  expect(new URL(page.url()).searchParams.has('postcode')).toBe(false);
+  await expect(page.getByRole('button', { name: 'Remove Adelaide' })).toBeVisible();
+  for (const key of ['latitude', 'longitude']) {
+    expect(new URL(page.url()).searchParams.has(key)).toBe(true);
+  }
+  await page.getByRole('button', { name: /More filters/ }).click();
+  await expect(dialog.getByRole('combobox', { name: 'Distance' })).toBeEnabled();
+  await expect(dialog.getByLabel('Suburb', { exact: true })).toHaveValue('Adelaide');
+});
+
+test("postcode is sent only when explicitly set in filters", async ({ page }) => {
+  const requests: URL[] = [];
+  await page.route('**/api/v1/public/discovery/items?**', route => {
+    const url = new URL(route.request().url());
+    requests.push(url);
+    return route.fulfill({ json: { data: { items: [], nextSkip: null } } });
+  });
+  await page.goto('/shop?locality=Melbourne&state=VIC&latitude=-37.8144733&longitude=144.9825846');
+  await expect.poll(() => requests.length).toBeGreaterThan(0);
+  expect(requests.at(-1)!.searchParams.get('locality')).toBe('Melbourne');
+  expect(requests.at(-1)!.searchParams.get('state')).toBe('VIC');
+  expect(requests.at(-1)!.searchParams.has('postcode')).toBe(false);
+  await page.getByRole('button', { name: /More filters/ }).click();
+  await page.getByRole('dialog').getByLabel('Postcode', { exact: true }).fill('3004');
+  await page.getByRole('button', { name: 'Apply filters' }).click();
+  await expect.poll(() => requests.at(-1)?.searchParams.get('postcode')).toBe('3004');
 });

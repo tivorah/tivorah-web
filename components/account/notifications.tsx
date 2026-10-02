@@ -1,12 +1,15 @@
 "use client";
 import { LoadingState } from "../ui/loading-state";
+import { AccountSurfaceLoading } from "./surface-loading";
 import Link from "next/link";
 import { useState } from "react";
 import { AccountGate } from "./gate";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { useMutation } from "../../hooks/use-mutation";
+import { PAGE_SIZE, Pagination } from "../ui/pagination";
 function Notices() {
-  const [skip, setSkip] = useState(0);
+  const [page, setPage] = useState(1);
+  const skip = (page - 1) * PAGE_SIZE;
   const { data, loading, error, retry } = usePrivateResource<{
     items: {
       id: number;
@@ -17,8 +20,9 @@ function Notices() {
       createdAt: string;
     }[];
     nextSkip: number | null;
-  }>(`/web/account/notifications?skip=${skip}`);
+  }>(`/web/account/notifications?skip=${skip}&take=${PAGE_SIZE}`);
   const mutation = useMutation(retry);
+  if (loading && !data) return <AccountSurfaceLoading embedded />;
   return (
     <>
       <Link href="/account" className="product-secondary">
@@ -75,24 +79,7 @@ function Notices() {
         <p>No updates yet.</p>
       ) : null}
       {mutation.error ? <p role="alert">{mutation.error}</p> : null}
-      <div className="account-actions">
-        {skip > 0 ? (
-          <button
-            className="product-secondary"
-            onClick={() => setSkip(Math.max(0, skip - 20))}
-          >
-            Previous
-          </button>
-        ) : null}
-        {data?.nextSkip != null ? (
-          <button
-            className="product-secondary"
-            onClick={() => setSkip(data.nextSkip!)}
-          >
-            Next
-          </button>
-        ) : null}
-      </div>
+      <Pagination page={page} hasNext={data?.nextSkip != null} busy={loading} label="Update" onChange={(next) => { setPage(next); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
     </>
   );
 }

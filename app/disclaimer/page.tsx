@@ -8,7 +8,7 @@ export default function Disclaimer() {
     <article className="content">
       <span className="eyebrow">Important information</span>
       <h1>Community knowledge is not professional advice.</h1>
-      <p className="legal-meta"><strong>Last updated:</strong> 15 September 2026</p>
+      <p className="legal-meta"><strong>Last updated:</strong> 2 October 2026</p>
       <p>
         Tivorah helps people share experiences, opportunities and local information. Unless we
         expressly say otherwise, member content is created by independent users and is not
@@ -35,7 +35,9 @@ export default function Disclaimer() {
 
       <h2>Listings, events and people</h2>
       <p>
-        Tivorah does not guarantee a member, organiser, listing, item, service, venue or event.
+        Tivorah does not guarantee a member, organiser, shop, listing, item, service, venue or
+        event. A shop page, photo or video approved for display is not a Tivorah endorsement or a
+        check that the seller&apos;s claims are true.
         Inspect items, use traceable payments, meet safely, tell someone your plans and follow
         venue and public-safety instructions. Rights that cannot be excluded under the Australian
         Consumer Law remain unaffected.

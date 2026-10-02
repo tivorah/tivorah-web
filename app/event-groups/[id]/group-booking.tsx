@@ -1,6 +1,7 @@
 'use client';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { BookingTermsConsent } from '../../../components/discovery/booking-terms-consent';
 import { useAccount } from '../../../hooks/use-account';
 import { eventApi, eventDate, ticketMoney } from '../../events/api';
 
@@ -12,6 +13,7 @@ export default function GroupBooking({ groupId }: { groupId: string }) {
   const [group, setGroup] = useState<Group | null>(null);
   const [name, setName] = useState('');
   const [adult, setAdult] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -29,13 +31,13 @@ export default function GroupBooking({ groupId }: { groupId: string }) {
   }, [groupId]);
   async function book(event: FormEvent) {
     event.preventDefault();
-    if (!(group?.group.available || (group?.group.status === 'used' && canResume)) || !adult || busy || !account) return;
+    if (!(group?.group.available || (group?.group.status === 'used' && canResume)) || !adult || !termsAccepted || busy || !account) return;
     setBusy(true); setError('');
     const storageKey = `tivorah-group-booking:${groupId}`;
     if (!retry.current) { try { retry.current = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); } catch { /* Keep the retry in memory. */ } }
     if (!retry.current) { retry.current = { key: crypto.randomUUID(), name: name.trim() }; try { sessionStorage.setItem(storageKey, JSON.stringify(retry.current)); } catch { /* Keep the retry in memory. */ } }
     try {
-      const result = await eventApi<{ checkoutUrl: string | null; ticketUrl: string; order: { id: number } }>(`/groups/${groupId}/orders`, { method: 'POST', headers: { Authorization: `Bearer ${token.current}` }, body: JSON.stringify({ idempotencyKey: retry.current.key, name: retry.current.name, adultConfirmed: adult }) });
+      const result = await eventApi<{ checkoutUrl: string | null; ticketUrl: string; order: { id: number } }>(`/groups/${groupId}/orders`, { method: 'POST', headers: { Authorization: `Bearer ${token.current}` }, body: JSON.stringify({ idempotencyKey: retry.current.key, name: retry.current.name, adultConfirmed: adult, termsAccepted }) });
       const ticketUrl = new URL(result.ticketUrl);
       try { sessionStorage.setItem(`tivorah-event-access:${result.order.id}`, new URLSearchParams(ticketUrl.hash.slice(1)).get('access') || ''); } catch { /* The private return URL contains access. */ }
       const destination = result.checkoutUrl ? new URL(result.checkoutUrl) : ticketUrl;
@@ -48,7 +50,7 @@ export default function GroupBooking({ groupId }: { groupId: string }) {
     {group ? <div className="event-layout"><div className="event-details"><h2>{group.event.title}</h2><dl className="event-facts"><div><dt>When</dt><dd>{eventDate(group.event.startsAt)}</dd></div><div><dt>Where</dt><dd>{group.event.location || 'See event details'}</dd></div><div><dt>Reserved for</dt><dd>{group.group.buyerEmail}</dd></div><div><dt>Complete by</dt><dd>{new Date(group.group.expiresAt).toLocaleString('en-AU', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Australia/Adelaide' })} (Adelaide time)</dd></div></dl><p>Only the buyer’s details are needed now. You can add names or email individual tickets to friends after booking.</p><a className="event-secondary" href={`/events/${group.event.id}`}>View event details</a></div>
       <section className="event-booking" aria-labelledby="group-ticket-heading"><h2 id="group-ticket-heading">Your group booking</h2><p>{group.group.quantity} × {group.ticket.name}</p>{group.quote ? <div className="event-total"><div><span>Tickets</span><span>{ticketMoney(group.quote.subtotalCents, group.ticket.currency)}</span></div>{group.quote.chargedTo === 'buyer' && group.quote.platformFeeCents > 0 ? <div><span>Booking fee</span><span>{ticketMoney(group.quote.platformFeeCents, group.ticket.currency)}</span></div> : null}<div><strong>Total</strong><strong>{group.quote.buyerTotalCents ? ticketMoney(group.quote.buyerTotalCents, group.ticket.currency) : 'Free'}</strong></div></div> : null}
         {accountLoading ? <p role="status">Checking your account…</p> : signedOut ? <p><Link className="event-primary" href={`/auth/signin?returnTo=${encodeURIComponent(`/event-groups/${groupId}`)}`}>Sign in to book</Link></p> : accountError ? <div role="alert"><p>{accountError}</p><button type="button" onClick={retryAccount}>Retry account</button></div> : null}
-        {group.group.available || (group.group.status === 'used' && canResume) ? <form onSubmit={book}><fieldset disabled={busy || !account || accountLoading}><h3>Your details</h3><label htmlFor="group-buyer-name">Full name</label><input id="group-buyer-name" autoComplete="name" required minLength={2} maxLength={100} value={name} onChange={event => setName(event.target.value)} /><p className="event-help">Tickets will be emailed to {group.group.buyerEmail}. Large groups use a private download page instead of an oversized attachment.</p><label className="event-check"><input type="checkbox" checked={adult} onChange={event => setAdult(event.target.checked)} required /><span>I am 18 or older and agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</span></label><button className="event-primary" disabled={!adult || busy} type="submit">{busy ? 'Opening your booking…' : group.group.status === 'used' ? 'Continue your booking' : group.quote?.buyerTotalCents ? `Continue to payment · ${ticketMoney(group.quote.buyerTotalCents, group.ticket.currency)}` : 'Get group tickets'}</button></fieldset></form> : <div className="ticket-notice" role="status"><p>This group hold is no longer available. Ask the organiser for a new invitation.</p></div>}
+        {group.group.available || (group.group.status === 'used' && canResume) ? <form onSubmit={book}><fieldset disabled={busy || !account || accountLoading}><h3>Your details</h3><label htmlFor="group-buyer-name">Full name</label><input id="group-buyer-name" autoComplete="name" required minLength={2} maxLength={100} value={name} onChange={event => setName(event.target.value)} /><p className="event-help">Tickets will be emailed to {group.group.buyerEmail}. Large groups use a private download page instead of an oversized attachment.</p><BookingTermsConsent confirmAge checked={adult && termsAccepted} onChange={value => { setAdult(value); setTermsAccepted(value); }} /><button className="event-primary" disabled={!adult || !termsAccepted || busy} type="submit">{busy ? 'Opening your booking…' : group.group.status === 'used' ? 'Continue your booking' : group.quote?.buyerTotalCents ? `Continue to payment · ${ticketMoney(group.quote.buyerTotalCents, group.ticket.currency)}` : 'Get group tickets'}</button></fieldset></form> : <div className="ticket-notice" role="status"><p>This group hold is no longer available. Ask the organiser for a new invitation.</p></div>}
         {error ? <p className="event-error" role="alert">{error}</p> : null}<p className="event-help">Sign in with the email this invitation was sent to. Paid bookings are processed by Stripe.</p>
       </section></div> : error ? <div className="ticket-notice" role="alert"><p>{error}</p></div> : null}
   </main>;

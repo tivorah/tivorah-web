@@ -1,20 +1,36 @@
 "use client";
-import { LoadingState } from "../ui/loading-state";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRef } from "react";
 import { Account, useAccount } from "../../hooks/use-account";
+import { useSigningOut } from "../../lib/auth/sign-out";
+import { AccountSurfaceLoading } from "./surface-loading";
 export function AccountGate({
   children,
+  redirectOnSignedOut = false,
 }: {
   children: (account: Account) => ReactNode;
+  redirectOnSignedOut?: boolean;
 }) {
   const { account, loading, signedOut, error, retry } = useAccount();
+  // During sign-out the session empties before the redirect; keep the current page
+  // (and the button's "Signing out…" state) on screen instead of the signed-out card.
+  const signingOut = useSigningOut();
+  const lastAccount = useRef<Account | null>(null);
+  if (account) lastAccount.current = account;
   const path = usePathname();
-  if (loading)
-    return (
-      <LoadingState label="Checking your account…" variant="form" />
-    );
+  const router = useRouter();
+  useEffect(() => {
+    if (!signedOut || !redirectOnSignedOut) return;
+    const destination = `${window.location.pathname}${window.location.search}`;
+    router.replace(`/auth/signin?returnTo=${encodeURIComponent(destination)}`);
+  }, [redirectOnSignedOut, router, signedOut]);
+  if (signingOut && lastAccount.current) return <div key={lastAccount.current.id}>{children(lastAccount.current)}</div>;
+  if (loading) return <AccountSurfaceLoading embedded />;
+  if (signedOut && redirectOnSignedOut) return <AccountSurfaceLoading embedded />;
   if (signedOut)
     return (
       <section className="product-form">

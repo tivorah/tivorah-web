@@ -2,7 +2,9 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { ticketImage } from './ticket-image';
 import { BrandedQrCode } from '../../branded-qr-code';
+import { EventAppInvite } from '../../../components/discovery/event-app-invite';
 import { eventApi, eventDate, ticketMoney } from '../../events/api';
+import { SelectField } from "../../../components/ui/select-field";
 type Booking = { order: { id: number; eventId: number; status: string; quantity: number; totalCents: number; currency: string; confirmationEmailSent: boolean }; event: { title: string; startsAt: string | null; location: string | null; onlineUrl: string | null }; ticketType: { name: string }; tickets: { publicId: string; shortCode: string | null; attendeeName: string | null; status: string; checkedInAt: string | null; qrPayload: string | null }[]; checkoutUrl: string | null };
 export default function OrderTickets({ orderId }: { orderId: string }) {
   const [booking, setBooking] = useState<Booking | null>(null);
@@ -78,9 +80,10 @@ export default function OrderTickets({ orderId }: { orderId: string }) {
         title: booking.event.title, date: eventDate(booking.event.startsAt),
         location: booking.event.location || 'See event details', admission: booking.ticketType.name,
         position: index + 1, count: booking.tickets.length,
-        code: ticket.shortCode || ticket.publicId, orderId: booking.order.id,
+        code: ticket.shortCode || 'Unavailable', orderId: booking.order.id,
         qrSvg: document.querySelector<SVGElement>(`.event-pass[data-ticket-id="${ticket.publicId}"] .ticket-entry svg[role="img"]`)?.outerHTML || null,
         status: ticket.checkedInAt ? 'Checked in' : ticket.status,
+        holderName: ticket.attendeeName,
       });
       if (share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: booking.event.title });
@@ -189,16 +192,16 @@ export default function OrderTickets({ orderId }: { orderId: string }) {
         <div className="event-pass-grid ticket-wallet" role="region" aria-label="Your tickets">
           {booking.tickets.length > 1 ? <nav className="ticket-navigation" aria-label="Choose a ticket">
             <button className="event-secondary" aria-label="Previous ticket" disabled={activeTicket === 0} onClick={() => switchTicket(activeTicket - 1)}>←</button>
-            <label><span className="event-sr">Ticket to display</span><select value={Math.min(activeTicket, booking.tickets.length - 1)} onChange={e => switchTicket(Number(e.target.value))}>{booking.tickets.map((ticket, index) => <option key={ticket.publicId} value={index}>Ticket {index + 1} of {booking.tickets.length}</option>)}</select></label>
+            <label><span className="event-sr">Ticket to display</span><SelectField label="Ticket to display" value={String(Math.min(activeTicket, booking.tickets.length - 1))} onChange={value => switchTicket(Number(value))} options={booking.tickets.map((ticket, index) => ({ value: String(index), label: `Ticket ${index + 1} of ${booking.tickets.length}` }))} /></label>
             <button className="event-secondary" aria-label="Next ticket" disabled={activeTicket >= booking.tickets.length - 1} onClick={() => switchTicket(activeTicket + 1)}>→</button>
           </nav> : null}
           <div data-switch-direction={ticketDirection || undefined} className={`ticket-stack${booking.tickets.length > 1 ? ' ticket-stack-multiple' : ''}`}>
 {visibleTickets.map(({ ticket, index }) => <article className="event-pass" data-ticket-id={ticket.publicId} key={ticket.publicId} aria-label={`Ticket ${index + 1} of ${booking.tickets.length}`}>
           <div className="ticket-pass-top"><span className="event-eyebrow">TIVORAH EVENT PASS</span><span>{index + 1} / {booking.tickets.length}</span></div>
           <h2>{booking.event.title}</h2><p className="ticket-admission">{booking.ticketType.name}{ticket.attendeeName ? ` · ${ticket.attendeeName}` : ''}</p>
-          <div className="ticket-entry"><p className="event-status-label">{ticket.checkedInAt ? 'Checked in' : ticket.status === 'valid' && confirmed ? 'Ready for entry' : ticket.status}</p>
+          <div className="ticket-entry"><p className="event-status-label">{ticket.checkedInAt ? 'Checked in' : ticket.status === 'valid' && confirmed && ticket.qrPayload ? 'Ready for entry' : ticket.status}</p>
           {confirmed && ticket.status === 'valid' && !ticket.checkedInAt && ticket.qrPayload ? <><BrandedQrCode value={ticket.qrPayload} ariaLabel={`Entry code for ticket ${index + 1}`} size={240} /><p className="event-help">Show this code at the entrance</p></> : <p>This ticket cannot be used for entry.</p>}
-          <p className="ticket-number">Ticket #{booking.order.id}-{ticket.shortCode || ticket.publicId}</p><p className="ticket-code-label">Entry code</p><div className="ticket-code"><code>{ticket.shortCode || ticket.publicId}</code><button type="button" aria-label={`Copy ticket ${index + 1} code`} title="Copy ticket code" onClick={() => { void navigator.clipboard.writeText(ticket.shortCode || ticket.publicId).then(() => setCopiedTicket(ticket.publicId)).catch(() => setError('Could not copy the code. Select the ticket number to copy it.')); }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></svg></button></div><span className="ticket-copy-feedback" role="status">{copiedTicket === ticket.publicId ? 'Copied' : ''}</span></div>
+          <p className="ticket-number">Ticket #{booking.order.id}-{ticket.shortCode || 'Unavailable'}</p><p className="ticket-code-label">Entry code</p><div className="ticket-code"><code>{ticket.shortCode || 'Unavailable'}</code><button type="button" aria-label={`Copy ticket ${index + 1} code`} title="Copy ticket code" disabled={!ticket.shortCode} onClick={() => { void navigator.clipboard.writeText(ticket.shortCode || 'Unavailable').then(() => setCopiedTicket(ticket.publicId)).catch(() => setError('Could not copy the code. Select the ticket number to copy it.')); }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></svg></button></div><span className="ticket-copy-feedback" role="status">{copiedTicket === ticket.publicId ? 'Copied' : ''}</span></div>
           <div className="ticket-pass-bottom"><p>{eventDate(booking.event.startsAt)}</p><p>{booking.event.location}</p><span>Booking reference #{booking.order.id} · {index + 1} of {booking.tickets.length}</span></div>
         <div className="ticket-individual-actions">
             <button className="event-primary" disabled={!confirmed || !!busyTicket} onClick={() => void saveTicket(index)}>{busyTicket === ticket.publicId ? 'Preparing…' : 'Download ticket'}</button>
@@ -210,7 +213,8 @@ export default function OrderTickets({ orderId }: { orderId: string }) {
           {inviteTicket === ticket.publicId ? <form className="ticket-invite-form" onSubmit={event => void inviteFriend(event, ticket.publicId)}><p>Your friend will receive an email invitation. Once they accept, they get a new entry code and this one stops working.</p><label htmlFor={`invite-email-${ticket.publicId}`}>Friend’s email address</label><input id={`invite-email-${ticket.publicId}`} type="email" autoComplete="email" required maxLength={254} value={inviteEmail} onChange={event => setInviteEmail(event.target.value)} /><button className="event-primary" type="submit" disabled={inviteBusy}>{inviteBusy ? 'Sending…' : 'Send invitation'}</button></form> : null}
         </article>)}</div><p className="ticket-action-feedback" role="status">{actionMessage}</p>{confirmed && !booking.tickets.length ? <div className="ticket-notice" role="status"><h2>Your booking is confirmed</h2><p>Your entry codes are not available yet.</p><button className="event-secondary" disabled={loading} onClick={() => void refresh()}>{loading ? 'Checking…' : 'Refresh tickets'}</button></div> : null}</div>
       </div>
-      <p className="ticket-support">Need a hand? <a href="/contact">Contact Tivorah</a> with your booking number.</p>
+      {confirmed ? <EventAppInvite /> : null}
+      <p className="ticket-support">Online tickets are removed seven days after the event ends. Keep your booking confirmation for your records. Need a hand? <a href="/contact">Contact Tivorah</a> with your booking number.</p>
     </> : null}
   </section>;
 }

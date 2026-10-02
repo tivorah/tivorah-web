@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 26 September 2026
+        <strong>Last updated:</strong> 2 October 2026
       </p>
 
       <p>
@@ -40,9 +40,10 @@ export default function Privacy() {
           password credential, verification and two-factor status, linked
           sign-in provider, session and device information, account role and
           acceptance of our legal terms. We collect date of birth and 18+
-          confirmation to enforce Tivorah&apos;s adults-only eligibility rule. If you use Sign in with Apple, Apple
-          provides an account identifier and the name or relay email you choose
-          to share; Tivorah does not receive your Apple password.
+          confirmation to enforce Tivorah&apos;s adults-only eligibility rule. If you use Sign in with Apple or Google, that
+          provider gives us an account identifier and the name, email address
+          (or Apple relay address) and profile photo you choose to share;
+          Tivorah does not receive your Apple or Google password.
         </li>
         <li>
           <strong>Profile information:</strong> profile photo, biography,
@@ -74,7 +75,18 @@ export default function Privacy() {
         <li>
           <strong>Marketplace and services:</strong> listings, images, prices,
           service areas, enquiries, offers, order records, seller information
-          and information needed to arrange pickup, delivery or a service.
+          and information needed to arrange pickup, delivery or a service. If
+          you share a listing to a Hub, members of that Hub can see it.
+        </li>
+        <li>
+          <strong>Shops and showcase media:</strong> your shop name, web
+          address, introduction, story, logo, cover image, photos, short videos,
+          an optional introduction video with its captions and transcript, and
+          optional details such as area, opening hours, service area, delivery
+          and booking policies. A published shop is public and can be viewed by
+          people who are not signed in, and a shop card can appear on your item,
+          service and event pages. Images are screened automatically and videos
+          are reviewed by Tivorah before they appear publicly.
         </li>
         <li>
           <strong>Events, tickets and payments:</strong> events, bookings,
@@ -88,6 +100,15 @@ export default function Privacy() {
           verification and payout-status information rather than full identity
           documents, full bank-account details or full payment-card numbers. If you follow an
           external ticket link, the external provider&apos;s privacy practices apply.
+          If you buy tickets without an account, we collect the name and email
+          address you give at checkout to issue and send the tickets.
+        </li>
+        <li>
+          <strong>Ticket transfers:</strong> when you send a ticket to someone,
+          we use the email address you enter to send them an invitation, and we
+          record who sent it, who accepted it and when. The name of the person
+          who accepts appears on their ticket. Only send a ticket to someone who
+          would expect to hear from you.
         </li>
         <li>
           <strong>Jobs and opportunities:</strong> job and employer profiles,
@@ -278,11 +299,15 @@ export default function Privacy() {
 
       <h2>Website cookies and mobile storage</h2>
       <p>
-        The public website does not currently use advertising cookies or
-        non-essential behavioural analytics cookies. The restricted admin
-        portal uses necessary authentication and security cookies. The mobile
-        app uses local and secure device storage for sessions, settings,
-        encryption keys and feature state. See our <Link href="/cookies">Cookie Notice</Link>.
+        The website does not use advertising cookies, cross-site tracking or
+        behavioural analytics. When you sign in on the website, we use strictly
+        necessary, secure, HTTP-only cookies to keep you signed in and protect
+        your session. The website also keeps a few small items in your browser
+        (such as an in-progress checkout or a dismissed message) to make
+        features work, and event pages may show an embedded Google map that is
+        provided by Google under its own privacy terms. The mobile app uses
+        local and secure device storage for sessions, settings, encryption keys
+        and feature state. See our <Link href="/cookies">Cookie Notice</Link>.
       </p>
 
       <h2>Notifications, news and marketing</h2>
@@ -323,8 +348,15 @@ export default function Privacy() {
         <li>
           infrastructure, database, media-storage, email, push, authentication,
           payment, customer-support, security and analytics providers, including
-          Netlify, Apple, Resend, Cloudflare R2, ImageKit during storage migration or rollback, Google Cloud Vision, Stripe, Expo and PostHog when the
-          relevant service is configured;
+          Netlify (website hosting), Railway (application hosting), Aiven
+          (database), Redis Cloud and Upstash (caching, rate limiting and live
+          updates), Cloudflare and Cloudflare R2 (security, delivery and media
+          storage), ImageKit (during storage migration or rollback), Google
+          Cloud Vision and Amazon Rekognition (automated image-safety
+          screening), Google (sign-in and embedded maps), Apple (sign-in), Resend
+          (email), Stripe (payments and payouts), Expo (push notifications),
+          PostHog (mobile product analytics) and Grafana (operational logs), when
+          the relevant service is configured;
         </li>
         <li>
           professional advisers, insurers, auditors or a successor involved in
@@ -355,6 +387,22 @@ export default function Privacy() {
         including under the Sharing Economy Reporting Regime. Legal and
         financial records may be retained after account deletion where needed
         for tax, refunds, disputes, fraud prevention or another lawful purpose.
+      </p>
+
+      <h2>Automated decisions</h2>
+      <p>
+        Tivorah uses computer programs to help make some decisions that can
+        affect you. Images you upload are screened automatically for nudity,
+        violence and other unsafe content, and an image that fails screening
+        may be blocked from public display. Automated
+        security and rate-limit checks may temporarily block sign-in attempts,
+        sign-ups, messages or checkout requests that look abusive or
+        fraudulent. Age and eligibility checks use the date of birth and
+        confirmation you provide. Payment providers such as Stripe also run
+        their own automated fraud and verification checks. You can ask for a
+        person at Tivorah to review an automated decision that affects you by
+        contacting{" "}
+        <a href="mailto:support@tivorah.com">support@tivorah.com</a>.
       </p>
 
       <h2>Overseas processing</h2>
@@ -408,8 +456,10 @@ export default function Privacy() {
         transaction integrity, legal obligations and dispute resolution.
       </p>
       <p>
-        You can request deletion in the mobile app under
-        <strong> Profile → Settings → Delete account</strong>. Deletion revokes
+        You can delete your account in the mobile app under
+        <strong> Profile → Settings → Delete account</strong>, or on the
+        website under <strong>Your account → Settings → Delete account</strong>.
+        Deletion revokes
         active sessions and removes or anonymises core account and profile
         identifiers. Some contributions or limited records may remain in
         anonymised or restricted form where needed to preserve conversations or
@@ -434,6 +484,29 @@ export default function Privacy() {
           Office of the Australian Information Commissioner
         </a>
         .
+      </p>
+
+      <h2>If you are outside Australia</h2>
+      <p>
+        Tivorah is designed for people in Australia and is operated from
+        Australia. If you use Tivorah from another country, the privacy laws of
+        that country may also apply. If the European Union or United Kingdom
+        General Data Protection Regulation applies to you, we rely on these
+        legal bases: performing our contract with you (to provide your account
+        and the features you use), our legitimate interests (to keep Tivorah
+        safe, prevent fraud and improve the service, balanced against your
+        rights), legal obligations (such as tax and record-keeping), and your
+        consent (for optional analytics, marketing and certain device
+        permissions, which you can withdraw at any time).
+      </p>
+      <p>
+        Depending on the law that applies, you may have rights to access,
+        correct, delete, restrict or object to the use of your information, to
+        receive a copy in a portable format, and to complain to your local data
+        protection authority. We do not sell personal information or share it
+        for cross-context behavioural advertising. To use these rights, email{" "}
+        <a href="mailto:privacy@tivorah.com">privacy@tivorah.com</a>. We will
+        respond within the time the applicable law requires.
       </p>
 
       <h2>Children</h2>

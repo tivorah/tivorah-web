@@ -1,12 +1,11 @@
-import { LoadingState } from "../../../components/ui/loading-state";
-import { Suspense } from "react";
 import { AuthForm } from "../../../components/auth/auth-form";
-export default function Page() {
+import { loadSocialProviders } from "../../../lib/auth/auth-page";
+
+export default async function Page() {
+  const providers = await loadSocialProviders();
   return (
     <div className="product-page page-shell">
-      <Suspense fallback={<LoadingState label="Loading account form…" variant="form" />}>
-        <AuthForm initialMode="signup" />
-      </Suspense>
+      <AuthForm initialMode="signup" initialProviders={providers} />
     </div>
   );
 }

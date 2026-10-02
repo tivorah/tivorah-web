@@ -1,13 +1,27 @@
 .content {
-  width: 100%;
+  width: min(calc(100% - var(--site-shell-gutters)), var(--site-shell-max));
+  max-width: var(--site-shell-max);
   min-width: 0;
   font-size: 16px;
   overflow-wrap: anywhere;
 }
 
 .content-wide {
-  max-width: 1080px;
+  width: min(calc(100% - var(--site-shell-gutters)), var(--site-shell-max));
+  max-width: var(--site-shell-max);
 }
+
+article.content > p,
+article.content > ul,
+article.content > ol,
+article.content > .legal-callout,
+article.content > .legal-alert {
+  max-width: 100%;
+}
+
+/* Legal and informational articles use a centered reading column. */
+article.content { width: min(calc(100% - var(--site-shell-gutters)), 1040px); max-width: 1040px; margin-inline: auto; padding-inline: 0; }
+@media (max-width: 600px) { article.content { width: calc(100% - 36px); } }
 
 .content-lead {
   max-width: 760px;
@@ -273,4 +287,8 @@ input:focus-visible {
   .legal-card {
     transition: none;
   }
+}
+
+@media (max-width: 600px) {
+  article.content h1 { font-size: 34px; line-height: 1.12; }
 }

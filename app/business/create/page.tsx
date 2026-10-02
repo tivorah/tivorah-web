@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { LoadingState } from "../../../components/ui/loading-state";
+import { AccountSurfaceLoading } from "../../../components/account/surface-loading";
 import { BusinessCreate } from "../../../components/business/create";
 export default function Page() {
   return (
     <div className="product-page page-shell">
-      <Suspense fallback={<LoadingState label="Loading business form…" variant="form" />}>
+      <Suspense fallback={<AccountSurfaceLoading embedded route="/business/create" />}>
         <BusinessCreate />
       </Suspense>
     </div>

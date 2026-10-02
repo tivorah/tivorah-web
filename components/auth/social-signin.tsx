@@ -3,25 +3,30 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { memberAuth } from "../../lib/auth/client";
 import { api } from "../../lib/api/client";
-import { LoadingState } from "../ui/loading-state";
+import type { SocialProviders } from "../../lib/auth/auth-page";
 type Provider = "google" | "apple";
-type Providers = Record<Provider, { enabled: boolean }>;
+type Providers = SocialProviders;
 export function SocialSignIn({
   returnTo,
   disabled,
   onBusy,
+  initialProviders = null,
 }: {
   returnTo: string;
   disabled: boolean;
+  // Loaded by the server page; the browser only checks when this is missing.
+  initialProviders?: Providers | null;
   onBusy: (busy: boolean) => void;
 }) {
-  const [providers, setProviders] = useState<Providers | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [providers, setProviders] = useState<Providers | null>(initialProviders);
+  const [loading, setLoading] = useState(!initialProviders);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState<Provider | null>(null);
   const [attempt, setAttempt] = useState(0);
   const lock = useRef(false);
+  const hadInitial = useRef(!!initialProviders);
   useEffect(() => {
+    if (attempt === 0 && hadInitial.current) return;
     const controller = new AbortController();
     setLoading(true);
     api<Providers>("/public/auth/providers", { signal: controller.signal })
@@ -78,7 +83,7 @@ export function SocialSignIn({
       <p className="auth-divider">or</p>
       <div className="auth-social">
         {loading ? (
-          <LoadingState label="Checking sign-in options…" variant="compact" />
+          <p className="auth-social-help" role="status">Checking other sign-in options…</p>
         ) : (
           (["google", "apple"] as const).map((provider) => (
             <button

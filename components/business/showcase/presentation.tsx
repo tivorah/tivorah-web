@@ -5,10 +5,13 @@ export function ShowcasePresentation({
   content,
   assets,
   preview = false,
+  sectionOnly = false,
 }: {
   content: Partial<ShowcaseContent>;
   assets: ShowcaseAsset[];
   preview?: boolean;
+  /** Inside the shop page: the shop hero already shows the cover, logo and name. */
+  sectionOnly?: boolean;
 }) {
   const asset = (id: number | null | undefined) =>
     assets.find(
@@ -24,7 +27,7 @@ export function ShowcasePresentation({
           Draft preview — only you can see this version.
         </p>
       ) : null}
-      {cover?.url ? (
+      {!sectionOnly && cover?.url ? (
         <div className="showcase-cover">
           <Image
             src={cover.url}
@@ -34,7 +37,7 @@ export function ShowcasePresentation({
           />
         </div>
       ) : null}
-      <header className="account-heading">
+      {!sectionOnly && <header className="account-heading">
         <div>
           {logo?.url ? (
             <Image
@@ -53,7 +56,7 @@ export function ShowcasePresentation({
         {!preview && <a className="product-primary" href="#offerings">
           Browse offerings
         </a>}
-      </header>
+      </header>}
       {content.story ? (
         <section>
           <h2>About the business</h2>

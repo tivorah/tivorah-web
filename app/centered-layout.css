@@ -427,3 +427,16 @@ footer {
 @media (max-width: 600px) {
   .nav { height: 64px; }
 }
+
+/* Shared outer shell matches the approved homepage on every public page. */
+body { --site-shell-max: 1536px; --site-shell-gutters: 80px; }
+@media (max-width: 600px) { body { --site-shell-gutters: 36px; } }
+
+.footer-bottom { display: flex; justify-content: space-between; gap: 28px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line, #dfd5ec); font-size: 13px; line-height: 1.7; color: #62546e; }
+.footer-business,.footer-hometown { display: grid; gap: 4px; }
+.footer-business strong { font-size: 12px; letter-spacing: .06em; color: #34283f; }
+.footer-hometown { align-content: start; text-align: right; }
+@media (max-width: 600px) {
+  .footer-bottom { flex-direction: column; gap: 20px; }
+  .footer-hometown { text-align: left; }
+}

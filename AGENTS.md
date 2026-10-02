@@ -241,9 +241,10 @@ For a normal web change:
 
 ## Public event tickets
 
-- `/events/[id]` renders published event details without login. New bookings require
-  a member session and use `/api/v1/web/account/events/:id/orders`. Existing guest
-  order, transfer and ticket links retain their private token access.
+- `/events/[id]` renders published event details without login. Members book through
+  `/api/v1/web/account/events/:id/orders`; guests can book with name, email and adult
+  confirmation through `/api/v1/public/events/:id/guest-orders`. Guest orders,
+  transfers and ticket links retain their private token access.
 - `/event-orders/[id]` is a private, non-indexed ticket/status page. Keep the access
   token in the URL fragment/session storage and send it only as a Bearer header.
 - Ticket entry codes require a server-confirmed order. Never infer payment success
@@ -293,7 +294,8 @@ For a normal web change:
   `hooks/` own request lifecycles; `stores/discovery-store.ts` holds only filters.
 - Bookable service pages use authenticated availability and canonical market
   booking APIs. Payment retries use the same booking and Stripe idempotency key.
-  Item enquiries and private conversations continue in mobile.
+  Item and service enquiries can continue in web account Messages; private
+  end-to-end encrypted conversations remain in mobile.
 - `components/motion/` contains lazy React Three Fiber artwork. It renders on
   demand, skips phones and reduced-motion users, and has a static fallback.
 - Preserve the existing homepage hero, content and visual design. The shared
@@ -303,8 +305,7 @@ For a normal web change:
 - `app/product.css` extends the existing light brand and 1280px public shell,
   including phone navigation. Match the approved homepage and event ticket look.
 - Product pages now use a user-requested 1536px maximum width with 40px desktop
-  gutters and 18px phone gutters; the product header aligns to that width. The homepage shares that desktop width; other marketing pages
-  keep their original shell. Discovery uses a compact heading, one search bar and
+  gutters and 18px phone gutters; the product header aligns to that width. The homepage shares that desktop width; marketing and legal pages share the same outer shell and header gutters. The shared footer appears on public information pages independently of sign-in state. Discovery routes (Events, Services, Shop and Hubs), account, business, auth and transaction screens omit it. Discovery uses a compact heading, one search bar and
   matching card/skeleton grids (four wide, three medium, two tablet, one phone).
 - Social sign-in uses Better Auth `signIn.social`, public availability booleans
   from `/public/auth/providers` and a same-origin `/auth/complete` callback. Keep
@@ -328,9 +329,10 @@ For a normal web change:
   URL history. Each mounted browser holds up to 40 public response pages for 30s
   in memory; no private records or persistent cache. Retry bypasses the cache.
   Changes abort obsolete requests and clear results from unrelated searches.
-- Sign-in and registration share the responsive `auth-layout`, existing brand
-  typography and existing community photography. Desktop has an introductory panel; phones focus on
-  the form. OAuth availability and server age checks remain authoritative.
+- Sign-in and registration share the centered `auth-layout` and existing brand
+  typography. The form is the only auth-page content on desktop and phones; the
+  route Suspense boundary has no shimmer. OAuth availability and server age checks
+  remain authoritative.
 - Homepage invites discovery directly; the former waitlist form is an optional
   news subscription using the existing `/public/waitlist` endpoint and unsubscribe
   flow, with source `website-newsletter`. Consent remains explicit and unchecked.
@@ -360,3 +362,18 @@ For a normal web change:
 - The filter dialog includes a suburb/postcode picker with visible suggestions.
   Location and radius are drafts until Apply; editing a selected suburb clears its
   coordinates, and distance stays disabled until a valid suggestion is selected.
+
+- AccountProvider persists the member profile across client navigation. Private resource
+  reads share a session-scoped, memory-only cache (30 seconds, 40 settled entries).
+  Successful API mutations invalidate it; session changes dispose it. Do not persist
+  private records or reuse data across sessions. Keep route/data loading fallbacks
+  identical, and retain usable content during background refresh.
+
+- Legal and informational `article.content` pages use a centered 1040px reading
+  column inside the shared 1536px site shell; their headers retain homepage width.
+- Manage event, service and item workspaces expose cover photo editing and
+  entity-specific reviewed videos. Service workspaces show customer bookings and
+  enquiries separately; items show enquiries. Videos require a transcript and
+  timed captions and appear on public detail pages only after approval.
+- Account Messages uses edge-to-edge phone layouts for the inbox and thread.
+  The composer supports photo attachments; received audio remains playable.

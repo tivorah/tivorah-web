@@ -1,11 +1,11 @@
 import "./product.css";
+import { SiteFooter } from "../components/site-footer";
+import { AccountProvider } from "../hooks/use-account";
 import "./discovery-filters.css";
 import { DiscoveryFeatures } from "../components/discovery/features";
 import { MobileProductNav } from "../components/discovery/mobile-nav";
 import type { Metadata } from "next";
 import { indexingDisabled, siteOrigin, socialImage } from "../lib/site";
-import Link from "next/link";
-import Image from "next/image";
 import "./styles.css";
 import "./brand.css";
 import "./product-tour.css";
@@ -13,7 +13,17 @@ import "./centered-layout.css";
 import "./journey-polish.css";
 import "./legal.css";
 import "./home-polish.css";
+import "react-day-picker/style.css";
+import "./date-field.css";
+import "./select-field.css";
+import "./showcase.css";
+import "./refine.css";
 import { SiteHeader } from "./site-header";
+import { loadInitialFeatures } from "../lib/api/server-features";
+import { Suspense } from "react";
+import { NavigationTracker } from "../components/ui/navigation-tracker";
+import { PressEffect } from "../components/ui/press-effect";
+import { NavProgress } from "../components/ui/nav-progress";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
@@ -37,79 +47,35 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const initialFeatures = await loadInitialFeatures();
   return (
-    <html lang="en">
+    // The pre-paint script may add data-signed-in before React hydrates.
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem("tivorah-signed-in")==="1")document.documentElement.setAttribute("data-signed-in","")}catch(e){}`,
+          }}
+        />
+      </head>
       <body>
-        <DiscoveryFeatures>
+        <AccountProvider><DiscoveryFeatures initialConfig={initialFeatures}>
           <a className="skip-link" href="#main-content">
             Skip to content
           </a>
+          <Suspense fallback={null}><NavigationTracker /></Suspense>
+          <PressEffect />
+          <Suspense fallback={null}><NavProgress /></Suspense>
           <SiteHeader />
           <MobileProductNav />
           <main id="main-content" tabIndex={-1}>
             {children}
           </main>
-          <footer>
-            <div className="page-shell footer-inner">
-              <div>
-                <Image
-                  className="footer-logo"
-                  src="/tivorah-logo.png"
-                  alt="Tivorah"
-                  width={708}
-                  height={226}
-                />
-                <p>Community, opportunity and belonging in one place.</p>
-              </div>
-              <div className="footer-links">
-                <nav aria-label="Tivorah">
-                  <strong>Company</strong>
-                  <Link href="/about">About</Link>
-                  <Link href="/why-tivorah">Why Tivorah</Link>
-                  <Link href="/#features">Features</Link>
-                  <Link href="/hub-organisers">Hub organisers</Link>
-                  <Link href="/service-providers">Service providers</Link>
-                  <Link href="/contact">Contact us</Link>
-                  <Link href="/#updates">Subscribe to updates</Link>
-                </nav>
-                <nav aria-label="Legal and trust">
-                  <strong>Legal &amp; trust</strong>
-                  <Link href="/legal">Legal centre</Link>
-                  <Link href="/privacy">Privacy</Link>
-                  <Link href="/terms">Terms</Link>
-                  <Link href="/community-guidelines">Community guidelines</Link>
-                  <Link href="/safety">Safety centre</Link>
-                  <Link href="/child-safety">Child safety</Link>
-                  <Link href="/hub-organisers">Organiser rules</Link>
-                  <Link href="/service-providers">Provider rules</Link>
-                </nav>
-                <nav aria-label="Account and access">
-                  <strong>Account &amp; access</strong>
-                  <Link href="/account-deletion">Delete account</Link>
-                  <Link href="/unsubscribe">Unsubscribe</Link>
-                  <Link href="/cookies">Cookies</Link>
-                  <Link href="/accessibility">Accessibility</Link>
-                  <Link href="/disclaimer">Important disclaimer</Link>
-                </nav>
-              </div>
-            </div>
-            <div className="page-shell footer-bottom">
-              <div className="footer-business">
-                <strong>TIVORAH PTY LTD</strong>
-                <span>ABN 94 702 094 844</span>
-                <span>ACN 702 094 844</span>
-                <span>Adelaide, South Australia, Australia</span>
-              </div>
-              <div className="footer-hometown">
-                <span>Proudly built in Adelaide, South Australia.</span>
-                <span>Made for belonging across Australia.</span>
-              </div>
-            </div>
-          </footer>
-        </DiscoveryFeatures>
+          <SiteFooter />
+        </DiscoveryFeatures></AccountProvider>
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import { LoadingState } from "../../components/ui/loading-state";
+import { AccountSurfaceLoading } from "../../components/account/surface-loading";
 export default function Loading() {
-  return <div className="product-page page-shell"><LoadingState label="Loading business…" variant="form" /></div>;
+  return <AccountSurfaceLoading embedded />;
 }

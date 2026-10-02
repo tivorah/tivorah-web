@@ -6,7 +6,7 @@ export const metadata = pageMetadata("Legal & Trust Centre", "Tivorah policies, 
 
 const sections = [
   ["Privacy Policy", "What Tivorah collects, why we use it and your privacy choices.", "/privacy"],
-  ["Terms of Use", "The agreement that applies when you create an account or use Tivorah.", "/terms"],
+  ["Terms of Use", "The agreement for using Tivorah, including shops, tickets and transfers.", "/terms"],
   ["Marketplace Partner Agreement", "Payment, payout, customer and tax responsibilities for organisers, service providers and sellers.", "/marketplace-partner-agreement"],
   ["Community Guidelines", "The conduct and content standards for every Tivorah surface.", "/community-guidelines"],
   ["Safety Centre", "How to report harm, block someone, appeal a decision and get urgent help.", "/safety"],
@@ -14,7 +14,7 @@ const sections = [
   ["Hub organiser rules", "Responsibilities for Hub creators, admins, moderators and event organisers.", "/hub-organisers"],
   ["Service provider rules", "Advertising, licensing, consumer-law and privacy responsibilities for service listings.", "/service-providers"],
   ["Account deletion", "Delete in the app or request deletion when you cannot sign in.", "/account-deletion"],
-  ["Cookies", "The limited browser storage used by the website and admin portal.", "/cookies"],
+  ["Cookies", "The sign-in cookies and small browser storage the website needs, and the services on our pages.", "/cookies"],
   ["Accessibility", "Our accessibility commitment and how to report a barrier.", "/accessibility"],
   ["Important disclaimer", "Important limits on community, migration, job, event and marketplace information.", "/disclaimer"],
   ["Contact & complaints", "Reach support, privacy and safety or make a complaint.", "/contact"],

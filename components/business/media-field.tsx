@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { api } from "../../lib/api/client";
 export function MediaField({
   context,
@@ -51,9 +52,9 @@ export function MediaField({
     }
   }
   return (
-    <div>
-      <label>
-        Photos
+    <div className="business-media-field">
+      <p className="business-media-label">Photos</p>
+      <label className="business-media-picker">
         <input
           type="file"
           accept="image/*"
@@ -64,17 +65,22 @@ export function MediaField({
             e.target.value = "";
           }}
         />
+        <span className="business-media-picker-icon" aria-hidden="true">＋</span>
+        <strong>{busy ? "Uploading photos…" : urls.length >= 5 ? "Five photos added" : "Add photos"}</strong>
+        <span>Choose up to five images</span>
       </label>
       <p className="event-help">
         Up to five photos, 10 MB each. Photos are checked before publishing.
       </p>
       {busy ? <p role="status">Uploading and checking photos…</p> : null}
       {error ? <p role="alert">{error}</p> : null}
-      {urls.map((url, index) => (
-        <div className="account-actions" key={url}>
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View photo {index + 1}
+      {urls.length ? <div className="business-media-preview">{urls.map((url, index) => (
+        <div className="business-media-photo" key={url}>
+          <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`View photo ${index + 1}`}>
+            <Image src={url} alt={`Uploaded photo ${index + 1}`} width={112} height={92} />
           </a>
+          <span>{index === 0 ? "Cover photo" : `Photo ${index + 1}`}</span>
+          {index > 0 ? <button type="button" className="product-secondary" disabled={busy} onClick={() => { const next = [url, ...urls.filter((_, i) => i !== index)]; setUrls(next); onChange(next); }}>Make cover</button> : null}
           <button
             type="button"
             className="product-secondary"
@@ -85,10 +91,10 @@ export function MediaField({
               onChange(next);
             }}
           >
-            Remove photo {index + 1}
+            Remove
           </button>
         </div>
-      ))}
+      ))}</div> : null}
     </div>
   );
 }

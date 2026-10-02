@@ -1,11 +1,17 @@
 "use client";
 import Link from "next/link";
-import { AuthIntroduction } from "./introduction";
-import { FormEvent, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { FormEvent, useMemo, useState, useSyncExternalStore } from "react";
+import type { ChangeEvent } from "react";
 import { memberAuth } from "../../lib/auth/client";
+import type { SocialProviders } from "../../lib/auth/auth-page";
 import { safeReturnPath } from "../../lib/auth/return-path";
 import { SocialSignIn } from "./social-signin";
+import { PasswordInput } from "../ui/password-input";
+import { DateField } from "../ui/date-field";
+import { birthDateProps } from "./birth-date";
+import { PasswordStrength, passwordMeetsRules } from "./password-strength";
+import { UsernameField } from "./username-field";
 export type AuthMode =
   "signin" | "signup" | "verify" | "recover" | "two-factor";
 const titles: Record<AuthMode, string> = {
@@ -15,12 +21,41 @@ const titles: Record<AuthMode, string> = {
   recover: "Let’s get you back in.",
   "two-factor": "One more security check.",
 };
-export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
-  const params = useSearchParams();
+// Read the query string without useSearchParams: that hook needs a Suspense
+// fallback, which put a loading placeholder in the page's HTML. The server
+// snapshot is empty and the real values apply right after hydration, keeping
+// /auth/* static so links can prefetch them.
+const noSubscription = () => () => {};
+function useQueryString() {
+  return useSyncExternalStore(noSubscription, () => window.location.search, () => "");
+}
+
+export function AuthForm({
+  initialMode,
+  initialProviders = null,
+}: {
+  initialMode: AuthMode;
+  initialProviders?: SocialProviders | null;
+}) {
+  const query = useQueryString();
+  const params = useMemo(() => new URLSearchParams(query), [query]);
   const returnTo = safeReturnPath(params.get("returnTo"));
+  const socialError = !!params.get("socialError");
+  const createDestination = new URL(returnTo, "https://tivorah.com");
+  const createType = createDestination.pathname === "/business/create" ? createDestination.searchParams.get("type") : null;
+  const createLabel = createType === "event" ? "an event" : createType === "service" ? "a service" : createType === "item" ? "a shop listing" : null;
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [busy, setBusy] = useState(false);
+  // Sign-up gating, matching mobile: an adult date of birth and accepted terms
+  // are required before Create account is enabled.
+  const [newPassword, setNewPassword] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [birthDate, setBirthDate] = useState("");
+  const birthRules = useMemo(() => birthDateProps(), []);
+  const underage = !!birthDate && birthRules.validate(birthDate) !== "";
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [codeSent, setCodeSent] = useState(false);
@@ -55,7 +90,8 @@ export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
         window.location.assign(returnTo);
       } else if (mode === "signup") {
         const result = await memberAuth.signUp.email({
-          name: String(form.get("name")).trim(),
+          // Same shape as the mobile app: the API splits this into first and last name.
+          name: `${firstName.trim()} ${lastName.trim()}`.trim(),
           username: String(form.get("username")).trim().toLowerCase(),
           email: email.trim().toLowerCase(),
           password,
@@ -147,17 +183,17 @@ export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
     mode === "two-factor" ||
     (mode === "recover" && codeSent);
   return (
-    <div className="auth-layout">
-      <AuthIntroduction />
+    <div className={`auth-layout${mode === "signup" ? " auth-layout-signup" : ""}`}>
+    <div className="auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
     <section className="product-form auth-form">
       <p className="product-eyebrow">{mode === "signup" ? "JOIN TIVORAH" : "YOUR TIVORAH"}</p>
-      <h1>{titles[mode]}</h1>
+      <h1>{createLabel && (mode === "signin" || mode === "signup") ? mode === "signin" ? `Sign in to create ${createLabel}.` : `Create your account to get started.` : titles[mode]}</h1>
       <p>
-        {mode === "signup" ? "Create your account to book events and services, and discover more nearby." : mode === "verify" ? "Enter the code sent to your email to confirm your account." : "Sign in to pick up where you left off."}
+        {createLabel && (mode === "signin" || mode === "signup") ? `You’ll return to your ${createType === "item" ? "listing" : createType} form after ${mode === "signin" ? "signing in" : "creating your account"}.` : mode === "signup" ? "Create your account to book events and services, and discover more nearby." : mode === "verify" ? "Enter the code sent to your email to confirm your account." : "Sign in to pick up where you left off."}
       </p>
       {mode === "signin" && (
         <>
-          {params.get("socialError") && (
+          {socialError && (
             <p className="product-notice" role="alert">
               Social sign-in was not completed. Try again, or sign in with your
               email. If you do not have an account yet, create one below.
@@ -168,27 +204,35 @@ export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
       <form onSubmit={submit} key={mode}>
         {mode === "signup" ? (
           <>
-            <label>
-              Full name
-              <input
-                name="name"
-                required
-                autoComplete="name"
-                minLength={2}
-                maxLength={100}
-              />
-            </label>
-            <label>
-              Username
-              <input
-                name="username"
-                required
-                autoComplete="username"
-                minLength={3}
-                maxLength={40}
-                pattern="[a-zA-Z0-9._-]+"
-              />
-            </label>
+            {/* Same fields as the mobile sign-up: first and last name, then a
+                username generated from them and checked live. */}
+            <div className="auth-name-row">
+              <label>
+                First name
+                <input
+                  name="firstName"
+                  required
+                  autoComplete="given-name"
+                  minLength={2}
+                  maxLength={50}
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                />
+              </label>
+              <label>
+                Last name
+                <input
+                  name="lastName"
+                  required
+                  autoComplete="family-name"
+                  minLength={2}
+                  maxLength={50}
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                />
+              </label>
+            </div>
+            <UsernameField firstName={firstName.trim()} lastName={lastName.trim()} disabled={busy} />
           </>
         ) : null}
         {mode !== "two-factor" ? (
@@ -235,28 +279,38 @@ export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
           </label>
         ) : null}
         {needsPassword ? (
-          <label>
-            {mode === "recover" ? "New password" : "Password"}
-            <input
+          <div className="auth-password-field">
+            <label htmlFor="auth-password">{mode === "recover" ? "New password" : "Password"}</label>
+            <PasswordInput
+              id="auth-password"
+              fieldLabel={mode === "recover" ? "New password" : "Password"}
               name="password"
-              type="password"
               required
               minLength={mode === "signin" ? 1 : 10}
               maxLength={100}
               autoComplete={
                 mode === "signin" ? "current-password" : "new-password"
               }
+              {...(mode === "signin" ? {} : {
+                value: newPassword,
+                "aria-describedby": "auth-password-strength",
+                onChange: (event: ChangeEvent<HTMLInputElement>) => {
+                  setNewPassword(event.target.value);
+                  event.target.setCustomValidity(passwordMeetsRules(event.target.value) ? "" : "Your password needs everything listed below.");
+                },
+              })}
             />
-          </label>
+            {mode !== "signin" && <PasswordStrength id="auth-password-strength" password={newPassword} />}
+          </div>
         ) : null}
         {mode === "signup" ? (
           <>
             <label>
               Date of birth
-              <input name="birthDate" type="date" required />
+              <DateField name="birthDate" required {...birthRules} onChange={(value) => { setBirthDate(value); if (value && birthRules.validate(value)) setTermsAccepted(false); }} />
             </label>
-            <label className="product-checkbox">
-              <input name="terms" type="checkbox" required />
+            <label className={`product-checkbox${underage ? " is-disabled" : ""}`}>
+              <input name="terms" type="checkbox" required checked={termsAccepted && !underage} disabled={underage || busy} onChange={(event) => setTermsAccepted(event.target.checked)} />
               <span>
                 I am at least 18 and agree to the{" "}
                 <Link href="/terms" target="_blank">
@@ -272,12 +326,13 @@ export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
           </>
         ) : null}
         {error ? (
-          <p className="product-error" role="alert">
-            {error}
-          </p>
+          <div className="product-error" role="alert">
+            <p>{error}</p>
+            {mode === "signin" && /verif/i.test(error) ? <Link href={`/auth/verify?returnTo=${encodeURIComponent(returnTo)}`}>Verify your email</Link> : null}
+          </div>
         ) : null}
         {notice ? <p role="status">{notice}</p> : null}
-        <button type="submit" className="product-primary" disabled={busy}>
+        <button type="submit" className="product-primary" disabled={busy || (mode === "signup" && (!termsAccepted || underage))}>
           {busy
             ? "Please wait…"
             : mode === "signup"
@@ -289,7 +344,7 @@ export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
                   : "Continue"}
         </button>
       </form>
-      {mode === "signin" && <SocialSignIn returnTo={returnTo} disabled={busy} onBusy={setBusy} />}
+      {mode === "signin" && <SocialSignIn returnTo={returnTo} disabled={busy} onBusy={setBusy} initialProviders={initialProviders} />}
       <div className="product-form-links">
         <Link
           href={`/auth/${mode === "signin" ? "signup" : "signin"}?returnTo=${encodeURIComponent(returnTo)}`}
@@ -299,13 +354,9 @@ export function AuthForm({ initialMode }: { initialMode: AuthMode }) {
         <Link href={`/auth/recover?returnTo=${encodeURIComponent(returnTo)}`}>
           Forgot password?
         </Link>
-        {mode === "signin" ? (
-          <Link href={`/auth/verify?returnTo=${encodeURIComponent(returnTo)}`}>
-            Verify email
-          </Link>
-        ) : null}
       </div>
     </section>
+    <Link className="auth-home-link" href="/">Return to Tivorah home</Link>
     </div>
   );
 }

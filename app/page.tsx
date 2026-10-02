@@ -27,7 +27,8 @@ const siteIdentity = {
       "@type": "Organization", "@id": "https://tivorah.com/#organization",
       name: "Tivorah", legalName: "TIVORAH PTY LTD", url: "https://tivorah.com/",
       logo: "https://tivorah.com/tivorah-logo.png", description: appDescription,
-      address: { "@type": "PostalAddress", addressLocality: "Adelaide", addressCountry: "AU" },
+      address: { "@type": "PostalAddress", addressLocality: "Adelaide", addressRegion: "SA", addressCountry: "AU" },
+      areaServed: { "@type": "Country", name: "Australia" },
     },
     {
       "@type": "WebSite", "@id": "https://tivorah.com/#website",
@@ -93,7 +94,7 @@ export default async function Home() {
             <h1 id="home-title">A new place.<br />Your kind of<br /><em>people.</em></h1>
             <p className="opening-intro">Meet people through Hubs, find or offer services, create or book events, and buy or sell new and used local items on Tivorah.</p>
             <div className="opening-actions">
-              <Link className="button opening-primary" href="/events">Explore Tivorah <span aria-hidden="true">→</span></Link>
+              <Link className="button opening-primary press-fx" href="/events">Explore Tivorah <span aria-hidden="true">→</span></Link>
               <a className="opening-tour-link" href="#preview">Take a look inside <span aria-hidden="true">↓</span></a>
             </div>
             <p className="opening-note">Built for life in Australia · For adults 18+</p>

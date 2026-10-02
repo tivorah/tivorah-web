@@ -9,7 +9,7 @@ export default function AccountDeletion() {
       <span className="eyebrow">Account controls</span>
       <h1>Delete your Tivorah account</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 15 September 2026
+        <strong>Last updated:</strong> 2 October 2026
       </p>
 
       <h2>Delete in the mobile app</h2>
@@ -32,7 +32,19 @@ export default function AccountDeletion() {
         anonymised.
       </p>
 
-      <h2>If you cannot access the app</h2>
+      <h2>Delete on the website</h2>
+      <ol>
+        <li>Sign in at tivorah.com.</li>
+        <li>Open <strong>Your account</strong>, then <strong>Settings</strong>.</li>
+        <li>Under <strong>Delete account</strong>, confirm your password and select <strong>Permanently delete my account</strong>.</li>
+      </ol>
+      <p>
+        Deleting your account also removes your shop page. If you sell or organise events, finish
+        or cancel open orders and bookings first; records we must keep for refunds, tax and
+        disputes are kept as explained below.
+      </p>
+
+      <h2>If you cannot access the app or website</h2>
       <p>
         Email{" "}
         <a href="mailto:privacy@tivorah.com?subject=Tivorah%20account%20deletion%20request">

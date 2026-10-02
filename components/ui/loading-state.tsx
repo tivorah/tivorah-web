@@ -1,16 +1,18 @@
 type LoadingStateProps = {
   label?: string;
-  variant?: "cards" | "form" | "list" | "compact";
+  variant?: "cards" | "panels" | "form" | "list" | "compact";
   refreshing?: boolean;
+  count?: number;
 };
 
 export function LoadingState({
   label = "Loading…",
   variant = "list",
   refreshing = false,
+  count: requestedCount,
 }: LoadingStateProps) {
   if (refreshing) return <p role="status">Updating…</p>;
-  const count = variant === "cards" ? 8 : variant === "compact" ? 1 : 3;
+  const count = requestedCount ?? (variant === "cards" ? 8 : variant === "compact" ? 1 : 3);
   return (
     <div
       className={`product-loading product-loading-${variant}`}
