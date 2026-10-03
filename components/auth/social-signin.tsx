@@ -22,11 +22,10 @@ export function SocialSignIn({
   const [loading, setLoading] = useState(!initialProviders);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState<Provider | null>(null);
-  const [attempt, setAttempt] = useState(0);
   const lock = useRef(false);
   const hadInitial = useRef(!!initialProviders);
   useEffect(() => {
-    if (attempt === 0 && hadInitial.current) return;
+    if (hadInitial.current) return;
     const controller = new AbortController();
     setLoading(true);
     api<Providers>("/public/auth/providers", { signal: controller.signal })
@@ -37,16 +36,14 @@ export function SocialSignIn({
         }
       })
       .catch(() => {
-        if (!controller.signal.aborted)
-          setError(
-            "Could not check social sign-in. Try again or use your email above.",
-          );
+        // Email sign-in still works; social options just stay hidden.
+        if (!controller.signal.aborted) setProviders(null);
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [attempt]);
+  }, []);
   async function signIn(provider: Provider) {
     if (disabled || lock.current || !providers?.[provider].enabled) return;
     lock.current = true;
@@ -78,56 +75,46 @@ export function SocialSignIn({
     }
   }
 
+  // Only providers the API has credentials for are offered. With none configured (or while the
+  // check is still running or failed) nothing is shown, so email sign-in stands on its own.
+  const available = (["google", "apple"] as const).filter((provider) => providers?.[provider].enabled);
+  if (loading || !available.length) return null;
+
   return (
     <>
       <p className="auth-divider">or</p>
       <div className="auth-social">
-        {loading ? (
-          <p className="auth-social-help" role="status">Checking other sign-in options…</p>
-        ) : (
-          (["google", "apple"] as const).map((provider) => (
-            <button
-              type="button"
-              data-provider={provider}
-              aria-label={`Continue with ${provider === "google" ? "Google" : "Apple"}`}
-              title={!providers?.[provider].enabled ? "Not available yet" : undefined}
-              key={provider}
-              disabled={disabled || !!busy || !providers?.[provider].enabled}
-              onClick={() => void signIn(provider)}
-            >
-              <span aria-hidden="true">
-                {provider === "google" ? (
-                  <Image src="/google-signin.png" alt="" width={20} height={20} />
-                ) : (
-                  <svg
-                    width="20"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M17 12.4c0-2.1 1.7-3.2 1.8-3.3-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-2.9-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.8 1.2 9 .8 1.1 1.6 2.2 2.8 2.1 1.1 0 1.5-.7 2.9-.7 1.4 0 1.8.7 3 .7 1.2 0 2-1 2.7-2.1.9-1.2 1.3-2.4 1.3-2.5-.1 0-2.5-.9-2.5-3.7ZM14.8 5.9c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.2 1.9-1 3 1 .1 2.1-.5 2.7-1.4Z" />
-                  </svg>
-                )}
-              </span>
-              {busy === provider
-                ? "Connecting…"
-                : provider === "google" ? "Google" : "Apple"}
-            </button>
-          ))
-        )}
-        {!loading && providers && (!providers.google.enabled || !providers.apple.enabled) && (
-          <p className="auth-social-help">{!providers.google.enabled && !providers.apple.enabled ? "Google and Apple sign-in are not available yet." : `${!providers.google.enabled ? "Google" : "Apple"} sign-in is not available yet.`}</p>
-        )}
+        {available.map((provider) => (
+          <button
+            type="button"
+            data-provider={provider}
+            aria-label={`Continue with ${provider === "google" ? "Google" : "Apple"}`}
+            key={provider}
+            disabled={disabled || !!busy}
+            onClick={() => void signIn(provider)}
+          >
+            <span aria-hidden="true">
+              {provider === "google" ? (
+                <Image src="/google-signin.png" alt="" width={20} height={20} />
+              ) : (
+                <svg
+                  width="20"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M17 12.4c0-2.1 1.7-3.2 1.8-3.3-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-2.9-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.8 1.2 9 .8 1.1 1.6 2.2 2.8 2.1 1.1 0 1.5-.7 2.9-.7 1.4 0 1.8.7 3 .7 1.2 0 2-1 2.7-2.1.9-1.2 1.3-2.4 1.3-2.5-.1 0-2.5-.9-2.5-3.7ZM14.8 5.9c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.2 1.9-1 3 1 .1 2.1-.5 2.7-1.4Z" />
+                </svg>
+              )}
+            </span>
+            {busy === provider
+              ? "Connecting…"
+              : provider === "google" ? "Google" : "Apple"}
+          </button>
+        ))}
         {error && (
           <p role="alert" className="auth-social-help">
-            {error}{" "}
-            <button
-              type="button"
-              onClick={() => setAttempt((value) => value + 1)}
-              disabled={loading || disabled}
-            >
-              Retry sign-in options
-            </button>
+            {error}
           </p>
         )}
       </div>

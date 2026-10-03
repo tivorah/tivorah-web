@@ -22,12 +22,19 @@ for (const provider of ["Google", "Apple"]) {
     await expect(page.getByRole("button", { name: `Continue with ${provider}` })).toBeEnabled();
   });
 }
-test("missing provider configuration disables OAuth without disabling email sign-in", async ({ page }) => {
+test("missing provider configuration hides OAuth without affecting email sign-in", async ({ page }) => {
   await page.route("**/api/v1/public/auth/providers", route => route.fulfill({ json: { data: { google: { enabled: false }, apple: { enabled: false } } } }));
   await page.goto("/auth/signin");
-  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Continue with Apple" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Continue with Apple" })).toHaveCount(0);
+  await expect(page.locator(".auth-divider")).toHaveCount(0);
+});
+test("only configured providers are offered", async ({ page }) => {
+  await page.route("**/api/v1/public/auth/providers", route => route.fulfill({ json: { data: { google: { enabled: true }, apple: { enabled: false } } } }));
+  await page.goto("/auth/signin");
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Continue with Apple" })).toHaveCount(0);
 });
 test("social callback requires server-confirmed age eligibility", async ({ page }) => {
   await page.route("**/api/auth/get-session**", route => route.fulfill({ json: { session: { id: "test", userId: "1", token: "test-only", expiresAt: "2030-01-01" }, user: { id: "1", adultConfirmed: false } } }));
