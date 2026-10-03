@@ -1,5 +1,7 @@
 export type DiscoveryKind = "events" | "items" | "services" | "hubs";
 export type DiscoveryItem = {
+  /** Kilometres from the searched location; null without one (or for online services out of range). */
+  distanceKm?: number | null;
   id: number;
   title: string;
   description: string | null;

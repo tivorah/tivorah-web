@@ -7,6 +7,7 @@ import {
   money,
 } from "../../lib/api/discovery";
 import { hubInterestTiers } from "../../lib/category-filter";
+import { distanceLabel } from "../../lib/distance";
 export function DiscoveryCard({
   item,
   kind,
@@ -53,8 +54,12 @@ export function DiscoveryCard({
           </p>;
         })() : null}
         <p>
-          {[item.locality, item.state].filter(Boolean).join(", ") ||
-            (item.locationType === "online" ? "Online" : kind === "hubs" ? "Location not specified" : "Explore on Tivorah")}
+          {/* Distance first, matching mobile, so a long place name never hides it. */}
+          {[
+            distanceLabel(item.distanceKm),
+            [item.locality, item.state].filter(Boolean).join(", ") ||
+              (item.locationType === "online" ? "Online" : kind === "hubs" ? "Location not specified" : "Explore on Tivorah"),
+          ].filter(Boolean).join(" · ")}
         </p>
         {kind !== "hubs" && (item.businessName || item.ownerName || item.sellerUsername || item.ownerUsername) ? (
           <p className="discover-seller">{kind === "events" ? "Organised by " : "By "}{item.businessName || item.ownerName || `@${item.sellerUsername || item.ownerUsername}`}</p>
