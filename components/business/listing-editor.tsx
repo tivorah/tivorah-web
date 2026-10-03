@@ -13,6 +13,7 @@ import { ServiceSettings, ServiceSettingsValue, serviceTimezoneForState } from "
 import { SelectField } from "../ui/select-field";
 import { HubShareField } from "./hub-share-field";
 import { conditionOptions, priceTypeOptions } from "./select-options";
+import { money } from '../../lib/api/discovery';
 type Listing = ServiceSettingsValue & {
   id: number;
   sellerId: number;
@@ -23,6 +24,7 @@ type Listing = ServiceSettingsValue & {
   category: string;
   images: string[];
   priceCents: number;
+  currency: string;
   priceType: string;
   condition: string;
   /** Hubs this listing is shared with (owner view only). */
@@ -74,6 +76,7 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
         images,
         communityIds: hubIds,
         priceCents: Math.round(Number(f.get("price")) * 100),
+        currency: String(f.get("currency") || item.currency || "AUD"),
         priceType: f.get("priceType"),
         ...(locality || {}),
         ...(service
@@ -93,7 +96,7 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
         <div>
           <p className="product-eyebrow">{service ? "SERVICE WORKSPACE" : "ITEM WORKSPACE"} <span className="event-manage-status">{status === "active" ? (service ? "Live" : "On sale") : status}</span></p>
           <h1>{item.title}</h1>
-          <p className="event-manage-meta">{item.priceCents ? `$${(item.priceCents / 100).toFixed(2)}${item.priceType === "hourly" ? " / hour" : item.priceType === "from" ? " (from)" : ""}` : item.priceType === "quote" ? "Price on quote" : "Free"} · {[item.suburb, item.state].filter(Boolean).join(", ") || "Online"}</p>
+          <p className="event-manage-meta">{item.priceCents ? `${money(item.priceCents, item.currency)}${item.priceType === "hourly" ? " / hour" : item.priceType === "from" ? " (from)" : ""}` : item.priceType === "quote" ? "Price on quote" : "Free"} · {[item.suburb, item.state].filter(Boolean).join(", ") || "Online"}</p>
         </div>
         <div className="event-manage-actions">
           <Link className="product-secondary press-fx" href={publicPath}>View public page <span aria-hidden="true">↗</span></Link>
@@ -140,7 +143,8 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
                 <section className="showcase-step">
                   <h2>Price</h2>
                   <div className="showcase-row">
-                    <label>Price (AUD)<input name="price" type="number" min={0} max={1000000} step="0.01" defaultValue={item.priceCents / 100} required /></label>
+                    <label>Price<input name="price" type="number" min={0} max={1000000} step="0.01" defaultValue={item.priceCents / 100} required /></label>
+                    <label>Currency<SelectField name="currency" label="Currency" defaultValue={item.currency || "AUD"} options={["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map(value => ({ value, label: value }))} /></label>
                     <label>Price basis<SelectField name="priceType" label="Price basis" defaultValue={item.priceType || "fixed"} options={service ? priceTypeOptions : priceTypeOptions.slice(0, 1)} /></label>
                   </div>
                 </section>

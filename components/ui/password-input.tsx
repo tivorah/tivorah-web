@@ -4,10 +4,15 @@ import { useState, type InputHTMLAttributes } from "react";
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
   fieldLabel: string;
+  /** Controls visibility from outside, e.g. to reveal a suggested password. */
+  visible?: boolean;
+  onVisibleChange?: (visible: boolean) => void;
 };
 
-export function PasswordInput({ fieldLabel, ...props }: Props) {
-  const [visible, setVisible] = useState(false);
+export function PasswordInput({ fieldLabel, visible: visibleProp, onVisibleChange, ...props }: Props) {
+  const [visibleState, setVisibleState] = useState(false);
+  const visible = visibleProp ?? visibleState;
+  const setVisible = (next: boolean) => { setVisibleState(next); onVisibleChange?.(next); };
   return <span className="password-input">
     <input {...props} type={visible ? "text" : "password"} />
     <button
@@ -15,7 +20,7 @@ export function PasswordInput({ fieldLabel, ...props }: Props) {
       className="password-input-toggle"
       aria-label={`${visible ? "Hide" : "Show"} ${fieldLabel.toLowerCase()}`}
       aria-pressed={visible}
-      onClick={() => setVisible((value) => !value)}
+      onClick={() => setVisible(!visible)}
     >
       <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />

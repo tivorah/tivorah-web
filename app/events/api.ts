@@ -11,7 +11,7 @@ export async function eventApi<T>(path: string, init?: RequestInit): Promise<T> 
   if (!response.ok || !payload.status) throw new EventApiError(payload.message || 'This request could not be completed. Please try again.', response.status, payload.errorCode);
   return payload.data as T;
 }
-export const ticketMoney = (cents: number, currency = 'AUD') => new Intl.NumberFormat('en-AU', { style: 'currency', currency }).format(cents / 100);
+export const ticketMoney = (cents: number, currency = 'AUD') => new Intl.NumberFormat('en-AU', { style: 'currency', currency, currencyDisplay: 'code' }).format(cents / 100);
 export function eventDate(value: string | null) {
   return value ? new Date(value).toLocaleString('en-AU', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Australia/Adelaide' }) + ' (Adelaide time)' : 'Date to be confirmed';
 }

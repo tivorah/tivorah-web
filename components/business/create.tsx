@@ -235,7 +235,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           </> : <section id="create-price" className="showcase-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">4</span>{kind === "service" ? "Price & bookings" : "Price"}</h2>
             <div className="showcase-row">
-              <label>Price (AUD)<input name="price" type="number" min={0} max={1000000} step="0.01" required placeholder="0.00" /></label>
+              <label>Price<input name="price" type="number" min={0} max={1000000} step="0.01" required placeholder="0.00" /></label>
+              <label>Currency<SelectField name="currency" label="Currency" defaultValue="AUD" options={["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map(value => ({ value, label: value }))} /></label>
               {kind === "service" ? <label>Pricing<SelectField name="priceType" label="Pricing" defaultValue="fixed" options={priceTypeOptions} /></label> : null}
             </div>
             {kind === "service" ? <>

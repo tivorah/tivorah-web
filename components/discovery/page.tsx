@@ -14,8 +14,8 @@ export function DiscoveryPageView({ kind }: { kind: DiscoveryKind }) {
           </p>
           <h1>{section.title}</h1>
           <p>{section.description}</p>
-          {kind !== "hubs" ? <CreatePromo kind={kind} /> : null}
         </div>
+        {kind !== "hubs" ? <CreatePromo kind={kind} /> : null}
       </section>
       <Suspense
         fallback={<DiscoveryLoading label="Loading search…" />}

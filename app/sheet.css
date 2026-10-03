@@ -1,0 +1,13 @@
+/* One sheet language on phones (mobile counterpart: tivorah-mobile/constants/sheet.ts):
+   22px top corners, grab handle, slide up, swipe down to close (hooks/use-sheet-gestures.ts). */
+.sheet-grabber { display: none; }
+@media (max-width: 760px) {
+  .sheet-grabber { display: flex; justify-content: center; padding: 8px 0 2px; touch-action: none; cursor: grab; }
+  .sheet-grabber span { width: 36px; height: 5px; border-radius: 3px; background: #cfc8d2; }
+  .tv-sheet, .tv-sheet.is-wide, .filter-dialog { border-radius: 22px 22px 0 0 !important; padding-bottom: env(safe-area-inset-bottom); }
+  .tv-sheet .tv-sheet-head { padding-top: 8px; }
+  .filter-dialog > header { padding-top: 6px; }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .tv-sheet[open], .filter-dialog[open] { animation: none; }
+}

@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 2 October 2026
+        <strong>Last updated:</strong> 3 October 2026
       </p>
 
       <p>
@@ -228,6 +228,18 @@ export default function Privacy() {
         to read that content.
       </p>
       <p>
+        Photos, videos, voice messages and files sent in an end-to-end encrypted
+        chat are encrypted on the sender&apos;s device, each with its own key,
+        before they are uploaded. Tivorah stores only the encrypted file and
+        cannot open it, see what kind of file it is or what it is called. The
+        key travels inside the encrypted message, so only the devices in that
+        chat can download, check and decrypt the file. Because Tivorah cannot
+        see these files, it cannot automatically screen them; reporting works
+        as described below. A decrypted copy is kept in the app&apos;s private
+        storage on your device so it opens quickly, and is removed if you
+        uninstall the app or the system clears that storage.
+      </p>
+      <p>
         Banter, posts, threads, Hub messages, announcements, group conversations
         and conversations connected to a listing, marketplace item, service,
         event, ticket, job or other transaction are not end-to-end encrypted.
@@ -269,6 +281,14 @@ export default function Privacy() {
         ticket QR codes at check-in. The camera image is processed on the
         organiser&apos;s device to read the code; only the ticket code is sent to
         Tivorah, and the camera image is not stored or uploaded.
+        The in-app QR scanner works the same way: the code is read on your
+        device, only Tivorah links are opened, and the camera image is not
+        stored or uploaded. When you choose &ldquo;Get directions&rdquo; for an
+        event, the website may ask your browser for your location to start the
+        route; if you allow it, the location is placed in a Google Maps link
+        that opens in a new tab and is not sent to Tivorah. In the app,
+        directions open in Google Maps, which may use your device location under
+        Google&apos;s own terms.
         Permissions are optional and can be withdrawn in iOS or Android
         settings, although the related feature may then be unavailable. Tivorah
         does not access your address book merely because you connect with
@@ -319,6 +339,18 @@ export default function Privacy() {
         Tivorah, we may show an in-app notice that you need to acknowledge when
         we change the availability of a payment feature or a Tivorah platform
         fee that affects you. We record when you acknowledge it.
+      </p>
+      <p>
+        Push notifications for end-to-end encrypted chats never include the
+        message: they only say who sent you a message, because Tivorah cannot
+        read it. Notifications for enquiries about a listing, service or event,
+        which are not end-to-end encrypted, can include the sender&apos;s name,
+        what the enquiry is about and the start of the message. Depending on
+        your device settings, notification text may appear on your lock screen.
+        While you are using the app, new messages may appear as an in-app
+        banner; for encrypted chats the text in that banner is decrypted on your
+        device. Push notifications are delivered through Expo and Apple or
+        Google notification services.
       </p>
       <p>
         You can only join the website waitlist after ticking the consent box.

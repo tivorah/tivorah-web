@@ -2,6 +2,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FilterSelect } from "../ui/filter-select";
+import { selectedCategories, toggleCategory } from "../../lib/category-filter";
 import { FilterDialog } from "../ui/filter-dialog";
 import { LocationSearch, type Locality } from "./location-search";
 import categories from "../../lib/discovery-categories.json";
@@ -84,6 +85,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
       condition: String(data.get("condition") || ""),
       minPrice: min ? String(Math.round(Number(min) * 100)) : "",
       maxPrice: max ? String(Math.round(Number(max) * 100)) : "",
+      currency: String(data.get("currency") || "AUD"),
       postcode,
       radiusKm:
         draftLocation?.latitude != null && draftLocation.longitude != null
@@ -137,10 +139,9 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
     { value: "weekend", label: "Weekend" },
     { value: "month", label: "This month" },
   ];
+  const chosenCategories = selectedCategories(params.get("category"));
   const active = [
-    params.get("category")
-      ? { label: params.get("category")!, clear: { category: "" } }
-      : null,
+    ...chosenCategories.map((category) => ({ label: category, clear: { category: toggleCategory(params.get("category"), category) } })),
     params.get("when")
       ? {
           label:
@@ -158,12 +159,14 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
           clear: { condition: "" },
         }
       : null,
-    params.has("minPrice") || params.has("maxPrice")
+    params.has("minPrice") || params.has("maxPrice") || (params.get("currency") && params.get("currency") !== "AUD")
       ? {
-          label: params.has("maxPrice")
-            ? `$${Number(params.get("minPrice") || 0) / 100}–$${Number(params.get("maxPrice")) / 100}`
-            : `From $${Number(params.get("minPrice")) / 100}`,
-          clear: { minPrice: "", maxPrice: "" },
+          label: !params.has("minPrice") && !params.has("maxPrice")
+            ? `${params.get("currency")} prices`
+            : params.has("maxPrice")
+            ? `${params.get("currency") || "AUD"} ${Number(params.get("minPrice") || 0) / 100}–${Number(params.get("maxPrice")) / 100}`
+            : `From ${params.get("currency") || "AUD"} ${Number(params.get("minPrice")) / 100}`,
+          clear: { minPrice: "", maxPrice: "", currency: "" },
         }
       : null,
     params.get("radiusKm")
@@ -213,6 +216,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
           disabled={loading || (kind === "hubs" && !interests.length)}
           onChange={(value) => update({ category: value })}
           searchable
+          multiple
         />
         {kind === "events" && (
           <FilterSelect
@@ -376,14 +380,14 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
             {(kind === "items" || kind === "services") && (
               <fieldset>
                 <legend>Price range</legend>
-                <p>Set your budget in Australian dollars.</p>
+                <FilterSelect label="Currency" name="currency" defaultValue={params.get("currency") || "AUD"} options={["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map(value => ({ value, label: value }))} />
+                <p>Prices are compared in the selected currency.</p>
                 <div className="filter-price-row">
                   <label>
-                    Minimum price (AUD)
+                    Minimum price
                     <span className="filter-price-input">
-                      <span aria-hidden="true">$</span>
                       <input
-                        aria-label="Minimum price (AUD)"
+                        aria-label="Minimum price"
                         name="minPrice"
                         type="number"
                         min="0"
@@ -399,11 +403,10 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
                     </span>
                   </label>
                   <label>
-                    Maximum price (AUD)
+                    Maximum price
                     <span className="filter-price-input">
-                      <span aria-hidden="true">$</span>
                       <input
-                        aria-label="Maximum price (AUD)"
+                        aria-label="Maximum price"
                         name="maxPrice"
                         type="number"
                         min="0"

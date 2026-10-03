@@ -16,6 +16,7 @@ export type PackageDraft = {
   description: string;
   /** Price per ticket, or per person for a group package. */
   price: string;
+  currency?: string;
   quantity: string;
   maxPerBuyer: string;
   salesStartAt: string;
@@ -46,7 +47,7 @@ export const PACKAGE_PRESETS: { name: string; description?: string; kind?: "grou
 let counter = 0;
 export const newPackage = (preset: Partial<PackageDraft> = {}): PackageDraft => ({
   key: `pkg-${Date.now()}-${counter++}`,
-  name: "", description: "", price: "0", quantity: "50", maxPerBuyer: "4", salesStartAt: "", salesEndAt: "",
+  name: "", description: "", price: "0", currency: "AUD", quantity: "50", maxPerBuyer: "4", salesStartAt: "", salesEndAt: "",
   kind: "standard", groupSize: "6", regularPrice: "", hidden: false, accessCode: "", releaseAfter: "",
   ...preset,
 });
@@ -55,20 +56,21 @@ export const presetPackage = (preset: (typeof PACKAGE_PRESETS)[number], price = 
   kind: preset.kind ?? "standard", hidden: !!preset.hidden, maxPerBuyer: preset.kind === "group" ? "2" : "4", quantity: preset.kind === "group" ? "10" : "50",
 });
 
-const dollars = (value: number) => `$${value.toFixed(2).replace(/\.00$/, "")}`;
+const dollars = (value: number, currency = "AUD") => new Intl.NumberFormat("en-AU", { style: "currency", currency, currencyDisplay: "code", maximumFractionDigits: 2 }).format(value);
 /** Group summary like "Group of 6 · $120 total ($20 each) · save 20%". */
-export function groupSummary(draft: Pick<PackageDraft, "kind" | "groupSize" | "price" | "regularPrice">) {
+export function groupSummary(draft: Pick<PackageDraft, "kind" | "groupSize" | "price" | "regularPrice" | "currency">) {
   if (draft.kind !== "group") return null;
   const size = Number(draft.groupSize) || 0;
   const each = Number(draft.price) || 0;
   const usual = Number(draft.regularPrice) || 0;
   const saving = usual > each && usual > 0 ? Math.round((1 - each / usual) * 100) : 0;
-  return `Group of ${size} · ${each ? `${dollars(each * size)} total (${dollars(each)} each)` : "Free"}${saving ? ` · save ${saving}%` : ""}`;
+  return `Group of ${size} · ${each ? `${dollars(each * size, draft.currency)} total (${dollars(each, draft.currency)} each)` : "Free"}${saving ? ` · save ${saving}%` : ""}`;
 }
 
 /** Turns the drafts into the API's `tickets` array, or throws a friendly message. */
 export function packagesPayload(drafts: PackageDraft[]) {
   if (!drafts.length) throw new Error("Add at least one ticket package.");
+  if (new Set(drafts.map(draft => draft.currency || "AUD")).size > 1) throw new Error("Use one currency for all ticket packages in this event.");
   const names = new Set<string>();
   return drafts.map((draft, index) => {
     const label = draft.name.trim() || `Package ${index + 1}`;
@@ -96,7 +98,7 @@ export function packagesPayload(drafts: PackageDraft[]) {
     if (draft.hidden && code && !/^[A-Za-z0-9-]{3,40}$/.test(code)) throw new Error(`The access code for ${label} must be 3–40 letters, numbers or dashes.`);
     const releaseIndex = draft.releaseAfter.startsWith("key:") ? drafts.findIndex((item) => `key:${item.key}` === draft.releaseAfter) : -1;
     return {
-      name, priceCents, quantity, maxTicketsPerBuyer,
+      name, priceCents, currency: draft.currency || "AUD", quantity, maxTicketsPerBuyer,
       kind: draft.kind, groupSize,
       regularPriceCents: group ? regular : null,
       description: draft.description.trim() || undefined,
@@ -128,7 +130,7 @@ export function PackageFields({ draft, onChange, index, onRemove, lockPrice = fa
       <span className="package-card-index">{index + 1}</span>
       <strong>{draft.name.trim() || "New package"}</strong>
       {draft.hidden ? <span className="package-tag">Code only</span> : null}
-      <span className={`package-card-price${each === 0 ? " is-free" : ""}`}>{each === 0 ? "Free" : group ? `${dollars(each)} each` : dollars(each)}</span>
+      <span className={`package-card-price${each === 0 ? " is-free" : ""}`}>{each === 0 ? "Free" : group ? `${dollars(each, draft.currency)} each` : dollars(each, draft.currency)}</span>
       {onRemove ? <button type="button" className="package-card-remove" onClick={onRemove} aria-label={`Remove ${draft.name.trim() || `package ${index + 1}`}`}>×</button> : null}
     </div>
 
@@ -136,14 +138,15 @@ export function PackageFields({ draft, onChange, index, onRemove, lockPrice = fa
       <label>Package name
         <input value={draft.name} onChange={(event) => set({ name: event.target.value })} required maxLength={100} placeholder={group ? "e.g. Group of 6" : "e.g. Early bird"} />
       </label>
+      <label>Currency<select value={draft.currency || "AUD"} onChange={(event) => set({ currency: event.target.value })} disabled={lockPrice}>{["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map((currency) => <option key={currency} value={currency}>{currency}</option>)}</select></label>
       {group ? <label>People per group
         <input type="number" min={2} max={50} value={draft.groupSize} onChange={(event) => set({ groupSize: event.target.value })} required disabled={lockPrice} />
-      </label> : <label>Price (AUD)
+      </label> : <label>Price per ticket
         <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} aria-describedby={lockPrice ? `${id}-locked` : undefined} />
       </label>}
     </div>
     {group ? <div className="showcase-row">
-      <label>Price per person (AUD)
+      <label>Price per person
         <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} />
       </label>
       <label>{group ? "Groups available" : "Tickets available"}<input type="number" min={1} max={1000000} value={draft.quantity} onChange={(event) => set({ quantity: event.target.value })} required /></label>

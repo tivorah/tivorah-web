@@ -52,6 +52,7 @@ export function AuthForm({
   // Sign-up gating, matching mobile: an adult date of birth and accepted terms
   // are required before Create account is enabled.
   const [newPassword, setNewPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [birthDate, setBirthDate] = useState("");
   const birthRules = useMemo(() => birthDateProps(), []);
@@ -293,14 +294,21 @@ export function AuthForm({
               }
               {...(mode === "signin" ? {} : {
                 value: newPassword,
+                visible: passwordVisible,
+                onVisibleChange: setPasswordVisible,
                 "aria-describedby": "auth-password-strength",
                 onChange: (event: ChangeEvent<HTMLInputElement>) => {
                   setNewPassword(event.target.value);
-                  event.target.setCustomValidity(passwordMeetsRules(event.target.value) ? "" : "Your password needs everything listed below.");
+                  event.target.setCustomValidity(passwordMeetsRules(event.target.value) ? "" : "Your password isn’t strong enough yet.");
                 },
               })}
             />
-            {mode !== "signin" && <PasswordStrength id="auth-password-strength" password={newPassword} />}
+            {mode !== "signin" && <PasswordStrength id="auth-password-strength" password={newPassword} onSuggest={(suggested) => {
+              setNewPassword(suggested);
+              setPasswordVisible(true);
+              const input = document.getElementById("auth-password") as HTMLInputElement | null;
+              input?.setCustomValidity("");
+            }} />}
           </div>
         ) : null}
         {mode === "signup" ? (

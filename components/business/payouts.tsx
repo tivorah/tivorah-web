@@ -1,6 +1,6 @@
 "use client";
 import { PayoutsLayout, PayoutsLoading } from "./payouts-layout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AccountGate } from "../account/gate";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { api } from "../../lib/api/client";
@@ -10,7 +10,11 @@ type Payouts = {
   payoutsEnabled: boolean;
   currentPartnerAgreementVersion: string;
   partnerAgreementVersion: string | null;
+  checkoutMethods: ("card" | "afterpay_clearpay" | "klarna" | "zip")[] | null;
+  availableCheckoutMethods?: ("card" | "afterpay_clearpay" | "klarna" | "zip")[];
+  hasCheckoutLogo?: boolean;
 };
+const optionalMethods = [{ id: "afterpay_clearpay", label: "Afterpay" }, { id: "klarna", label: "Klarna" }, { id: "zip", label: "Zip" }] as const;
 function PayoutSettings() {
   const { data, loading, error, retry } = usePrivateResource<Payouts>(
     "/payments/connect/account",
@@ -19,6 +23,30 @@ function PayoutSettings() {
   const [busy, setBusy] = useState<"dashboard" | "onboarding" | null>(null);
   const agreementCurrent = !!data && data.partnerAgreementVersion === data.currentPartnerAgreementVersion;
   const [notice, setNotice] = useState("");
+  const [methods, setMethods] = useState<Payouts["checkoutMethods"]>(null);
+  const [settingsBusy, setSettingsBusy] = useState(false);
+  const [settingsNotice, setSettingsNotice] = useState("");
+  useEffect(() => { if (data) setMethods(data.checkoutMethods); }, [data]);
+  async function saveMethods() {
+    if (!data?.connected || settingsBusy) return;
+    setSettingsBusy(true); setSettingsNotice("");
+    try {
+      const saved = await api<{ methods: Payouts["checkoutMethods"] }>("/payments/connect/checkout-methods", { method: "PATCH", body: JSON.stringify({ methods }) });
+      setMethods(saved.methods); setSettingsNotice("Checkout choices saved for new payments."); retry();
+    } catch (cause) { setSettingsNotice(cause instanceof Error ? cause.message : "Could not save. Try again."); }
+    finally { setSettingsBusy(false); }
+  }
+  async function uploadLogo(file: File | undefined) {
+    if (!file || !data?.connected || settingsBusy) return;
+    if (file.size > 2 * 1024 * 1024) { setSettingsNotice("Choose a logo under 2 MB."); return; }
+    setSettingsBusy(true); setSettingsNotice("Uploading logo…");
+    try {
+      const body = new FormData(); body.set("logo", file);
+      await api("/payments/connect/checkout-logo", { method: "POST", body });
+      setSettingsNotice("Logo saved to your Stripe checkout branding."); retry();
+    } catch (cause) { setSettingsNotice(cause instanceof Error ? cause.message : "Could not upload the logo. Try again."); }
+    finally { setSettingsBusy(false); }
+  }
   async function open(dashboard: boolean) {
     if (!data || busy || (!dashboard && !agreementCurrent && !accepted)) return;
     const stripeTab = window.open("about:blank", "_blank");
@@ -81,6 +109,15 @@ function PayoutSettings() {
         </div>
         {notice ? <p role="alert">{notice}</p> : null}
       </section>
+      {data.connected ? <section className="payouts-card payouts-checkout-settings" aria-label="Customer checkout settings">
+        <h2>Customer checkout</h2>
+        <p>Choose which methods customers can see. Stripe may hide a method when the currency or purchase is ineligible.</p>
+        <div className="payouts-checkout-choice"><label className="product-checkbox"><input type="radio" name="checkout-method-mode" checked={methods === null} onChange={() => setMethods(null)} /><span>Let Stripe choose</span></label><label className="product-checkbox"><input type="radio" name="checkout-method-mode" checked={methods !== null} onChange={() => setMethods(["card"])} /><span>Choose methods</span></label></div>
+        {methods ? <div className="payouts-method-options"><p>Card payments stay available.</p>{optionalMethods.map(option => { const available = data.availableCheckoutMethods?.includes(option.id); return <label className="product-checkbox" key={option.id}><input type="checkbox" checked={methods.includes(option.id)} disabled={!available && !methods.includes(option.id)} onChange={event => setMethods(current => current ? event.target.checked ? [...current, option.id] : current.filter(method => method !== option.id) : ["card"])} /><span>{option.label}{!available ? " · Unavailable in Stripe" : ""}</span></label>; })}</div> : null}
+        <button type="button" className="product-primary" disabled={settingsBusy || JSON.stringify(methods) === JSON.stringify(data.checkoutMethods)} onClick={() => void saveMethods()}>{settingsBusy ? "Saving…" : "Save checkout options"}</button>
+        <div className="payouts-logo-control"><strong>Checkout logo</strong><p>{data.hasCheckoutLogo ? "A logo is set for your Stripe checkout." : "Add your own logo to Stripe checkout."} PNG, JPEG or WebP, up to 2 MB.</p><input id="checkout-logo" className="payouts-logo-input" type="file" accept="image/png,image/jpeg,image/webp" disabled={settingsBusy} aria-label="Choose checkout logo image" onChange={event => { void uploadLogo(event.target.files?.[0]); event.target.value = ""; }} /><label className="product-secondary payouts-logo-upload" htmlFor="checkout-logo">{data.hasCheckoutLogo ? "Replace logo" : "Upload logo"}</label></div>
+        {settingsNotice ? <p role="status">{settingsNotice}</p> : null}
+      </section> : null}
       <section className="payouts-card"><h2>Partner agreement</h2><p>{agreementCurrent ? `You’ve accepted the current agreement (version ${data.currentPartnerAgreementVersion}).` : "Accept the current agreement before setting up or updating payouts."}</p><a className="payouts-agreement-link" href="/marketplace-partner-agreement" target="_blank" rel="noopener noreferrer">Read the Marketplace Partner Agreement <span aria-hidden="true">↗</span></a></section>
     </> : null}
   </PayoutsLayout>;

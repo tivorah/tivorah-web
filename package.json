@@ -10,7 +10,8 @@
     "start": "next start -p 7456",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test": "node --import tsx --test \"lib/**/*.test.ts\" \"components/**/*.test.ts\" \"app/**/*.test.ts\""
   },
   "engines": {
     "node": ">=20 <23"

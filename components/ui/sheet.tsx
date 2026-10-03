@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useSheetGestures } from "../../hooks/use-sheet-gestures";
 
 // Side sheet: slides in from the right on desktop and up from the bottom on phones.
 // Built on the native modal <dialog> (like the Hub picker) so focus is trapped,
@@ -21,6 +22,8 @@ export function Sheet({ open, onClose, title, description, children, footer, wid
   const opener = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const descriptionId = useId();
+  const grip = useRef<HTMLDivElement>(null);
+  useSheetGestures(dialog, grip, open, onClose);
 
   useEffect(() => {
     const element = dialog.current;
@@ -44,6 +47,7 @@ export function Sheet({ open, onClose, title, description, children, footer, wid
       onCancel={(event) => { event.preventDefault(); onClose(); }}
       onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       {open ? <div className="tv-sheet-panel">
+        <div ref={grip} className="sheet-grabber" aria-hidden="true"><span /></div>
         <header className="tv-sheet-head">
           <div>
             <h2 id={titleId}>{title}</h2>

@@ -12,6 +12,9 @@ export type DiscoveryItem = {
   startsAt?: string | null;
   locationType?: string;
   priceCents?: number | null;
+  currency?: string;
+  ownerName?: string | null;
+  ownerUsername?: string | null;
   externalTicketUrl?: string | null;
   hasPaidTickets?: boolean;
   priceType?: string;
@@ -73,7 +76,5 @@ export const sections = {
 >;
 export const itemPath = (kind: DiscoveryKind, id: number) =>
   `${sections[kind].path}${kind === "items" ? "/items" : ""}/${id}`;
-export const money = (value: number) =>
-  new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(
-    value / 100,
-  );
+export const money = (value: number, currency = "AUD") =>
+  new Intl.NumberFormat("en-AU", { style: "currency", currency, currencyDisplay: "code" }).format(value / 100);

@@ -317,13 +317,13 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
         </label>)}
         <div className="showcase-video">
           <strong>Introduction video</strong>
-          <p className="showcase-hint">Up to 25 MB. Videos are reviewed by Tivorah before they appear, and need captions and a transcript.</p>
+          <p className="showcase-hint">Up to 25 MB. Videos are reviewed by Tivorah before they appear. Captions and a transcript are optional and help more people follow along.</p>
           {content.videoId ? <p className="showcase-hint">Video #{content.videoId} · {asset(content.videoId)?.status ?? "uploaded"} <button type="button" className="showcase-link" onClick={() => set({ videoId: null })}>Remove</button></p> : null}
           {!content.videoId && videos.length ? <p className="showcase-hint">Earlier uploads: {videos.map((video) => <button key={video.id} type="button" className="showcase-link" onClick={() => set({ videoId: video.id })}>Use video #{video.id} ({video.status})</button>)}</p> : null}
           <label className="product-secondary showcase-video-upload">Upload a video<input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={(e) => { void addVideo(e.target.files?.[0]); e.target.value = ""; }} disabled={!!uploading || busy} /></label>
           {content.videoId ? <>
-            <label>Video transcript<textarea rows={4} required maxLength={10000} value={content.videoTranscript} onChange={(e) => set({ videoTranscript: e.target.value })} /></label>
-            <label>Timed captions (WebVTT)<textarea rows={4} maxLength={100000} value={content.videoCaptions || ""} placeholder={"WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nWelcome to our shop."} onChange={(e) => set({ videoCaptions: e.target.value })} /></label>
+            <label>Video transcript (optional)<textarea rows={4} maxLength={10000} value={content.videoTranscript} onChange={(e) => set({ videoTranscript: e.target.value })} /></label>
+            <label>Timed captions (WebVTT, optional)<textarea rows={4} maxLength={100000} value={content.videoCaptions || ""} placeholder={"WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nWelcome to our shop."} onChange={(e) => set({ videoCaptions: e.target.value })} /></label>
           </> : null}
         </div>
       </details>

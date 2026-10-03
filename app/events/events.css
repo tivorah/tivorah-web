@@ -48,9 +48,11 @@
 @media print { .event-app-invite { display: none !important; } }
 .event-booking input:not([type=checkbox]),.event-booking select { border-radius: 999px; padding-inline: 18px; }
 .event-detail-loading .event-hero { background-image: linear-gradient(100deg,#eee9f2 20%,#faf8fc 45%,#eee9f2 70%); }
+.event-detail-loading .event-loading-back { width: 70px; height: 18px; border-radius: 6px; margin: 13px 0 31px; }
 .event-detail-loading .event-tools span { display: block; width: 120px; height: 44px; border-radius: 999px; }
 .event-detail-loading .event-tools span:last-child { width: 110px; }
-.event-detail-loading .event-loading-title,.event-detail-loading .event-loading-organizer,.event-detail-loading .event-details section > span,.event-detail-loading .event-booking > span,.event-detail-loading .event-facts span { display: block; border-radius: 8px; }
+.event-detail-loading .event-loading-eyebrow,.event-detail-loading .event-loading-title,.event-detail-loading .event-loading-organizer,.event-detail-loading .event-details section > span,.event-detail-loading .event-booking > span,.event-detail-loading .event-facts span { display: block; border-radius: 8px; }
+.event-detail-loading .event-loading-eyebrow { width: 118px; height: 14px; margin-bottom: 14px; }
 .event-detail-loading .event-loading-title { width: min(85%,560px); height: 52px; margin: 8px 0 22px; }
 .event-detail-loading .event-loading-organizer { width: 190px; height: 20px; margin-bottom: 16px; }
 .event-detail-loading .event-facts { grid-template-columns: repeat(2,minmax(0,1fr)); }
@@ -59,11 +61,23 @@
 .event-detail-loading .event-loading-section-title { width: 180px; height: 26px; margin-bottom: 18px; }
 .event-detail-loading .event-loading-line { width: 90%; height: 17px; margin-bottom: 10px; }
 .event-detail-loading .event-loading-line.short { width: 55%; }
+.event-detail-loading .event-loading-map { width: 100%; height: 270px; margin-top: 18px; border-radius: 16px !important; }
+.event-detail-loading .event-loading-showcase { overflow: hidden; margin-top: 28px; border: 1px solid var(--line); border-radius: 24px; background: #fff; }
+.event-detail-loading .event-loading-showcase-cover { height: 72px; }
+.event-detail-loading .event-loading-showcase-body { display: grid; gap: 14px; padding: 0 20px 20px; }
+.event-detail-loading .event-loading-showcase-body > span { display: block; border-radius: 8px; }
+.event-detail-loading .event-loading-showcase-logo { width: 52px; height: 52px; margin-top: -22px; border: 3px solid #fff; border-radius: 14px !important; }
+.event-detail-loading .event-loading-showcase-gallery { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.event-detail-loading .event-loading-showcase-gallery span { aspect-ratio: 4 / 3; border-radius: 10px; }
 .event-detail-loading .event-loading-booking { display: grid; align-content: start; gap: 14px; }
 .event-detail-loading .event-loading-booking .event-loading-section-title { margin-bottom: 10px; }
 .event-detail-loading .event-loading-booking .event-loading-label { margin-top: 8px; margin-bottom: 0; }
 .event-detail-loading .event-loading-control { width: 100%; height: 48px; border-radius: 999px !important; }
-.event-detail-loading .event-loading-total { width: 100%; height: 90px; margin: 14px 0; border-radius: 14px !important; }
+.event-detail-loading .event-loading-help { width: 80%; height: 14px; }
+.event-detail-loading .event-loading-total { width: 100%; height: 86px; margin: 8px 0 4px; border-radius: 14px !important; }
+.event-detail-loading .event-loading-guest { width: 150px; margin: 6px 0 0 !important; }
+.event-detail-loading .event-loading-check { width: 80%; height: 22px; margin-top: 8px; }
+.event-detail-loading .event-loading-button { width: 100%; height: 48px; border-radius: 999px !important; }
 @media (max-width: 760px) { .event-detail-loading .event-loading-title { height: 66px; } .event-detail-loading .event-facts { grid-template-columns: 1fr; } }
 
 .ticket-page .ticket-skeleton span{background:linear-gradient(100deg,#eee9f2 20%,#faf8fc 45%,#eee9f2 70%);background-size:240% 100%}
@@ -150,3 +164,35 @@
 .account-ticket-transfer-notice button { width: 44px; height: 44px; flex: none; margin: -10px -10px 0 0; border: 0; border-radius: 999px; background: transparent; color: #14532d; font-size: 24px; cursor: pointer; }
 .account-ticket-transfer-notice button:focus-visible { outline: 3px solid #86c9a2; outline-offset: 1px; }
 @media (max-width: 600px) { .ticket-transfer-actions { grid-template-columns: 1fr; } }
+
+/* Organiser shortcut to the web event workspace: one compact button in the tools row. */
+.event-tools .event-manage-link{display:inline-flex;align-items:center;gap:8px;border-color:#6941b4;background:#6941b4;color:#fff;font-weight:700;text-decoration:none}
+.event-tools .event-manage-link:hover{background:#573395}
+
+/* More events like this. */
+.more-events{margin-top:48px;padding-top:36px;border-top:1px solid #e8e1ec}
+.more-events-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:20px}
+.more-events-head h2{margin:0}
+.more-events-all{display:inline-flex;align-items:center;min-height:44px;color:#563580;font-weight:700}
+.more-events-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.more-events-error button{min-height:44px;border:0;background:none;color:#563580;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+@media(max-width:1100px){.more-events-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.more-events-grid{grid-template-columns:1fr}}
+/* Loading placeholder matches the gallery's footprint so nothing shifts when photos arrive. */
+.event-detail-loading .event-hero{aspect-ratio:auto;max-height:none;height:clamp(240px,30vw,400px);border-radius:14px}
+@media(max-width:760px){.event-detail-loading .event-hero{height:auto;aspect-ratio:4/3;border-radius:18px}}
+/* First price load for a paid ticket type only; later quantity changes are instant. */
+.event-total-pending{display:inline-block;width:92px;height:20px;border-radius:999px}
+.animated-money{font-variant-numeric:tabular-nums}
+/* A short lift and tint when the total changes; the number itself rolls in animated-money.tsx. */
+.animated-money-value{display:inline-block}
+.animated-money-value.is-changed{animation:price-bump .42s cubic-bezier(.2,.8,.2,1)}
+@keyframes price-bump{0%{transform:translateY(-4px) scale(1.06);color:#6941b4}60%{transform:translateY(0) scale(1.01);color:#6941b4}100%{transform:none}}
+@media(prefers-reduced-motion:reduce){.animated-money-value.is-changed{animation:none}}
+/* "Ask the organiser" under the ticket card (components/discovery/enquiry.tsx). */
+.event-booking-column .product-detail-enquiry{margin-top:16px;padding:22px;border:1px solid var(--line);border-radius:24px;background:#fff}
+.event-booking-column .product-detail-enquiry h2{font-size:20px;margin:0 0 6px}
+.event-booking-column .product-detail-enquiry p{font-size:14px!important;color:#62576d;margin:0 0 12px}
+.event-booking-column .product-detail-enquiry textarea{width:100%;min-height:88px;padding:10px 12px;border:1px solid #c9becf;border-radius:14px;font:inherit;font-size:16px;resize:vertical}
+.event-booking-column .product-detail-enquiry label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+.event-booking-column .product-detail-enquiry .product-secondary{width:100%;margin-top:12px;min-height:46px}

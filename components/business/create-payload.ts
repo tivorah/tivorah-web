@@ -57,6 +57,7 @@ export function creationPayload(
     listingType: kind,
     businessName: text("businessName"),
     priceCents: Math.round(Number(text("price")) * 100),
+    currency: text("currency") || "AUD",
     priceType: text("priceType") || "fixed",
     condition: text("condition") || "used_good",
     messagePrompts: [text("prompt1"), text("prompt2"), text("prompt3")].filter(Boolean),

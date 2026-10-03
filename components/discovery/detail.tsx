@@ -1,4 +1,7 @@
 import Image from "next/image";
+import { MediaGallery } from "./media-gallery";
+import { OwnerManage } from "./owner-manage";
+import { eventPhotos } from "../../lib/event-detail";
 import Link from "next/link";
 import { PublicOfferingVideos } from "../business/offering-videos";
 import { notFound } from "next/navigation";
@@ -49,9 +52,9 @@ function itemJsonLd(kind: DetailKind, item: DiscoveryItem) {
   const image = [item.image, ...(item.images ?? [])].filter((value): value is string => !!value && value.startsWith("https://"));
   const area = item.locality ? { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: item.locality, addressRegion: item.state, addressCountry: "AU" } } : undefined;
   if (kind === "hubs") return { "@context": "https://schema.org", "@type": "Organization", name: item.title, description: item.description, url, logo: image[0], ...(area ? { location: area } : {}) };
-  const seller = item.businessName || (item.sellerUsername ? `@${item.sellerUsername}` : undefined);
+  const seller = item.businessName || item.ownerName || (item.sellerUsername ? `@${item.sellerUsername}` : undefined);
   const offers = item.priceCents != null && item.priceType !== "quote"
-    ? { "@type": "Offer", url, price: (item.priceCents / 100).toFixed(2), priceCurrency: "AUD", availability: "https://schema.org/InStock", ...(seller ? { seller: { "@type": "Organization", name: seller } } : {}) }
+    ? { "@type": "Offer", url, price: (item.priceCents / 100).toFixed(2), priceCurrency: item.currency || "AUD", availability: "https://schema.org/InStock", ...(seller ? { seller: { "@type": "Organization", name: seller } } : {}) }
     : undefined;
   return kind === "services"
     ? { "@context": "https://schema.org", "@type": "Service", name: item.title, description: item.description, url, image, serviceType: item.category, ...(area ? { areaServed: area } : {}), ...(seller ? { provider: { "@type": "Organization", name: seller } } : {}), ...(offers ? { offers } : {}) }
@@ -66,10 +69,12 @@ export async function DiscoveryDetail({
 }) {
   const item = await getItem(kind, id);
   const href = itemPath(kind, item.id);
+  const photos = eventPhotos(item.image, item.images);
   const structured = <JsonLd data={itemJsonLd(kind, item)} />;
   if (kind === "hubs") return <div className="product-page page-shell">
     {structured}
     <BackLink className="product-secondary" fallback="/hubs" />
+    <OwnerManage ownerUsername={item.creatorUsername} appPath={`hubs/invite/${id}`} label="Manage Hub in the app" />
     <article className="hub-detail">
       <div className="hub-detail-hero">
         <div className="hub-detail-cover">{item.coverImage ? <Image src={item.coverImage} alt="" fill sizes="(max-width: 760px) 100vw, 1280px" priority /> : null}</div>
@@ -85,39 +90,16 @@ export async function DiscoveryDetail({
     <div className="product-page page-shell">
       {structured}
       <BackLink className="product-secondary" fallback={sections[kind].path} />
+      <OwnerManage ownerUsername={item.sellerUsername} href={`/business/listings/${item.id}`} label={kind === "items" ? "Manage item" : "Manage service"} />
       <article className={`product-detail product-detail-${kind}`}>
-        <div className="product-detail-media">
-          <div className="product-detail-visual">
-            {item.image ? (
-              <Image
-                src={item.image}
-                alt={item.title}
-                fill
-                sizes="(max-width: 600px) 100vw, 60vw"
-                priority
-              />
-            ) : (
-              <span className="discover-image-fallback" aria-hidden="true">
-                ✳
-              </span>
-            )}
+        {/* Same photo header as event pages (components/discovery/media-gallery.tsx). */}
+        {photos.length ? <MediaGallery photos={photos} title={item.title} /> : (
+          <div className="product-detail-visual product-detail-empty">
+            <span className="discover-image-fallback" aria-hidden="true">✳</span>
           </div>
-          <div className="product-detail-gallery">
-            {item.images
-              ?.filter((url) => url !== item.image)
-              .map((url, index) => (
-                <div key={`${url}-${index}`}>
-                  <Image
-                    src={url}
-                    alt={`${item.title}, photo ${index + 2}`}
-                    fill
-                    sizes="(max-width: 600px) 30vw, 20vw"
-                  />
-                </div>
-              ))}
-          </div>
-        </div>
+        )}
         <div className="product-detail-content">
+          <div className="product-detail-main">
           <p className="product-eyebrow">
             {item.category || sections[kind].label}
           </p>
@@ -126,7 +108,7 @@ export async function DiscoveryDetail({
             <p className="product-detail-price">
               {item.priceType === "quote"
                 ? "Price by agreement"
-                : `${item.priceType === "from" ? "From " : ""}${money(item.priceCents)}${item.priceType === "hourly" ? " / hour" : ""}`}
+                : `${item.priceType === "from" ? "From " : ""}${money(item.priceCents, item.currency)}${item.priceType === "hourly" ? " / hour" : ""}`}
             </p>
           ) : null}
           <div className="product-detail-facts">
@@ -135,10 +117,12 @@ export async function DiscoveryDetail({
               <div><span>Condition</span><strong>{item.condition.replaceAll("_", " ")}</strong></div>
             ) : null}
             {item.sellerUsername ? (
-              <div className="product-detail-seller"><span>{kind === "items" ? "Seller" : "Provider"}</span><strong>{item.businessName || `@${item.sellerUsername}`}</strong>{item.sellerShopOnline !== false ? <Link href={`/shops/${encodeURIComponent(item.sellerUsername)}`}>View shop <span aria-hidden="true">→</span></Link> : null}</div>
+              <div className="product-detail-seller"><span>{kind === "items" ? "Seller" : "Provider"}</span><strong>{item.businessName || item.ownerName || `@${item.sellerUsername}`}</strong>{item.sellerShopOnline !== false ? <Link href={`/shops/${encodeURIComponent(item.sellerUsername)}`}>View shop <span aria-hidden="true">→</span></Link> : null}</div>
             ) : null}
           </div>
           <section className="product-detail-about"><h2>{kind === "items" ? "About this item" : "About this service"}</h2><p className="product-detail-description">{item.description || "More details will be added soon."}</p></section>
+          {/* Booking gets the full main column so the calendar and times have room. */}
+          {kind === "services" && item.bookingEnabled ? <div id="book" className="product-detail-booking-main"><ServiceBooking id={item.id} /></div> : null}
           {(kind === "items" || kind === "services") ? <PublicOfferingVideos kind={kind === "items" ? "item" : "service"} id={item.id} /> : null}
           {item.guidelines?.length ? (
             <section>
@@ -150,9 +134,8 @@ export async function DiscoveryDetail({
               </ul>
             </section>
           ) : null}
-          {kind === "services" && item.bookingEnabled ? (
-            <ServiceBooking id={item.id} />
-          ) : null}
+          </div>
+          <aside className="product-detail-side" aria-label={kind === "items" ? "Contact seller" : "Book or enquire"}>
           <Enquiry id={item.id} kind={kind} primary={kind === "items" || !item.bookingEnabled} />
           {item.sellerUsername && item.sellerShopOnline !== false && (kind === "items" || kind === "services") ? <ShowcaseCard username={item.sellerUsername} surface={kind} /> : null}
           <p className="product-detail-report">
@@ -162,6 +145,7 @@ export async function DiscoveryDetail({
               Report a concern
             </Link>
           </p>
+          </aside>
         </div>
       </article>
     </div>

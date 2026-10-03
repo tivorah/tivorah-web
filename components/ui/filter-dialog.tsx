@@ -1,5 +1,6 @@
 "use client";
 import { ReactNode, useEffect, useId, useRef } from "react";
+import { useSheetGestures } from "../../hooks/use-sheet-gestures";
 export function FilterDialog({
   open,
   onClose,
@@ -11,6 +12,8 @@ export function FilterDialog({
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const title = useId();
+  const grip = useRef<HTMLDivElement>(null);
+  useSheetGestures(dialog, grip, open, onClose);
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -46,13 +49,14 @@ export function FilterDialog({
         }
       }}
     >
+      <div ref={grip} className="sheet-grabber" aria-hidden="true"><span /></div>
       <header>
         <div>
           <h2 id={title}>Refine your search</h2>
           <p>A few details to find the right fit.</p>
         </div>
         <button type="button" aria-label="Close filters" onClick={onClose}>
-          ×
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
         </button>
       </header>
       {open && children}

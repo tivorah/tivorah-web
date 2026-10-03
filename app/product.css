@@ -1036,9 +1036,17 @@
   padding-top: 40px;
 }
 .discovery-page .discover-hero {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
   padding: 32px 0 20px;
   overflow: visible;
+}
+.discovery-page .discover-hero > div { min-width: 0; }
+.discovery-page .discover-hero > .create-promo-trigger { flex: none; margin-top: 0; }
+@media (max-width: 760px) {
+  .discovery-page .discover-hero { flex-wrap: wrap; }
 }
 .discovery-page .discover-hero h1 {
   max-width: 1000px;
@@ -1499,16 +1507,18 @@
   .auth-layout-signup .auth-skeleton-check { height: 40px; }
 }
 
-/* Listing details keep the photo, facts and next action in one readable column. */
+/* Public listing details share the event page's full-width media and action column. */
 .product-detail-items,
-.product-detail-services { grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); align-items: start; }
+.product-detail-services { grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: start; }
 .product-detail-media,
 .product-detail-content { min-width: 0; }
+.product-detail-content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 390px); gap: 48px; align-items: start; }
+.product-detail-main,.product-detail-side { min-width: 0; }
 .product-detail-items .product-detail-visual,
-.product-detail-services .product-detail-visual { aspect-ratio: 4 / 3; max-height: 560px; }
+.product-detail-services .product-detail-visual { aspect-ratio: 3 / 1; max-height: 400px; }
 .product-detail-items .product-detail-visual img,
-.product-detail-services .product-detail-visual img { object-fit: cover; }
-.product-detail-content > .product-eyebrow { margin: 0 0 8px; }
+.product-detail-services .product-detail-visual img { object-fit: contain; }
+.product-detail-main > .product-eyebrow { margin: 0 0 8px; }
 .product-detail-content h1 { font-size: clamp(32px, 3.4vw, 46px); line-height: 1.12; margin: 0 0 18px; }
 .product-detail-content .product-detail-price { font-size: clamp(24px, 2.4vw, 32px); line-height: 1.2; margin: 0 0 24px; }
 .product-detail-content .product-detail-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: #251d2d; }
@@ -1528,17 +1538,21 @@
 .product-detail-content .product-detail-enquiry .product-primary,
 .product-detail-content .product-detail-booking .product-primary { min-height: 46px; }
 .product-detail-services .product-detail-enquiry { background: #f4f0f7; border-color: #e9e0f0; }
+.product-detail-side .product-detail-booking,.product-detail-side .product-detail-enquiry { margin: 0 0 16px; padding: 24px; border: 1px solid var(--line); border-radius: 24px; background: #fff; box-shadow: 0 12px 40px rgba(38,27,47,.04); }
+.product-detail-side .showcase-card { margin-top: 18px; }
 .product-detail-report { margin: 22px 0 0; font-size: 14px; }
 .product-detail-report a { color: #62546b; }
 @media (max-width: 950px) {
   .product-detail-items,
   .product-detail-services { grid-template-columns: 1fr; }
+  .product-detail-content { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .product-detail-side { width: 100%; max-width: 620px; justify-self: center; }
   .product-detail-items .product-detail-visual,
   .product-detail-services .product-detail-visual { max-height: 520px; }
 }
 @media (max-width: 600px) {
   .product-detail-items .product-detail-visual,
-  .product-detail-services .product-detail-visual { aspect-ratio: 4 / 3; }
+  .product-detail-services .product-detail-visual { aspect-ratio: 16 / 9; }
   .product-detail-content .product-detail-facts { gap: 16px; }
   .product-detail-content .product-detail-enquiry,
   .product-detail-content .product-detail-booking { padding: 22px 20px; }
@@ -1857,6 +1871,17 @@
 .payouts-card .payouts-state { display: flex; align-items: center; gap: 8px; margin: 16px 0 8px; font-size: 18px; font-weight: 650; color: #56347e; }
 .payouts-account-card { display: grid; gap: 20px; margin-bottom: 20px; }
 .payouts-account-card .account-actions { margin: 0; }
+.payouts-checkout-settings { display: grid; justify-items: start; gap: 18px; margin-bottom: 20px; }
+.payouts-checkout-settings h2 { margin-bottom: 0; }
+.payouts-checkout-choice, .payouts-method-options { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.payouts-method-options { display: grid; gap: 8px; }
+.payouts-checkout-settings .product-checkbox { display: inline-flex; align-items: center; min-height: 44px; gap: 9px; }
+.payouts-checkout-settings .product-checkbox input { width: 18px; height: 18px; accent-color: #60339b; }
+.payouts-logo-control { width: 100%; display: grid; gap: 8px; padding-top: 18px; border-top: 1px solid var(--line); }
+.payouts-logo-control > strong { font-weight: 700; }
+.payouts-logo-upload { width: fit-content; min-height: 44px; cursor: pointer; }
+.payouts-logo-input { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.payouts-logo-input:focus-visible + .payouts-logo-upload { outline: 3px solid #60339b; outline-offset: 3px; }
 .payouts-agreement-link { display: inline-flex; align-items: center; min-height: 44px; gap: 8px; margin-top: 8px; color: #56347e; font-weight: 600; }
 .payouts-loading .tivorah-shimmer { display: block; border-radius: 6px; }
 .payouts-skeleton-label { width: 65%; height: 26px; margin-bottom: 16px; }
@@ -1913,9 +1938,12 @@
 .password-meter-label.is-weak { color: #9a530a; }
 .password-meter-label.is-good { color: #7a6208; }
 .password-meter-label.is-strong { color: #14734b; }
-.password-rules { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.password-rules li { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border-radius: 999px; background: #f5f2f6; color: #625a68; font-size: 13px; font-weight: 650; }
-.password-rules li.is-met { background: #e7f6ed; color: #14734b; }
+.password-strength { gap: 4px; }
+.password-hint-row { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+.password-hint { display: flex; flex: 1; align-items: flex-start; gap: 6px; margin: 0; color: #625a68; font-size: 13px; line-height: 1.4; font-weight: 600; }
+.password-hint svg { flex: none; margin-top: 2px; }
+.password-hint.is-met { color: #14734b; }
+.password-hint-row .username-action { flex: none; }
 @media (prefers-reduced-motion: reduce) { .password-meter-bars span { transition: none; } }
 
 /* Terms checkbox locked while the date of birth is under 18. */
@@ -2094,3 +2122,27 @@
 .hub-share-search-wrap { padding: 0 22px 10px; }
 .hub-share-dialog .hub-share-search { display: block; width: 100%; margin: 0; }
 .hub-share-dialog .hub-share-search:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 1px; background: #fff; }
+
+/* Hub cards: primary interest as a chip, secondary interests as quieter text. */
+.hub-card-interests { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.hub-card-primary { display: inline-flex; align-items: center; min-height: 24px; padding: 2px 10px; border-radius: 999px; background: #efe7fb; color: #4f2f86; font-size: 13px; font-weight: 750; }
+.hub-card-secondary { color: #5f5866; font-size: 13px; font-weight: 600; }
+
+/* Service booking in the main column: calendar and times side by side on wide screens. */
+.product-detail-booking-main { scroll-margin-top: 100px; }
+.product-detail-booking-main .product-detail-booking { margin-top: 8px; }
+@media (min-width: 900px) {
+  .product-detail-booking-main .appointment-picker { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  .product-detail-booking-main .appointment-month-nav,
+  .product-detail-booking-main .appointment-calendar { grid-column: 1; }
+  .product-detail-booking-main .appointment-times { grid-column: 2; grid-row: 1 / span 2; border-top: 0; border-left: 1px solid #e5dcea; }
+}
+.detail-loading-booking { margin-top: 24px; }
+.detail-loading-calendar { display: block; height: 320px; border-radius: 18px; margin-top: 14px; }
+
+/* Owner shortcut (components/discovery/owner-manage.tsx), same look as "Manage event". */
+.owner-manage { display: flex; justify-content: flex-end; margin: -44px 0 14px; pointer-events: none; }
+.owner-manage .owner-manage-link { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 18px; border: 1px solid #6941b4; border-radius: 24px; background: #6941b4; color: #fff; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+.owner-manage .owner-manage-link:hover { background: #573395; }
+.owner-manage .owner-manage-link:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 3px; }
+@media (max-width: 600px) { .owner-manage { margin: 0 0 12px; justify-content: flex-start; } }

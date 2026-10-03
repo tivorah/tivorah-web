@@ -7,6 +7,8 @@ import { useAccount } from "../../hooks/use-account";
 import { api } from "../../lib/api/client";
 import { BookingTermsConsent } from "./booking-terms-consent";
 import { SelectField } from "../ui/select-field";
+import { AnimatedMoney } from "../ui/animated-money";
+import { feeRateFromQuote, ticketTotals, type FeeRate } from "../../lib/ticket-pricing";
 import {
   BookingQuote,
   eventApi,
@@ -56,10 +58,8 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
   const [quantity, setQuantity] = useState(() =>
     Math.max(1, Math.min(20, Number(params.get("quantity")) || 1)),
   );
-  const [quote, setQuote] = useState<{
-    key: string;
-    value: BookingQuote;
-  } | null>(null);
+  // Fee rate for the selected ticket type, from one server quote. Quantity changes never refetch.
+  const [rate, setRate] = useState<{ key: string; value: FeeRate } | null>(null);
   const [quoteError, setQuoteError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -73,24 +73,26 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
     null,
   );
   const selection = `${ticketId}:${quantity}`;
-  const currentQuote = quote?.key === selection ? quote.value : null;
   const ticket = packages.find((item) => item.id === ticketId);
+  const rateKey = `${ticketId}:${accessCode}`;
+  const paid = (ticket?.priceCents ?? 0) > 0;
+  const currentQuote = ticket ? ticketTotals(ticket.priceCents, quantity, rate?.key === rateKey ? rate.value : null) : null;
   const returnTo = `/events/${event.id}?ticket=${ticketId}&quantity=${quantity}#tickets`;
   useEffect(() => {
-    if (!ticketId) return;
+    if (!ticketId || !paid) return;
     const controller = new AbortController();
     setQuoteError("");
     eventApi<BookingQuote>(`/${event.id}/quote`, {
       method: "POST",
-      body: JSON.stringify({ ticketTypeId: ticketId, quantity, ...(accessCode ? { accessCode } : {}) }),
+      body: JSON.stringify({ ticketTypeId: ticketId, quantity: 1, ...(accessCode ? { accessCode } : {}) }),
       signal: controller.signal,
     })
       .then((value) => {
-        if (!controller.signal.aborted) setQuote({ key: selection, value });
+        if (!controller.signal.aborted) setRate({ key: rateKey, value: feeRateFromQuote(value) });
       })
       .catch((cause) => {
         if (!controller.signal.aborted) {
-          setQuote(null);
+          setRate(null);
           setQuoteError(
             cause instanceof Error
               ? cause.message
@@ -99,7 +101,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
         }
       });
     return () => controller.abort();
-  }, [ticketId, quantity, event.id, selection, attempt, accessCode]);
+  }, [ticketId, paid, event.id, rateKey, attempt, accessCode]);
   async function submit(e: FormEvent) {
     e.preventDefault();
     const guest = signedOut && event.guestBookingAvailable;
@@ -206,7 +208,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
     const notYet = item.salesStartAt && new Date(item.salesStartAt).getTime() > Date.now();
     const ended = item.salesEndAt && new Date(item.salesEndAt).getTime() <= Date.now();
     const state = item.releaseAfterName ? `On sale when ${item.releaseAfterName} sells out` : item.remaining <= 0 ? "Sold out" : notYet ? `On sale ${new Date(item.salesStartAt!).toLocaleString("en-AU", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}` : ended ? "Sale ended" : !item.available ? "Unavailable" : item.remaining <= 10 ? `Only ${item.remaining} left` : "";
-    return { item, state, label: `${item.name} · ${item.priceCents ? ticketMoney(item.priceCents) : "Free"}${state ? ` · ${state}` : ""}` };
+    return { item, state, label: `${item.name} · ${item.priceCents ? ticketMoney(item.priceCents, item.currency) : "Free"}${state ? ` · ${state}` : ""}` };
   });
   const chosenTicket = ticketChoices.find((choice) => choice.item.id === ticketId);
   const extras = <>
@@ -242,7 +244,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
         <SelectField id="event-ticket-type" label="Ticket type" value={String(ticketId ?? "")} onChange={(value) => { setTicketId(Number(value)); setQuantity(1); }}
           options={ticketChoices.map(({ item, label }) => ({ value: String(item.id), label, disabled: !item.available }))} />
         {chosenTicket ? <p className="event-help" role="status">
-          {chosenTicket.item.kind === "group" ? `${chosenTicket.item.groupSize} people per booking${chosenTicket.item.priceCents ? ` · ${ticketMoney(Math.round(chosenTicket.item.priceCents / Math.max(1, chosenTicket.item.groupSize ?? 1)))} each` : ""}. ` : ""}
+          {chosenTicket.item.kind === "group" ? `${chosenTicket.item.groupSize} people per booking${chosenTicket.item.priceCents ? ` · ${ticketMoney(Math.round(chosenTicket.item.priceCents / Math.max(1, chosenTicket.item.groupSize ?? 1)), chosenTicket.item.currency)} each` : ""}. ` : ""}
           {chosenTicket.item.description ? `${chosenTicket.item.description} ` : ""}
           {chosenTicket.state ? chosenTicket.state : ""}
         </p> : null}
@@ -268,26 +270,26 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
             <>
               <div>
                 <span>Tickets</span>
-                <span>{ticketMoney(currentQuote.subtotalCents)}</span>
+                <AnimatedMoney cents={currentQuote.subtotalCents} format={(cents) => ticketMoney(cents, chosenTicket?.item.currency)} />
               </div>
               {currentQuote.chargedTo === "buyer" &&
               currentQuote.platformFeeCents > 0 ? (
                 <div>
                   <span>Booking fee</span>
-                  <span>{ticketMoney(currentQuote.platformFeeCents)}</span>
+                  <AnimatedMoney cents={currentQuote.platformFeeCents} format={(cents) => ticketMoney(cents, chosenTicket?.item.currency)} />
                 </div>
               ) : null}
               <div>
                 <strong>Total</strong>
                 <strong>
                   {currentQuote.buyerTotalCents
-                    ? ticketMoney(currentQuote.buyerTotalCents)
+                    ? <AnimatedMoney cents={currentQuote.buyerTotalCents} format={(cents) => ticketMoney(cents, chosenTicket?.item.currency)} />
                     : "Free"}
                 </strong>
               </div>
             </>
           ) : (
-            quoteError ? <p role="alert">{quoteError}</p> : <LoadingState label="Calculating total…" variant="compact" />
+            quoteError ? <p role="alert">{quoteError}</p> : <div aria-busy="true"><span>Total</span><span className="event-total-pending tivorah-shimmer" aria-label="Loading price" /></div>
           )}
         </div>
         {quoteError ? (

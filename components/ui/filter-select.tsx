@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
+import { categorySummary, selectedCategories, toggleCategory } from "../../lib/category-filter";
 type Option = { value: string; label: string };
 type Props = {
   label: string;
@@ -10,9 +11,11 @@ type Props = {
   name?: string;
   disabled?: boolean;
   searchable?: boolean;
+  /** Several choices at once; the value is a comma-separated list. The empty option clears it. */
+  multiple?: boolean;
 };
 
-/** Single-choice popover: roving option focus, typeahead, Escape and outside dismissal. */
+/** Single- or multi-choice popover: roving option focus, typeahead, Escape and outside dismissal. */
 export function FilterSelect({
   label,
   options,
@@ -22,9 +25,12 @@ export function FilterSelect({
   name,
   disabled,
   searchable,
+  multiple = false,
 }: Props) {
   const [internal, setInternal] = useState(defaultValue);
   const selected = value ?? internal;
+  const chosen = multiple ? selectedCategories(selected) : [];
+  const isSelected = (optionValue: string) => multiple ? (optionValue ? chosen.includes(optionValue) : !chosen.length) : optionValue === selected;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [alignRight, setAlignRight] = useState(false);
@@ -139,7 +145,9 @@ export function FilterSelect({
         onClick={() => setOpen((v) => !v)}
       >
         <span>
-          {options.find((option) => option.value === selected)?.label || label}
+          {multiple
+            ? categorySummary(chosen, options.find((option) => option.value === "")?.label || label)
+            : options.find((option) => option.value === selected)?.label || label}
         </span>
         <svg
           width="16"
@@ -170,24 +178,27 @@ export function FilterSelect({
             id={id}
             role="listbox"
             aria-label={label}
+            aria-multiselectable={multiple || undefined}
             className="filter-select-options"
           >
             {filtered.map((option) => (
               <button
                 type="button"
                 role="option"
-                aria-selected={option.value === selected}
+                aria-selected={isSelected(option.value)}
                 tabIndex={-1}
                 key={option.value}
                 onClick={() => {
-                  setInternal(option.value);
-                  onChange?.(option.value);
-                  close(true);
+                  const next = multiple ? toggleCategory(selected, option.value) : option.value;
+                  setInternal(next);
+                  onChange?.(next);
+                  // Multi-select stays open so several choices can be made in one go.
+                  if (!multiple || !option.value) close(true);
                 }}
               >
                 <span>{option.label}</span>
                 <span aria-hidden="true">
-                  {option.value === selected ? "✓" : ""}
+                  {isSelected(option.value) ? "✓" : ""}
                 </span>
               </button>
             ))}

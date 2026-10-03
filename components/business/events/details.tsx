@@ -121,7 +121,7 @@ export function EventDetails({
         <span className="event-glance-label">Ticket packages</span>
         {event.ticketTypes.length ? <ul className="event-glance-packages">{event.ticketTypes.map((ticket) => <li key={ticket.id}>
           <span><strong>{ticket.name}</strong><small>{ticket.sold} of {ticket.quantity} sold{ticket.active === false ? " · paused" : ""}</small></span>
-          <span>{ticket.priceCents ? `$${(ticket.priceCents / 100).toFixed(2)}` : "Free"}</span>
+          <span>{ticket.priceCents ? new Intl.NumberFormat('en-AU', { style: 'currency', currency: ticket.currency || 'AUD', currencyDisplay: 'code' }).format(ticket.priceCents / 100) : "Free"}</span>
         </li>)}</ul> : <p>No packages yet.</p>}
       </div>
     </aside>

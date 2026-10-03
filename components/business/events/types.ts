@@ -3,6 +3,7 @@ export type TicketType = {
   name: string;
   description: string | null;
   priceCents: number;
+  currency: string;
   quantity: number;
   sold: number;
   maxTicketsPerBuyer: number;

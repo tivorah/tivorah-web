@@ -4,6 +4,7 @@ import { api, ApiError } from "../../../lib/api/client";
 import { ShopData, ShopTab, ShopView } from "../../../components/shop/shop-view";
 import { pageMetadata } from "../../../lib/site";
 import { BackLink } from "../../../components/ui/back-link";
+import { OwnerManage } from "../../../components/discovery/owner-manage";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { JsonLd, absoluteUrl, summary } from "../../../lib/seo";
@@ -82,7 +83,7 @@ export default async function Page({
         tab={tab}
         skip={skip}
         href={href}
-        banner={<BackLink className="shop-back" fallback="/shop" />}
+        banner={<><BackLink className="shop-back" fallback="/shop" /><OwnerManage ownerUsername={slug} href="/business/showcase" label="Manage shop" /></>}
         footer={<p className="shop-report"><Link href={`/contact?${new URLSearchParams({ subject: `Report shop ${slug}` })}`}>Report a concern</Link></p>}
       />
     </div>

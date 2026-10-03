@@ -201,6 +201,7 @@ Run checks from `tivorah-web/`:
 ```bash
 npm run typecheck
 npm run lint
+npm test        # Node test runner via tsx; unit tests in **/__tests__/*.test.ts
 npm run build
 ```
 
@@ -377,3 +378,16 @@ For a normal web change:
   timed captions and appear on public detail pages only after approval.
 - Account Messages uses edge-to-edge phone layouts for the inbox and thread.
   The composer supports photo attachments; received audio remains playable.
+
+- Event detail (`/events/[id]`) uses `components/discovery/event-gallery.tsx`: one photo is
+  framed over a soft backdrop of itself, two split, three or more form a mosaic with "+N";
+  phones get a swipe carousel; every photo opens a focus-managed `<dialog>` viewer.
+- The signed-in organiser (matched by public `organizerUsername`) sees a "Manage event" link
+  to `/business/events/:id`; the workspace still authorises on the API.
+- "More events like this" (`components/discovery/more-events.tsx`) mirrors mobile, using only
+  the public discovery projection. Helpers and tests: `lib/event-detail.ts`.
+- Ticket totals use `lib/ticket-pricing.ts` (mirrors mobile `utils/ticketPricing.ts` and API
+  `calculatePlatformFee`): one quote per ticket type, instant totals per quantity, and only
+  the price number rolls (`components/ui/animated-money.tsx`).
+- Sign-up password guidance is one hint line plus a Suggest button (`lib/password-policy.ts`,
+  shared wording and generator with mobile `utils/passwordPolicy.ts`).

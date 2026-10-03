@@ -18,6 +18,7 @@ const toDraft = (ticket: TicketType): PackageDraft => newPackage({
   name: ticket.name, description: ticket.description ?? "",
   kind: ticket.kind ?? "standard", groupSize: String(ticket.groupSize ?? 1),
   price: (ticket.priceCents / Math.max(1, ticket.groupSize ?? 1) / 100).toFixed(2),
+  currency: ticket.currency,
   regularPrice: ticket.regularPriceCents != null ? (ticket.regularPriceCents / 100).toFixed(2) : "",
   hidden: !!ticket.hidden, accessCode: "", releaseAfter: ticket.releaseAfterTicketTypeId ? `id:${ticket.releaseAfterTicketTypeId}` : "",
   quantity: String(ticket.quantity), maxPerBuyer: String(ticket.maxTicketsPerBuyer),
@@ -51,7 +52,7 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
         description: payload.description ?? null, salesStartAt: payload.salesStartAt ?? null, salesEndAt: payload.salesEndAt ?? null,
         releaseAfterTicketTypeId: payload.releaseAfterTicketTypeId ?? null,
         // Price and group size are fixed once tickets have sold.
-        ...(sold ? { priceCents: undefined, groupSize: undefined, kind: undefined } : {}),
+        ...(sold ? { priceCents: undefined, currency: undefined, groupSize: undefined, kind: undefined } : {}),
       };
       if (await mutation.run(`/events/${event.id}/ticket-types/${ticket.id}`, "PATCH", body, `${payload.name} updated.`)) setEditing(null);
     } catch (cause) { setFormError(cause instanceof Error ? cause.message : "Check the package details."); }
@@ -71,7 +72,7 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
         <h2>Ticket packages</h2>
         <p>Offer different prices, like Early bird, General admission or Student. Change them any time — tickets already sold keep their price.</p>
       </div>
-      {!adding && event.ticketTypes.length < MAX_PACKAGES ? <button type="button" className="product-primary press-fx" onClick={() => { setAdding(newPackage()); setEditing(null); }}>Add a package</button> : null}
+      {!adding && event.ticketTypes.length < MAX_PACKAGES ? <button type="button" className="product-primary press-fx" onClick={() => { setAdding(newPackage({ currency: event.ticketTypes[0]?.currency || "AUD" })); setEditing(null); }}>Add a package</button> : null}
     </header>
 
     {mutation.error || formError ? <p className="product-error" role="alert">{formError || mutation.error}</p> : null}
@@ -82,7 +83,7 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
       <label className="event-package-preset">Start with a ticket type
         <SelectField label="Start with a ticket type" value={PACKAGE_PRESETS.some((preset) => preset.name === adding.name) ? adding.name : ""} onChange={(name) => {
           const preset = PACKAGE_PRESETS.find((item) => item.name === name);
-          if (preset) setAdding({ ...presetPackage(preset, adding.price), key: adding.key });
+          if (preset) setAdding({ ...presetPackage(preset, adding.price), currency: adding.currency, key: adding.key });
         }} options={[{ value: "", label: "Custom package" }, ...PACKAGE_PRESETS.filter((preset) => !used.has(preset.name.toLowerCase())).map((preset) => ({ value: preset.name, label: `${preset.name} · ${preset.blurb}` }))]} />
       </label>
       <PackageFields draft={adding} index={event.ticketTypes.length} onChange={setAdding} releaseOptions={releaseOptions()} />
@@ -114,7 +115,7 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
             <div className="event-package-meter" aria-label={`${ticket.sold} of ${ticket.quantity} sold`}><span style={{ width: `${percent}%` }} /></div>
             <span className="event-package-meta">{ticket.sold} of {ticket.quantity} sold · up to {ticket.maxTicketsPerBuyer} per person{ticket.salesEndAt ? ` · sale ends ${new Date(ticket.salesEndAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}` : ""}</span>
           </div>
-          <strong className="event-package-price">{ticket.priceCents ? money(ticket.priceCents) : "Free"}{ticket.kind === "group" && ticket.priceCents ? <small>{money(Math.round(ticket.priceCents / Math.max(1, ticket.groupSize ?? 1)))} each</small> : null}</strong>
+          <strong className="event-package-price">{ticket.priceCents ? money(ticket.priceCents, ticket.currency) : "Free"}{ticket.kind === "group" && ticket.priceCents ? <small>{money(Math.round(ticket.priceCents / Math.max(1, ticket.groupSize ?? 1)), ticket.currency)} each</small> : null}</strong>
           <div className="event-package-actions">
             <button type="button" className="showcase-link" onClick={() => { setEditing({ id: ticket.id, draft: toDraft(ticket) }); setAdding(null); setFormError(""); }}>Edit</button>
             <button type="button" className="showcase-link" disabled={mutation.busy} onClick={() => void mutation.run(`/events/${event.id}/ticket-types/${ticket.id}`, "PATCH", { active: ticket.active === false }, ticket.active === false ? `${ticket.name} is on sale again.` : `${ticket.name} is paused. Nobody can buy it until you resume.`)}>{ticket.active === false ? "Resume sales" : "Pause sales"}</button>
