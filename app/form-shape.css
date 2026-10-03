@@ -1,0 +1,7 @@
+/* Form shape, matching the mobile app: every single-line input and select is fully rounded.
+   Loaded last so it wins over older per-page radii. Textareas keep their own soft corners
+   because a pill breaks once text wraps. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+select {
+  border-radius: 999px !important;
+}
