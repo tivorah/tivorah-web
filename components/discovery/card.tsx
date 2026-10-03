@@ -8,6 +8,7 @@ import {
 } from "../../lib/api/discovery";
 import { hubInterestTiers } from "../../lib/category-filter";
 import { distanceLabel } from "../../lib/distance";
+import { discoveryByline } from "../../lib/byline";
 export function DiscoveryCard({
   item,
   kind,
@@ -61,9 +62,11 @@ export function DiscoveryCard({
               (item.locationType === "online" ? "Online" : kind === "hubs" ? "Location not specified" : "Explore on Tivorah"),
           ].filter(Boolean).join(" · ")}
         </p>
-        {kind !== "hubs" && (item.businessName || item.ownerName || item.sellerUsername || item.ownerUsername) ? (
-          <p className="discover-seller">{kind === "events" ? "Organised by " : "By "}{item.businessName || item.ownerName || `@${item.sellerUsername || item.ownerUsername}`}</p>
-        ) : null}
+        {/* Always present (empty when unknown) so every card in a row lines up, like mobile. */}
+        {kind !== "hubs" ? (() => {
+          const byline = discoveryByline(kind, item);
+          return <p className="discover-seller">{byline ? <>{kind === "events" ? "Organised by " : "By "}{byline}</> : "\u00a0"}</p>;
+        })() : null}
         {kind === "hubs" ? <p className="hub-card-meta">{item.memberCount != null ? `${item.memberCount} ${item.memberCount === 1 ? "person" : "people"}` : "New Hub"}{item.ownerName || item.creatorUsername ? ` · Created by ${item.ownerName || `@${item.creatorUsername}`}` : ""}</p> : null}
         <div className="discover-card-bottom">
           <strong>

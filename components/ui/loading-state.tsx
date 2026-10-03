@@ -30,8 +30,12 @@ export function LoadingState({
             <div className="product-loading-copy">
               <span className="product-loading-line tivorah-shimmer" />
               <span className="product-loading-line tivorah-shimmer" />
+              {/* Cards mirror the real layout: title, seller/organiser, location, then price. */}
               {variant === "cards" && (
-                <span className="product-loading-line tivorah-shimmer" />
+                <>
+                  <span className="product-loading-line product-loading-byline tivorah-shimmer" />
+                  <span className="product-loading-line product-loading-price tivorah-shimmer" />
+                </>
               )}
             </div>
             {variant === "form" && (
