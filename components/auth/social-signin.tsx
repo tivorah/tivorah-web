@@ -23,11 +23,10 @@ export function SocialSignIn({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState<Provider | null>(null);
   const lock = useRef(false);
-  const hadInitial = useRef(!!initialProviders);
+  // The server's answer renders first (no flash); the browser then confirms with the API, since
+  // the server copy is cached for up to a minute and may predate a credentials change.
   useEffect(() => {
-    if (hadInitial.current) return;
     const controller = new AbortController();
-    setLoading(true);
     api<Providers>("/public/auth/providers", { signal: controller.signal })
       .then((value) => {
         if (!controller.signal.aborted) {
@@ -36,8 +35,7 @@ export function SocialSignIn({
         }
       })
       .catch(() => {
-        // Email sign-in still works; social options just stay hidden.
-        if (!controller.signal.aborted) setProviders(null);
+        // Keep the server's answer; with none, social options stay hidden and email still works.
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);

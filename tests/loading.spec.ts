@@ -12,7 +12,7 @@ for (const reducedMotion of ["reduce", "no-preference"] as const) {
     await page.goto("/events");
     const loading = page.getByRole("status", { name: "Checking availability…" });
     await expect(loading).toBeVisible();
-    await expect(loading.locator(".tivorah-shimmer").first()).toHaveCSS("animation-name", reducedMotion === "reduce" ? "none" : "tivorah-shimmer");
+    await expect(loading.locator(".tivorah-shimmer").first()).toHaveCSS("animation-name", reducedMotion === "reduce" ? "none" : /^tivorah-(brand-)?shimmer$/);
     expect(await loading.getByRole("button").count()).toBe(0);
     release();
     await expect(loading).toHaveCount(0);

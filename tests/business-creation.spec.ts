@@ -13,17 +13,20 @@ test("member can reach each creation form from account and business", async ({ p
   await expect(page.getByRole("heading", { name: "Create on Tivorah" })).toBeVisible();
   await page.getByRole("link", { name: /Create an event Bring people together/ }).click();
   await expect(page).toHaveURL(/\/business\/create\?type=event$/);
-  await expect(page.getByLabel("Tickets per person")).toBeVisible();
+  // Tickets are set up per ticket type now (limits live in each type's editor).
+  await expect(page.getByRole("button", { name: "Add a ticket type" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Manage business" })).toBeVisible();
   await expect(page.getByLabel("What are you creating?")).toHaveCount(0);
   await page.goto("/business");
-  await expect(page.getByRole("heading", { name: "Manage your business" })).toBeVisible();
-  await page.getByRole("link", { name: "Offer a service", exact: true }).click();
-  await expect(page.getByLabel("How do you provide this service?")).toBeVisible();
-  await page.getByLabel("How do you provide this service?").selectOption("mobile");
+  await expect(page.getByRole("heading", { level: 1, name: /^Good (morning|afternoon|evening), Taylor$/ })).toBeVisible();
+  // Offered in the header and in the empty shop section; either opens the same form.
+  await page.getByRole("link", { name: "Offer a service", exact: true }).first().click();
+  const serviceMode = page.getByRole("radiogroup", { name: "How do you provide this service?" });
+  await expect(serviceMode).toBeVisible();
+  await serviceMode.getByRole("radio", { name: "I travel" }).check();
   await expect(page.getByLabel("Travel distance (km)")).toBeVisible();
   await page.goto("/business/create?type=item");
-  await expect(page.getByLabel("Pickup details (optional)")).toBeVisible();
+  await expect(page.getByRole("textbox", { name: /^Pickup details/ })).toBeVisible();
 });
 
 test("event preview shows verified activity and clear actions", async ({ page }) => {
@@ -36,7 +39,7 @@ test("event preview shows verified activity and clear actions", async ({ page })
   await expect(preview).toContainText("4Messages received");
   await expect(preview.getByRole("link", { name: /Open latest enquiry/ })).toHaveAttribute("href", "/account/messages/37");
   await expect(preview.getByRole("button", { name: "Publish event" })).toBeVisible();
-  await expect(preview.getByRole("link", { name: "Review event details" })).toHaveAttribute("href", "/business/events/24");
+  await expect(preview.getByRole("link", { name: "Edit event details" })).toHaveAttribute("href", "/business/events/24");
 });
 
 test("business navigation switches between listings and events", async ({ page }) => {
@@ -108,18 +111,22 @@ test("event workspace stays focused across tabs and phone widths", async ({ page
   await expect(page.getByRole("heading", { name: "Sunset Rooftop Social Adelaide" })).toBeVisible();
   await expect(page.getByLabel("Business navigation", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Publish event", exact: true })).toHaveCount(1);
-  await expect(page.getByLabel("Title", { exact: true })).toBeVisible();
-  expect(await page.locator(".event-manage-content h2").evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeLessThanOrEqual(24);
+  await expect(page.getByRole("textbox", { name: "Event name" })).toHaveValue("Sunset Rooftop Social Adelaide");
+  await expect(page.getByRole("textbox", { name: "Description" })).toHaveValue("Music and conversation with city views.");
+  // Every section heading stays compact.
+  const headingSizes = await page.locator(".event-manage-content h2").evaluateAll(els => els.map(el => parseFloat(getComputedStyle(el).fontSize)));
+  expect(headingSizes.length).toBeGreaterThan(0);
+  expect(Math.max(...headingSizes)).toBeLessThanOrEqual(24);
   await page.screenshot({ path: "/tmp/tivorah-event-workspace-desktop.png", fullPage: true });
   await page.getByRole("navigation", { name: "Manage event" }).getByRole("button", { name: "Tickets", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Ticket types" })).toBeVisible();
-  await page.getByText("Add a ticket type", { exact: true }).click();
-  await expect(page.getByLabel("Quantity", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ticket packages" })).toBeVisible();
+  await page.getByRole("button", { name: "Add a package" }).click();
+  await expect(page.getByLabel("Tickets available", { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: "/tmp/tivorah-event-workspace-phone.png", fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.getByRole("navigation", { name: "Manage event" }).getByRole("button", { name: "Check-in", exact: true }).click();
-  await expect(page.getByText("Check-in is available for published events.")).toBeVisible();
+  await expect(page.getByText("Check-in opens when the event is published")).toBeVisible();
 });
 
 test("item availability dropdown locks scrolling and is absent for services", async ({ page }) => {
@@ -130,6 +137,7 @@ test("item availability dropdown locks scrolling and is absent for services", as
   ], pagination: { isMoreData: false } } } }));
   await page.route("**/api/v1/market/products/*/business-summary", route => route.fulfill({ json: { data: { enquiries: 0, messages: 0, appointments: 0, upcomingAppointments: 0, latestEnquiryId: null } } }));
   await page.goto("/business");
+  await page.getByRole("button", { name: /Dining chairs Shop item/ }).click();
   const trigger = page.getByRole("button", { name: "Change availability" });
   await trigger.click();
   const dropdown = page.getByRole("dialog", { name: "Change availability" });

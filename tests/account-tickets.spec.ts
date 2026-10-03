@@ -14,6 +14,8 @@ test("account ticket uses the established pass, downloads and preserves input af
   });
   await page.route("**/api/v1/events/tickets/*/invite", route => route.fulfill({ status: 503, json: { status: false } }));
   await page.goto("/account/tickets");
+  // On a phone the list comes first; choosing a ticket opens its pass.
+  await page.getByRole("button", { name: /Sunday gathering/ }).click();
   await expect(page.getByText("TIVORAH EVENT PASS")).toBeVisible();
   await expect(page.getByRole("img", { name: "Entry code for Sunday gathering" })).toBeVisible();
   const download = page.waitForEvent("download");
@@ -22,11 +24,15 @@ test("account ticket uses the established pass, downloads and preserves input af
   await page.getByRole("button", { name: "Name on ticket" }).click();
   await page.getByLabel("Name on ticket", { exact: true }).fill("Alex Member");
   await page.getByRole("button", { name: "Save name" }).click();
-  await expect(page.getByRole("region", { name: "Selected ticket preview" }).getByText("General admission · Alex Member")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Selected ticket" }).getByText("General admission · Alex Member")).toBeVisible();
   await page.getByRole("button", { name: "Send to a friend" }).click();
   await page.getByLabel("Friend’s email").fill("friend@example.test");
-  await page.getByRole("button", { name: "Send invitation" }).click();
+  // Transfers are confirmed first, because the ticket leaves your account.
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByRole("alertdialog", { name: "Transfer this ticket to friend@example.test?" })).toBeVisible();
+  await page.getByRole("button", { name: "Yes, transfer ticket" }).click();
   await expect(page.locator(".event-pass").getByRole("alert")).toContainText("Please try again");
+  await page.getByRole("button", { name: "Change email" }).click();
   await expect(page.getByLabel("Friend’s email")).toHaveValue("friend@example.test");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: "/tmp/tivorah-account-ticket-390.png", fullPage: true });

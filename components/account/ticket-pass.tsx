@@ -30,6 +30,8 @@ export function TicketPass({ ticket, refresh, disabled, past = false }: { ticket
   const [action, setAction] = useState<"name" | "invite" | null>(null);
   // Transfers are permanent once accepted, so the email is confirmed before anything is sent.
   const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
+  // Last email typed for a transfer, so "Change email" (e.g. after a failed send) keeps it.
+  const [draftEmail, setDraftEmail] = useState("");
   const mutation = useMutation(refresh);
   const valid = !past && ticket.status === "valid" && !ticket.checkedInAt && !!ticket.qrPayload;
   const entryCode = /^\d{6}$/.test(ticket.shortCode || "") ? ticket.shortCode : null;
@@ -95,13 +97,13 @@ export function TicketPass({ ticket, refresh, disabled, past = false }: { ticket
     {action && !(action === "invite" && confirmEmail) && ticket.canManage && !past && <form className="ticket-invite-form" key={action} onSubmit={async event => {
       event.preventDefault();
       const value = String(new FormData(event.currentTarget).get("value") || "").trim();
-      if (action === "invite") { setConfirmEmail(value); return; }
+      if (action === "invite") { setDraftEmail(value); setConfirmEmail(value); return; }
       const success = await mutation.run(`/events/tickets/${ticket.publicId}/${action === "name" ? "attendee" : "invite"}`, action === "name" ? "PATCH" : "POST", action === "name" ? { name: value || null } : { email: value }, action === "name" ? "Ticket name updated." : "Invitation sent. Your friend will receive an email to accept the ticket.");
       if (success) setAction(null);
     }}>
       <p>{action === "invite" ? "Sending a ticket transfers it. Once your friend accepts, it leaves your account and your copy stops working." : "Adding a name is optional. Leave it blank to remove the name."}</p>
       <label htmlFor={`ticket-input-${ticket.publicId}`}>{action === "name" ? "Name on ticket" : "Friend’s email"}</label>
-      <input id={`ticket-input-${ticket.publicId}`} name="value" type={action === "name" ? "text" : "email"} required={action === "invite"} minLength={action === "name" ? 2 : undefined} maxLength={action === "name" ? 100 : 254} defaultValue={action === "name" ? ticket.attendeeName || "" : ticket.pendingTransfer?.email || ""} disabled={disabled || mutation.busy} />
+      <input id={`ticket-input-${ticket.publicId}`} name="value" type={action === "name" ? "text" : "email"} required={action === "invite"} minLength={action === "name" ? 2 : undefined} maxLength={action === "name" ? 100 : 254} defaultValue={action === "name" ? ticket.attendeeName || "" : draftEmail || ticket.pendingTransfer?.email || ""} disabled={disabled || mutation.busy} />
       <button className="event-primary" disabled={disabled || mutation.busy}>{mutation.busy ? "Saving…" : action === "name" ? "Save name" : "Continue"}</button>
     </form>}
     {mutation.notice && <p className="ticket-invite-form" role="status">{mutation.notice}</p>}
