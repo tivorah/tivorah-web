@@ -6,6 +6,7 @@ import { DiscoveryCard } from "../discovery/card";
 import { ShopBlock, ShopSection, ShowcaseAsset, ShowcaseContent, normalizeSectionOrder } from "../business/showcase/types";
 import { AboutSummary } from "./about-summary";
 import { MediaGallery } from "./media-gallery";
+import { MessageShopLink } from "./message-shop-link";
 
 // A seller's shop, shared by the public page (/shops/[slug]) and the owner's
 // preview (/business/showcase/preview) so both look exactly the same.
@@ -15,6 +16,7 @@ import { MediaGallery } from "./media-gallery";
 export type ShopTab = "all" | ShopBlock;
 export type ShopHub = { id: number; name: string; avatar: string | null; description: string | null; suburb: string | null; state: string | null };
 export type ShopData = {
+  username?: string;
   content: ShowcaseContent;
   assets: ShowcaseAsset[];
   offerings: (DiscoveryItem & { listingType: string })[];
@@ -42,13 +44,14 @@ function HubAvatar({ src }: { src: string }) {
   return <img src={src} alt="" />;
 }
 
-export function ShopView({ data, tab, skip, href, banner, footer, preview = false }: {
+export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, preview = false }: {
   data: ShopData;
   tab: ShopTab;
   skip: number;
   href: (tab: ShopTab, skip?: number) => string;
   banner?: ReactNode;
   footer?: ReactNode;
+  contactSlug?: string;
   /** Draft preview: show media that is still in review. */
   preview?: boolean;
 }) {
@@ -90,6 +93,11 @@ export function ShopView({ data, tab, skip, href, banner, footer, preview = fals
     <span className="shop-hub-join">Join <span aria-hidden="true">→</span></span>
   </Link>)}</div>;
   const page = Math.floor(skip / 10) + 1;
+  const pagination = skip > 0 || data.nextSkip !== null ? <nav className="account-ticket-pagination" aria-label="Shop pages">
+    {skip > 0 ? <Link href={href(tab, Math.max(0, skip - 10))}>Previous</Link> : <span aria-hidden="true" />}
+    <span>Page {page}</span>
+    {data.nextSkip !== null ? <Link href={href(tab, data.nextSkip)}>Next</Link> : <span aria-hidden="true" />}
+  </nav> : null;
   const kindFor = (item: DiscoveryItem, section: ShopSection) => section === "events" ? "events" as const : (item as { listingType?: string }).listingType === "service" ? "services" as const : "items" as const;
   const grid = (list: DiscoveryItem[], section: ShopSection) => <div className="discover-grid">{list.map((item) => <DiscoveryCard key={`${section}-${item.id}`} kind={kindFor(item, section)} item={item} />)}</div>;
 
@@ -103,7 +111,7 @@ export function ShopView({ data, tab, skip, href, banner, footer, preview = fals
           {data.content.locality ? <p className="shop-hero-locality"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></svg>{data.content.locality}</p> : null}
           <h1>{name}</h1>
           {data.content.about ? <p className="shop-hero-about">{data.content.about}</p> : null}
-          <p className="shop-hero-counts">{order.map((key) => counts[key] ? plural(counts[key], key === "items" ? "item" : key === "services" ? "service" : "upcoming event") : "").filter(Boolean).join(" · ") || "New on Tivorah"}</p>
+          <div className="shop-hero-meta"><p className="shop-hero-counts">{order.map((key) => counts[key] ? plural(counts[key], key === "items" ? "item" : key === "services" ? "service" : "upcoming event") : "").filter(Boolean).join(" · ") || "New on Tivorah"}</p>{contactSlug ? <MessageShopLink slug={contactSlug} ownerUsername={data.username} /> : null}</div>
         </div>
       </div>
     </header>
@@ -133,15 +141,13 @@ export function ShopView({ data, tab, skip, href, banner, footer, preview = fals
       {gallery.length ? <MediaGallery items={gallery} title={name} layout="grid" /> : <p className="shop-empty">No photos or videos yet.</p>}
     </section> : tab === "hubs" ? <section className="shop-section" aria-label="Hubs">
       {hubs.length ? hubCards(hubs) : <p className="shop-empty">No Hubs to show.</p>}
+      {pagination}
     </section> : tab === "events" ? <section className="shop-section" aria-label="Upcoming events">
       {lists.events.length ? grid(lists.events, "events") : <p className="shop-empty">No upcoming events right now.</p>}
+      {pagination}
     </section> : <section className="shop-section" aria-label={tab === "items" ? "Items for sale" : "Services"}>
       {data.offerings.length ? grid(data.offerings, tab) : <p className="shop-empty">{tab === "services" ? "No services right now." : "No items for sale right now."}</p>}
-      {skip > 0 || data.nextSkip !== null ? <nav className="account-ticket-pagination" aria-label="Shop pages">
-        {skip > 0 ? <Link href={href(tab, Math.max(0, skip - 10))}>Previous</Link> : <span aria-hidden="true" />}
-        <span>Page {page}</span>
-        {data.nextSkip !== null ? <Link href={href(tab, data.nextSkip)}>Next</Link> : <span aria-hidden="true" />}
-      </nav> : null}
+      {pagination}
     </section>}
     {footer}
   </div>;

@@ -47,10 +47,10 @@ export default async function Page({
   const query = await searchParams;
   const skip = Math.max(0, Math.min(10000, Number(query.skip) || 0));
   const tab: ShopTab = query.tab === "items" || query.tab === "services" || query.tab === "events" || query.tab === "gallery" || query.tab === "hubs" ? query.tab : "all";
-  const type = tab === "items" ? "&type=item" : tab === "services" ? "&type=service" : "";
+  const type = tab === "items" ? "&type=item" : tab === "services" ? "&type=service" : tab === "events" ? "&type=event" : tab === "hubs" ? "&type=hub" : "";
   let data: ShopData;
   try {
-    data = await api(`/public/shops/${encodeURIComponent(slug)}?skip=${tab === "items" || tab === "services" ? skip : 0}${type}`);
+    data = await api(`/public/shops/${encodeURIComponent(slug)}?skip=${tab === "all" || tab === "gallery" ? 0 : skip}${type}`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
@@ -83,6 +83,7 @@ export default async function Page({
         tab={tab}
         skip={skip}
         href={href}
+        contactSlug={slug}
         banner={<><BackLink className="shop-back" fallback="/shop" /><OwnerManage ownerUsername={slug} href="/business/showcase" label="Manage shop" /></>}
         footer={<p className="shop-report"><Link href={`/contact?${new URLSearchParams({ subject: `Report shop ${slug}` })}`}>Report a concern</Link></p>}
       />
