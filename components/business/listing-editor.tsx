@@ -14,6 +14,7 @@ import { SelectField } from "../ui/select-field";
 import { HubShareField } from "./hub-share-field";
 import { conditionOptions, priceTypeOptions } from "./select-options";
 import { money } from '../../lib/api/discovery';
+import { centsOrThrow } from "../../lib/money";
 type Listing = ServiceSettingsValue & {
   id: number;
   sellerId: number;
@@ -75,7 +76,7 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
         categories: [f.get("category")],
         images,
         communityIds: hubIds,
-        priceCents: Math.round(Number(f.get("price")) * 100),
+        priceCents: centsOrThrow(f.get("price")),
         currency: String(f.get("currency") || item.currency || "AUD"),
         priceType: f.get("priceType"),
         ...(locality || {}),

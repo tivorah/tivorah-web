@@ -8,6 +8,7 @@ import { LocationSearch, type Locality } from "./location-search";
 import categories from "../../lib/discovery-categories.json";
 import type { DiscoveryKind } from "../../lib/api/discovery";
 import { api } from "../../lib/api/client";
+import { parseMoneyToCents } from "../../lib/money";
 
 export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
   const params = useSearchParams();
@@ -83,8 +84,8 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
     setFormError("");
     update({
       condition: String(data.get("condition") || ""),
-      minPrice: min ? String(Math.round(Number(min) * 100)) : "",
-      maxPrice: max ? String(Math.round(Number(max) * 100)) : "",
+      minPrice: min ? String(parseMoneyToCents(min) ?? "") : "",
+      maxPrice: max ? String(parseMoneyToCents(max) ?? "") : "",
       currency: String(data.get("currency") || "AUD"),
       postcode,
       radiusKm:

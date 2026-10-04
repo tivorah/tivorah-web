@@ -148,6 +148,12 @@ Owner/admin access uses the established email/password and TOTP/recovery flow.
 - Preserve the established light admin appearance and sidebar unless a redesign is
   explicitly requested.
 
+## Money
+
+- Prices are whole cents (`priceCents`, `totalCents`) plus a currency code, exactly as the API sends them; format only when rendering.
+- Typed prices go through `parseMoneyToCents` (`lib/money.ts`), which parses the text straight into cents. Never `Math.round(Number(text) * 100)`: float maths gives the wrong cent for some inputs and accepts `1e3` or three decimals.
+- Clients never compute payable fees; the API quotes them.
+
 ## API and environment configuration
 
 Public browser variables are bundled and are never secret. Important environment

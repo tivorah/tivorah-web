@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { Sheet } from "../../ui/sheet";
 import { DateField } from "../../ui/date-field";
 import { SelectField } from "../../ui/select-field";
+import { parseMoneyToCents } from "../../../lib/money";
 
 // Ticket "pricing packages" (ticket types): General admission, Early bird, Student, Group…
 // Each package has its own price, quantity, per-person limit and optional sales window.
@@ -81,12 +82,13 @@ export function packagesPayload(drafts: PackageDraft[]) {
     const group = draft.kind === "group";
     const groupSize = group ? Number(draft.groupSize) : 1;
     if (group && (!Number.isInteger(groupSize) || groupSize < 2 || groupSize > 50)) throw new Error(`Set between 2 and 50 people per group for ${label}.`);
-    const each = Math.round(Number(draft.price || 0) * 100);
-    if (!Number.isFinite(each) || each < 0) throw new Error(`Enter a valid price for ${label}.`);
+    const each = parseMoneyToCents(draft.price || "0");
+    if (each === null || each < 0) throw new Error(`Enter a valid price for ${label}.`);
     const priceCents = each * groupSize;
     if (priceCents > 0 && priceCents < 50) throw new Error(`Paid tickets must cost at least $0.50 (${label}).`);
-    const regular = draft.regularPrice.trim() ? Math.round(Number(draft.regularPrice) * 100) : null;
-    if (regular != null && (!Number.isFinite(regular) || regular < 0)) throw new Error(`Enter a valid usual price for ${label}.`);
+    const regularText = draft.regularPrice.trim();
+    const regular = regularText ? parseMoneyToCents(regularText) : null;
+    if (regularText && (regular === null || regular < 0)) throw new Error(`Enter a valid usual price for ${label}.`);
     const quantity = Number(draft.quantity);
     if (!Number.isInteger(quantity) || quantity < 1) throw new Error(`Enter how many ${label} ${group ? "groups" : "tickets"} are available.`);
     const maxTicketsPerBuyer = Number(draft.maxPerBuyer);

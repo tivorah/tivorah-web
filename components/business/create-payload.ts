@@ -1,4 +1,5 @@
 import type { Locality } from "./locality-field";
+import { centsOrThrow } from "../../lib/money";
 export type CreationKind = "item" | "service" | "event";
 export function creationPayload(
   form: FormData,
@@ -56,7 +57,7 @@ export function creationPayload(
     idempotencyKey,
     listingType: kind,
     businessName: text("businessName"),
-    priceCents: Math.round(Number(text("price")) * 100),
+    priceCents: centsOrThrow(text("price")),
     currency: text("currency") || "AUD",
     priceType: text("priceType") || "fixed",
     condition: text("condition") || "used_good",
