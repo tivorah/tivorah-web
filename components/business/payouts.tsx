@@ -40,7 +40,7 @@ function PayoutSettings() {
     setSection(value);
     window.history.replaceState(null, '', `#${value}`);
   }
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("AU");
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState<"dashboard" | "onboarding" | null>(null);
   const agreementCurrent = !!data && data.partnerAgreementVersion === data.currentPartnerAgreementVersion;
@@ -119,18 +119,16 @@ function PayoutSettings() {
     {data ? <>
       <div hidden={section === 'settings'}><PayoutStatistics view={section === 'payments' ? 'payments' : 'payouts'} connected={data.connected} /></div>
       <div id="payout-view-settings" hidden={section !== 'settings'}>
-      <header className="payout-section-heading"><h2>Payment settings</h2><p>Manage your bank connection, seller tax details and customer checkout.</p></header>
+      <header className="payout-section-heading"><h2>Payment settings</h2></header>
       <div className="payouts-status-grid">
-        <section className="payouts-card"><h2>Customer payments</h2><p className="payouts-state"><span aria-hidden="true">{data.chargesEnabled ? "✓" : "○"}</span>{data.chargesEnabled ? "Enabled" : "Setup required"}</p><p>Payments for your paid tickets and service bookings.</p></section>
-        <section className="payouts-card"><h2>Bank payouts</h2><p className="payouts-state"><span aria-hidden="true">{data.payoutsEnabled ? "✓" : "○"}</span>{data.payoutsEnabled ? "Enabled" : "Setup required"}</p><p>Transfers from your Stripe balance to your bank account.</p></section>
+        <section className="payouts-card"><h2>Customer payments</h2><p className="payouts-state"><span aria-hidden="true">{data.chargesEnabled ? "✓" : "○"}</span>{data.chargesEnabled ? "Enabled" : "Setup required"}</p></section>
+        <section className="payouts-card"><h2>Bank payouts</h2><p className="payouts-state"><span aria-hidden="true">{data.payoutsEnabled ? "✓" : "○"}</span>{data.payoutsEnabled ? "Enabled" : "Setup required"}</p></section>
       </div>
       </div>
-      <section hidden={section === 'payments'} className="payouts-card payouts-account-card"><div><h2>{data.connected ? "Your Stripe account" : "Connect your payout account"}</h2><p>{data.connected ? "View payout activity in Stripe or update your account details." : "Complete your account details in Stripe to set up payments and payouts."}</p></div>
+      <section hidden={section === 'payments'} className="payouts-card payouts-account-card"><div><h2>{data.connected ? "Stripe account" : "Set up payouts"}</h2></div>
         {!agreementCurrent ? <label className="product-checkbox"><input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)} /><span>I accept the <a href="/marketplace-partner-agreement" target="_blank" rel="noopener noreferrer">Marketplace Partner Agreement</a> (version {data.currentPartnerAgreementVersion}).</span></label> : null}
-        <p className="payouts-tab-note">Stripe opens in a new tab.</p>
-        {!data.connected ? <label>Country where your seller business is established<SelectField label="Seller business country" value={country} onChange={setCountry} options={countries.map(option => ({ value: option.code, label: option.name }))} /></label> : null}
-        {!data.connected ? <div className="payouts-connect-methods"><h3>Payment methods for your buyers</h3><p>You can change this any time in Settings.</p><CheckoutMethodsChooser name="connect-checkout-methods" value={methods} available={data.availableCheckoutMethods ?? ["card"]} onChange={setMethods} disabled={busy !== null} /></div> : null}
-        <p>Online seller payments are available in {(data.paymentCountries ?? []).map(code => countries.find(option => option.code === code)?.name ?? code).join(', ') || 'no countries at present'}. Hubs, listings, enquiries and bookings without online payment remain available elsewhere.</p>
+        {!data.connected ? <div><label htmlFor="seller-business-country">Seller business country</label><SelectField id="seller-business-country" label="Seller business country" value={country} onChange={setCountry} options={countries.map(option => ({ value: option.code, label: option.name }))} /><p className="payouts-tab-note">Change this if your business is based elsewhere.</p>{!data.paymentCountries?.includes(country) ? <p role="status">Online payments aren’t available for this business country yet. Enquiries and unpaid bookings still work.</p> : null}</div> : null}
+        {!data.connected ? <div className="payouts-connect-methods"><h3>Payment methods for your buyers</h3><CheckoutMethodsChooser name="connect-checkout-methods" value={methods} available={data.availableCheckoutMethods ?? ["card"]} onChange={setMethods} disabled={busy !== null} /></div> : null}
         {data.connected && data.countryPaymentsEnabled === false ? <p role="status">New online payments are unavailable for your seller country. Existing payment records and Stripe account access remain available.</p> : null}
         <div className="account-actions">
           {data.connected && data.chargesEnabled && data.payoutsEnabled ? <>
@@ -149,13 +147,12 @@ function PayoutSettings() {
       <div>
       {data.connected ? <section className="payouts-card payouts-checkout-settings" aria-label="Customer checkout settings">
         <h2>Customer checkout</h2>
-        <p>Choose what customers can pay with for your tickets and services.</p>
         <CheckoutMethodsChooser name="checkout-method-mode" value={methods} available={data.availableCheckoutMethods ?? ["card"]} onChange={setMethods} disabled={settingsBusy} />
         <button type="button" className="product-primary" disabled={settingsBusy || JSON.stringify(methods) === JSON.stringify(data.checkoutMethods)} onClick={() => void saveMethods()}>{settingsBusy ? "Saving…" : "Save checkout options"}</button>
-        <div className="payouts-logo-control"><strong>Checkout logo</strong><p>{data.hasCheckoutLogo ? "A logo is set for your Stripe checkout." : "Add your own logo to Stripe checkout."} PNG, JPEG or WebP, up to 2 MB.</p><input id="checkout-logo" className="payouts-logo-input" type="file" accept="image/png,image/jpeg,image/webp" disabled={settingsBusy} aria-label="Choose checkout logo image" onChange={event => { void uploadLogo(event.target.files?.[0]); event.target.value = ""; }} /><label className="product-secondary payouts-logo-upload" htmlFor="checkout-logo">{data.hasCheckoutLogo ? "Replace logo" : "Upload logo"}</label></div>
+        <div className="payouts-logo-control"><strong>Checkout logo</strong><p>PNG, JPEG or WebP · up to 2 MB</p><input id="checkout-logo" className="payouts-logo-input" type="file" accept="image/png,image/jpeg,image/webp" disabled={settingsBusy} aria-label="Choose checkout logo image" onChange={event => { void uploadLogo(event.target.files?.[0]); event.target.value = ""; }} /><label className="product-secondary payouts-logo-upload" htmlFor="checkout-logo">{data.hasCheckoutLogo ? "Replace logo" : "Upload logo"}</label></div>
         {settingsNotice ? <p role="status">{settingsNotice}</p> : null}
       </section> : null}
-      <section className="payouts-card"><h2>Partner agreement</h2><p>{agreementCurrent ? `You’ve accepted the current agreement (version ${data.currentPartnerAgreementVersion}).` : "Accept the current agreement before setting up or updating payouts."}</p><a className="payouts-agreement-link" href="/marketplace-partner-agreement" target="_blank" rel="noopener noreferrer">Read the Marketplace Partner Agreement <span aria-hidden="true">↗</span></a></section>
+      <section className="payouts-card"><h2>Partner agreement</h2>{!agreementCurrent ? <p>Accept the current agreement to continue setup.</p> : null}<a className="payouts-agreement-link" href="/marketplace-partner-agreement" target="_blank" rel="noopener noreferrer">Read the agreement <span aria-hidden="true">↗</span></a></section>
       </div></div></div>
     </> : null}
   </PayoutsLayout>;

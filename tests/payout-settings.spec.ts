@@ -106,5 +106,20 @@ test('booking payment failures recover without showing a false zero balance', as
   await payments.getByRole('button', { name: 'Services', exact: true }).click();
   await expect(payments.getByText('No paid service bookings yet.')).toBeVisible();
   await page.getByRole('navigation', { name: 'Payout workspace' }).getByRole('button', { name: 'Payouts', exact: true }).click();
-  await expect(page.getByText('Event and service money, paid into the same bank account.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your bank payouts' })).toBeVisible();
+});
+
+test('new seller sees Australia selected and can change business country', async ({ page }) => {
+  await page.route('**/api/auth/get-session**', route => route.fulfill({ json: { session: { id: 'session', userId: '1', expiresAt: new Date(Date.now() + 3600000).toISOString() }, user: { id: '1', email: 'seller@example.test', name: 'Seller' } } }));
+  await page.route('**/api/v1/web/account', route => route.fulfill({ json: { data: { id: 1, firstName: 'Seller' } } }));
+  await page.route('**/api/v1/payments/connect/account', route => route.fulfill({ json: { data: { connected: false, chargesEnabled: false, payoutsEnabled: false, paymentCountries: ['AU'], checkoutMethods: null, availableCheckoutMethods: ['card'], currentPartnerAgreementVersion: '1', partnerAgreementVersion: '1' } } }));
+  await page.route('**/api/v1/payments/connect/payout-summary', route => route.fulfill({ json: { data: { connected: false, currencies: [] } } }));
+  await page.goto('/business/payouts');
+  const country = page.getByRole('combobox', { name: 'Seller business country: Australia' });
+  await expect(country).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Set up payouts', exact: true })).toBeEnabled();
+  await country.click();
+  await page.getByRole('option', { name: 'United Kingdom' }).click();
+  await expect(page.getByRole('button', { name: 'Set up payouts', exact: true })).toBeDisabled();
+  await expect(page.getByText(/Enquiries and unpaid bookings still work/)).toBeVisible();
 });
