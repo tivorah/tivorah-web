@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 2 October 2026
+        <strong>Last updated:</strong> 7 October 2026
       </p>
 
       <div className="legal-callout">
@@ -182,6 +182,18 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
 
       <h2>In-app marketplace payments and payouts</h2>
       <p>
+        Receiving customer payments through Tivorah for events and services is
+        currently limited to organisers and service providers whose seller
+        business is established in Australia, subject to Tivorah’s onboarding
+        requirements and Stripe’s account requirements. This restriction concerns
+        the seller’s business country, not the customer’s location or nationality.
+        Members outside Australia may use supported Hubs, listings, enquiries and
+        booking features that do not involve receiving payment through Tivorah.
+        Creating an account or publishing a listing does not authorise online
+        payment collection. Any expansion of seller payment availability will be
+        announced separately.
+      </p>
+      <p>
         Where Tivorah enables an in-app payment for an item, service or event,
         the seller, provider or organiser is the supplier and seller of that
         underlying offering unless the checkout expressly identifies Tivorah as
@@ -208,6 +220,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       </p>
 
       <h2>Events, tickets and payments</h2>
+      <p>Where checkout reserves tickets temporarily, the displayed countdown shows the payment window. You can cancel an unpaid hold using Cancel hold. Cancelling or dismissing the Stripe checkout browser in the app also requests cancellation. Tickets are released only after payment can no longer complete; if payment has already completed or is processing, we check its status instead. Cancelling a hold does not refund a completed purchase. If cancellation cannot be confirmed, retry or check your order status.</p>
       <p>
         Event organisers are responsible for event descriptions, accessibility,
         permissions, safety, delivery, cancellations and compliance with law.
@@ -454,6 +467,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         </a>
         .
       </p>
+      <p>Independent organisers and service providers are responsible for their own seller tax obligations. Tivorah retains its own statutory obligations. Payment processing does not automatically register a seller for GST or file their returns. See <Link href="/seller-tax">Seller taxes and reporting</Link> for shared account settings, fees and reporting information.</p>
       {!inDialog ? <LegalNavigation /> : null}
     </article>
   );

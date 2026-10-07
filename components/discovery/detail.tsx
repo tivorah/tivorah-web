@@ -1,3 +1,4 @@
+import { LocationMap } from "./location-map";
 import Image from "next/image";
 import { MediaGallery } from "./media-gallery";
 import { OwnerManage } from "./owner-manage";
@@ -120,6 +121,7 @@ export async function DiscoveryDetail({
               <div className="product-detail-seller"><span>{kind === "items" ? "Seller" : "Provider"}</span><strong>{item.businessName || item.ownerName || `@${item.sellerUsername}`}</strong>{item.sellerShopOnline !== false ? <Link href={`/shops/${encodeURIComponent(item.sellerUsername)}`}>View shop <span aria-hidden="true">→</span></Link> : null}</div>
             ) : null}
           </div>
+          {item.locality && item.serviceMode !== "online" ? <section className="event-location"><h2>Area</h2><LocationMap key={item.id} destination={[item.locality, item.state].filter(Boolean).join(", ")} approximate /></section> : null}
           <section className="product-detail-about"><h2>{kind === "items" ? "About this item" : "About this service"}</h2><p className="product-detail-description">{item.description || "More details will be added soon."}</p></section>
           {/* Booking gets the full main column so the calendar and times have room. */}
           {kind === "services" && item.bookingEnabled ? <div id="book" className="product-detail-booking-main"><ServiceBooking id={item.id} /></div> : null}

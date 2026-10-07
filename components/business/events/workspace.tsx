@@ -1,4 +1,5 @@
 "use client";
+import { BookingSetupNotice } from "../booking-setup-notice";
 import { AccountSurfaceLoading } from "../../account/surface-loading";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -103,6 +104,7 @@ function Workspace({ id, accountId }: { id: string; accountId: number }) {
       <CancelEventDialog eventId={data.id} title={data.title} open={cancelOpen} onClose={() => setCancelOpen(false)} onCancelled={() => { retry(); setVersion((value) => value + 1); }} />
       {["cancelling", "cancelled"].includes(data.status) ? <RefundProgress eventId={data.id} /> : null}
       <EventStats id={data.id} version={version} />
+      <BookingSetupNotice issues={mutation.setupIssues.length ? mutation.setupIssues : data.setupIssues} />
       {mutation.error ? <p className="product-notice" role="alert">{mutation.error}</p> : null}
       {mutation.notice ? <p className="product-notice" role="status">{mutation.notice}</p> : null}
       <nav className="event-manage-tabs" aria-label="Manage event">

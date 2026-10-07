@@ -26,6 +26,7 @@ export function SiteFooter() {
                   <Link href="/#features">Features</Link>
                   <Link href="/hub-organisers">Hub organisers</Link>
                   <Link href="/service-providers">Service providers</Link>
+                  <Link href="/guide">Tivorah guide</Link>
                   <Link href="/contact">Contact us</Link>
                   <Link href="/#updates">Subscribe to updates</Link>
                 </nav>

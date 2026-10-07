@@ -1,4 +1,6 @@
 "use client";
+import { BookingSetupNotice } from "../booking-setup-notice";
+import { SelectField } from "../../ui/select-field";
 import { FormEvent, useState } from "react";
 import { useMutation } from "../../../hooks/use-mutation";
 import { Locality, LocalityField } from "../locality-field";
@@ -32,7 +34,13 @@ export function EventDetails({
       {
         title: form.get("title"),
         description: form.get("description"),
+        information: {
+          arrival: String(form.get('arrival') || ''), accessibility: String(form.get('accessibility') || ''),
+          agePolicy: String(form.get('agePolicy') || ''), refundPolicy: String(form.get('refundPolicy') || ''),
+          faqs: Array.from({length: 8}, (_, index) => ({ question: String(form.get(`faq-question-${index}`) || '').trim(), answer: String(form.get(`faq-answer-${index}`) || '').trim() })).filter(row => row.question || row.answer),
+        },
         category: form.get("category"),
+        gstTreatment: form.get("gstTreatment"),
         startsAt: start.toISOString(),
         endsAt: end.toISOString(),
         venueName: form.get("venueName"),
@@ -87,6 +95,20 @@ export function EventDetails({
         </section>
 
         <section className="showcase-step">
+          <h2>Plan your visit</h2>
+          <p className="showcase-hint">Optional details help people decide and arrive prepared. Only completed answers appear on your event page.</p>
+          {(['agePolicy', 'arrival', 'accessibility', 'refundPolicy'] as const).map(key => <label key={key}>{({agePolicy: 'Age and ID requirements', arrival: 'Arrival, parking and doors', accessibility: 'Accessibility', refundPolicy: 'Refund policy'})[key]}<textarea name={key} defaultValue={event.information?.[key] || ''} rows={key === 'agePolicy' ? 2 : 3} maxLength={key === 'agePolicy' ? 200 : 1200} /></label>)}
+          <p className="showcase-hint">Your policy cannot remove applicable consumer rights. Keep cancellation and refund instructions clear.</p>
+          <details className="showcase-more"><summary>Frequently asked questions</summary>{Array.from({length: 8}, (_, index) => <div className="showcase-step" key={index}><label>Question {index + 1}<input name={`faq-question-${index}`} defaultValue={event.information?.faqs?.[index]?.question || ''} maxLength={200} minLength={3} /></label><label>Answer {index + 1}<textarea name={`faq-answer-${index}`} defaultValue={event.information?.faqs?.[index]?.answer || ''} maxLength={1600} minLength={2} rows={3} /></label></div>)}</details>
+        </section>
+        <section className="showcase-step">
+          <h2 id="event-gst">Ticket GST</h2>
+          <p className="showcase-hint">AUD ticket sales require a seller declaration. Registered sellers must also choose this event’s GST treatment before customers can book.</p>
+          <p className="showcase-hint">Set your <a href="/business/payouts#event-tax">seller tax details</a> first. Your entered ticket prices include GST when applicable. This affects new bookings only.</p>
+          <label>Australian GST treatment<SelectField label="Australian GST treatment" name="gstTreatment" defaultValue={event.gstTreatment || "unspecified"} options={[{value:"unspecified", label:"Not specified"}, {value:"taxable", label:"Taxable · 10% GST included"}, {value:"gst_free",label:"GST-free"}, {value:"input_taxed",label:"Input taxed"}]} /></label>
+          <p className="showcase-hint">If you are not GST registered, no GST is charged on your tickets. For a registered seller, select the treatment that applies to this event; ask your accountant if unsure.</p>
+        </section>
+        <section className="showcase-step">
           <h2>Group bookings</h2>
           <label className="showcase-switch">
             <input type="checkbox" role="switch" name="allowGroupBookings" defaultChecked={!!event.allowGroupBookings} />
@@ -97,6 +119,7 @@ export function EventDetails({
 
         <section className="showcase-step"><HubShareField kind="event" value={hubIds} onChange={setHubIds} disabled={mutation.busy} /></section>
       </fieldset>
+      <BookingSetupNotice issues={mutation.setupIssues} />
       {mutation.error ? <p className="product-error" role="alert">{mutation.error}</p> : null}
       {mutation.notice ? <p className="product-notice" role="status">{mutation.notice}</p> : null}
       <div className="showcase-actions">

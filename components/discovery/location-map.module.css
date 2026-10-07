@@ -1,0 +1,14 @@
+.wrapper { margin: 12px 0; }
+.map { position: relative; height: 220px; border-radius: 16px; overflow: hidden; background: #f1edf4; }
+.map iframe { position: relative; width: 100%; height: 100%; border: 0; }
+.placeholder { position: absolute; inset: -12px; filter: blur(7px); }
+.placeholder svg { width: 100%; height: 100%; }
+.reveal, .hide, .directions a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 14px; border: 1px solid #ded6e6; border-radius: 12px; background: #fff; color: #6840ad; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
+.reveal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.hide { position: absolute; top: 10px; left: 10px; }
+.directions { position: absolute; top: 10px; right: 10px; }
+.directions a { font-size: 12px; font-weight: 400; }
+.reveal:focus-visible, .hide:focus-visible, .directions a:focus-visible { outline: 3px solid #6840ad; outline-offset: 3px; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: #554a5e; }
+.note { font-size: 14px; line-height: 1.5; color: #665d6c; margin: 8px 0 0; }
+@media (min-width: 760px) { .map { height: 280px; } }

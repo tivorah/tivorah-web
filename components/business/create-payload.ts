@@ -21,6 +21,10 @@ export function creationPayload(
     ...(locality || {}),
   };
   if (kind === "event") {
+    const information = {
+      agePolicy: text('agePolicy'), arrival: text('arrival'), accessibility: text('accessibility'), refundPolicy: text('refundPolicy'),
+      faqs: Array.from({length: 3}, (_, index) => ({question: text(`faq-question-${index}`), answer: text(`faq-answer-${index}`)})).filter(row => row.question || row.answer),
+    };
     if (!images.length) throw new Error("Add an event cover photo.");
     const start = new Date(text("startsAt"));
     const end = new Date(text("endsAt"));
@@ -35,6 +39,7 @@ export function creationPayload(
     const quantity = tickets.reduce((sum, ticket) => sum + ticket.quantity, 0);
     return {
       ...common,
+      information,
       img: images[0],
       displayName: text("businessName"),
       startsAt: start.toISOString(),

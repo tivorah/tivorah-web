@@ -68,3 +68,10 @@ body:has(.admin-dashboard)>.nav,body:has(.admin-dashboard)>footer{display:none}
 .admin-auth-page .admin-signin-form>button { min-height: 52px; width: 100%; margin: 2px 0 0; border-radius: 999px; }
 .admin-auth-page .admin-signin-form .login-security-note { margin: 18px 0 0 !important; text-align: left; }
 @media (max-width: 600px) { .admin-auth-page { padding-top: 24px; } .admin-auth-page .admin-signin-form { padding: 24px 20px; } }
+
+/* Country rollout controls reuse the admin form and searchable SelectField. */
+.payment-country-policy h2 { font-size: 1.35rem; line-height: 1.35; }
+.payment-country-policy button { min-height: 40px; }
+.payment-country-policy li { margin-block: 8px; }
+.payment-country-policy fieldset > label { display: block; margin-block: 12px 8px; }
+.payment-country-policy fieldset > p { max-width: 78ch; }

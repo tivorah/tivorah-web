@@ -16,6 +16,7 @@ const staticPaths: [string, MetadataRoute.Sitemap[number]["changeFrequency"], nu
   ["/services", "daily", 0.8],
   ["/hubs", "daily", 0.8],
   ["/about", "monthly", 0.6],
+  ["/guide", "monthly", 0.6],
   ["/why-tivorah", "monthly", 0.5],
   ["/hub-organisers", "monthly", 0.4],
   ["/service-providers", "monthly", 0.4],

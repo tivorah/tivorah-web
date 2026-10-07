@@ -13,7 +13,7 @@ describe("platformFee", () => {
 describe("ticketTotals", () => {
   const buyerRate = { percentageBps: 500, fixedFeeCents: 30, chargedTo: "buyer" as const };
   it("charges the fee once per order, not per ticket", () => {
-    assert.deepEqual(ticketTotals(5_200, 3, buyerRate), { subtotalCents: 15_600, platformFeeCents: 810, buyerTotalCents: 16_410, chargedTo: "buyer" });
+    assert.deepEqual(ticketTotals(5_200, 3, buyerRate), { subtotalCents: 15_600, platformFeeCents: 810, buyerTotalCents: 16_410, chargedTo: "buyer", ticketGstCents: null, taxTreatment: undefined });
   });
   it("keeps the buyer total equal to the subtotal when the organiser pays the fee", () => {
     const totals = ticketTotals(5_200, 2, { ...buyerRate, chargedTo: "provider" });
@@ -21,7 +21,12 @@ describe("ticketTotals", () => {
     assert.equal(totals?.platformFeeCents, 550);
   });
   it("needs no rate for free tickets", () => {
-    assert.deepEqual(ticketTotals(0, 4, null), { subtotalCents: 0, platformFeeCents: 0, buyerTotalCents: 0, chargedTo: "provider" });
+    assert.deepEqual(ticketTotals(0, 4, null), { subtotalCents: 0, platformFeeCents: 0, buyerTotalCents: 0, chargedTo: "provider", ticketGstCents: 0, taxTreatment: "not_applicable" });
+  });
+  it("extracts GST from inclusive tickets without applying it to the fee", () => {
+    const totals = ticketTotals(5500, 2, { ...buyerRate, taxTreatment: "taxable" });
+    assert.equal(totals?.ticketGstCents, 1000);
+    assert.equal(totals?.buyerTotalCents, 11580);
   });
   it("waits for the rate before pricing a paid ticket", () => assert.equal(ticketTotals(5_200, 1, null), null));
   it("ignores fractional or negative quantities", () => {

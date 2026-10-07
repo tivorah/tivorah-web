@@ -1,4 +1,5 @@
 "use client";
+import { BookingSetupNotice } from "../booking-setup-notice";
 import { useState } from "react";
 import Link from "next/link";
 import { SelectField } from "../../ui/select-field";
@@ -75,6 +76,7 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
       {!adding && event.ticketTypes.length < MAX_PACKAGES ? <button type="button" className="product-primary press-fx" onClick={() => { setAdding(newPackage({ currency: event.ticketTypes[0]?.currency || "AUD" })); setEditing(null); }}>Add a package</button> : null}
     </header>
 
+    <BookingSetupNotice issues={mutation.setupIssues} />
     {mutation.error || formError ? <p className="product-error" role="alert">{formError || mutation.error}</p> : null}
     {mutation.notice ? <p className="product-notice" role="status">{mutation.notice}</p> : null}
 

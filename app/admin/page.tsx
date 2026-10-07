@@ -2,6 +2,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { ShowcaseMediaReview } from "./showcase-media-review";
 import PricingManager from "./pricing-manager";
+import PaymentCountries from "./payment-countries";
 import FeatureManager from "./feature-manager";
 import Image from "next/image";
 import Link from "next/link";
@@ -1229,7 +1230,7 @@ export default function AdminPage() {
             </div>
           )}
           {section === "features" && <FeatureManager flags={features} loading={dashboardBusy} busy={featureBusy} update={updateFlag} history={featureHistory} toggleHistory={toggleHistory} />}
-          {section === "payments" && <PricingManager request={request} />}
+          {section === "payments" && <><PaymentCountries request={request} /><PricingManager request={request} /></>}
           {section === "users" && (
             <section className="panel user-directory" aria-busy={usersBusy}>
               <div className="directory-heading">

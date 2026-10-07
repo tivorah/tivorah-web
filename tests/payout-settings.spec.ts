@@ -1,8 +1,16 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  const event = { source: 'event', id: 42, title: 'Adelaide music evening', reference: 'Event order #42', createdAt: '2026-10-06T10:00:00Z', currency: 'AUD', totalCents: 10000, status: 'confirmed' };
+  const service = { source: 'service', id: 42, title: 'Home cleaning appointment', reference: 'Service booking #42', createdAt: '2026-10-06T09:00:00Z', currency: 'AUD', totalCents: 6000, status: 'completed' };
+  await page.route("**/api/v1/payments/connect/earnings-summary", route => route.fulfill({ json: { data: { totals: { all: [{ currency: 'AUD', collectedCents: 16000, payments: 3 }], event: [{ currency: 'AUD', collectedCents: 10000, payments: 2 }], service: [{ currency: 'AUD', collectedCents: 6000, payments: 1 }] }, recentPayments: { all: [event, service], event: [event], service: [service] }, updatedAt: '2026-10-07T00:00:00Z' } } }));
+  await page.route("**/api/v1/payments/event-tax-profile", route => route.fulfill({ json: { data: { profile: null } } }));
+});
+
 test("payout loading matches its layout and Stripe opens in a separate tab", async ({ page, context }) => {
   await page.route("**/api/auth/get-session**", route => route.fulfill({ json: { session: { id: "session", userId: "1", expiresAt: new Date(Date.now() + 3600000).toISOString() }, user: { id: "1", email: "taylor@example.test", name: "Taylor" } } }));
   await page.route("**/api/v1/web/account", route => route.fulfill({ json: { data: { id: 1, firstName: "Taylor" } } }));
+  await page.route("**/api/v1/payments/connect/payout-summary", route => route.fulfill({ json: { data: { connected: true, livemode: false, updatedAt: "2026-10-06T01:00:00.000Z", currencies: [{ currency: "AUD", minorUnitExponent: 2, paidOutAmount: 125000, paidOutCount: 4, availableAmount: 25000, pendingAmount: 5000, inTransitAmount: 10000 }] } } }));
   let release!: () => void;
   const held = new Promise<void>(resolve => { release = resolve; });
   await page.route("**/api/v1/payments/connect/account", async route => { await held; await route.fulfill({ json: { data: { connected: true, chargesEnabled: true, payoutsEnabled: true, currentPartnerAgreementVersion: "1.0", partnerAgreementVersion: "1.0" } } }); });
@@ -10,8 +18,31 @@ test("payout loading matches its layout and Stripe opens in a separate tab", asy
   await expect(page.getByRole("status", { name: "Loading payout settings" })).toHaveCount(1);
   await expect(page.getByText("Loading your listings…")).toHaveCount(0);
   release();
-  await expect(page.getByRole("heading", { name: "Customer payments" })).toBeVisible();
-  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  const workspace = page.getByRole('navigation', { name: 'Payout workspace' });
+  await expect(page.getByRole('heading', { name: 'Your bank payouts' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Booking payments', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Seller tax settings' })).toHaveCount(0);
+  await workspace.getByRole('button', { name: 'Payments', exact: true }).click();
+  await expect(page.locator(".payouts-account-card").getByRole("checkbox")).toHaveCount(0);
+  const earnings = page.getByRole('region', { name: 'Booking payments', exact: true });
+  await expect(earnings.getByText(/AUD.*160\.00/)).toBeVisible();
+  await earnings.getByRole('button', { name: 'Services', exact: true }).click();
+  await expect(earnings.locator(".payouts-amount").filter({ hasText: /AUD.*60\.00/ })).toBeVisible();
+  await expect(earnings.getByText('Home cleaning appointment')).toBeVisible();
+  await expect(earnings.getByText('Adelaide music evening')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Your bank payouts' })).toHaveCount(0);
+  await earnings.getByRole('button', { name: 'Events', exact: true }).click();
+  await expect(earnings.locator(".payouts-amount").filter({ hasText: /AUD.*100\.00/ })).toBeVisible();
+  await expect(earnings.getByText('Adelaide music evening')).toBeVisible();
+  await expect(earnings.getByText('Home cleaning appointment')).toHaveCount(0);
+  await expect(earnings.getByText('Event order #42', { exact: true })).toBeVisible();
+  await earnings.getByRole('button', { name: 'All', exact: true }).click();
+  await earnings.screenshot({ path: "/tmp/tivorah-booking-payments-desktop.png" });
+  await workspace.getByRole('button', { name: 'Payouts', exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Your bank payouts" })).toBeVisible();
+  await expect(page.getByText(/AUD.*1,250\.00/)).toBeVisible();
+  await expect(page.getByText(/Test mode/)).toBeVisible();
+  await page.setViewportSize({ width: 1600, height: 1000 });
   await page.screenshot({ path: "/tmp/tivorah-payouts-desktop.png" });
   await page.route("**/api/v1/payments/connect/dashboard", route => route.fulfill({ json: { data: { url: "https://dashboard.stripe.com/test" } } }));
   await context.route("https://dashboard.stripe.com/**", route => route.fulfill({ body: "Stripe test page" }));
@@ -19,10 +50,61 @@ test("payout loading matches its layout and Stripe opens in a separate tab", asy
   await page.getByRole("button", { name: "Open Stripe dashboard" }).click();
   const popup = await popupPromise;
   await expect(popup).toHaveURL("https://dashboard.stripe.com/test");
-  await expect(page).toHaveURL(/\/business\/payouts$/);
+  await expect(page).toHaveURL(/\/business\/payouts#payouts$/);
   expect(await popup.evaluate(() => window.opener)).toBeNull();
   await popup.close();
   await page.setViewportSize({ width: 390, height: 844 });
+  await workspace.getByRole('button', { name: 'Payments', exact: true }).click();
+  await earnings.screenshot({ path: "/tmp/tivorah-booking-payments-phone.png" });
+  await workspace.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Seller tax settings' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your bank payouts' })).toHaveCount(0);
   await page.screenshot({ path: "/tmp/tivorah-payouts-phone.png", fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
+test("payout statistics recover from an error and remain readable with zoom", async ({ page }) => {
+  await page.route("**/api/auth/get-session**", route => route.fulfill({ json: { session: { id: "session", userId: "1", expiresAt: new Date(Date.now() + 3600000).toISOString() }, user: { id: "1", email: "business@example.test", name: "Business" } } }));
+  await page.route("**/api/v1/web/account", route => route.fulfill({ json: { data: { id: 1, firstName: "Business" } } }));
+  await page.route("**/api/v1/payments/connect/account", route => route.fulfill({ json: { data: { connected: true, chargesEnabled: true, payoutsEnabled: true, currentPartnerAgreementVersion: "1.0", partnerAgreementVersion: "1.0" } } }));
+  let attempts = 0;
+  await page.route("**/api/v1/payments/connect/payout-summary", route => {
+    attempts++;
+    return attempts === 1 ? route.fulfill({ status: 503, json: { status: false, message: "Unavailable" } }) : route.fulfill({ json: { data: { connected: true, livemode: true, updatedAt: "2026-10-06T01:00:00.000Z", currencies: [{ currency: "AUD", minorUnitExponent: 2, paidOutAmount: 0, paidOutCount: 0, availableAmount: 0, pendingAmount: 0, inTransitAmount: 0 }] } } });
+  });
+  await page.goto("/business/payouts");
+  await expect(page.getByText(/Payout amounts could not load/)).toBeVisible();
+  await page.getByRole("button", { name: "Try again", exact: true }).click();
+  await expect(page.locator(".payouts-statistics").getByText(/AUD.*0\.00/)).toHaveCount(4);
+  await expect(page.getByText(/Test mode/)).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page.screenshot({ path: "/tmp/tivorah-payouts-statistics-dark-phone.png", fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.evaluate(() => { document.documentElement.style.zoom = "2"; });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: "/tmp/tivorah-payouts-statistics-zoom.png", fullPage: true });
+});
+
+test('booking payment failures recover without showing a false zero balance', async ({ page }) => {
+  await page.route('**/api/auth/get-session**', route => route.fulfill({ json: { session: { id: 'session', userId: '1', expiresAt: new Date(Date.now() + 3600000).toISOString() }, user: { id: '1', email: 'seller@example.test', name: 'Seller' } } }));
+  await page.route('**/api/v1/web/account', route => route.fulfill({ json: { data: { id: 1, firstName: 'Seller' } } }));
+  await page.route('**/api/v1/payments/connect/account', route => route.fulfill({ json: { data: { connected: true, chargesEnabled: true, payoutsEnabled: true, currentPartnerAgreementVersion: '1.0', partnerAgreementVersion: '1.0' } } }));
+  await page.route('**/api/v1/payments/connect/payout-summary', route => route.fulfill({ json: { data: { connected: true, livemode: true, currencies: [] } } }));
+  let fail = true;
+  await page.route('**/api/v1/payments/connect/earnings-summary', route => fail ? route.fulfill({ status: 503, json: { message: 'Unavailable' } }) : route.fulfill({ json: { data: { totals: { all: [], event: [], service: [] }, recentPayments: { all: [], event: [], service: [] } } } }));
+  await page.goto('/business/payouts');
+  await page.getByRole('navigation', { name: 'Payout workspace' }).getByRole('button', { name: 'Payments', exact: true }).click();
+  const payments = page.getByRole('region', { name: 'Booking payments', exact: true });
+  await expect(payments.getByText('Booking payments couldn’t load.')).toBeVisible();
+  await expect(payments.getByText(/No paid/)).toHaveCount(0);
+  await expect(payments.locator('.payouts-amount')).toHaveCount(0);
+  fail = false;
+  await payments.getByRole('button', { name: 'Retry booking payments' }).click();
+  await expect(payments.getByText('No paid event or service bookings yet.')).toBeVisible();
+  await payments.getByRole('button', { name: 'Services', exact: true }).click();
+  await expect(payments.getByText('No paid service bookings yet.')).toBeVisible();
+  await page.getByRole('navigation', { name: 'Payout workspace' }).getByRole('button', { name: 'Payouts', exact: true }).click();
+  await expect(page.getByText('Event and service money, paid into the same bank account.')).toBeVisible();
 });

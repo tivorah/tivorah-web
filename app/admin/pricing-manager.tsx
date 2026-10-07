@@ -28,7 +28,7 @@ export default function PricingManager({ request }: { request: (path: string, in
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not save pricing.'); } finally { setBusy(false); }
   }
   async function remove(rule: Rule) {
-    if (!window.confirm('Delete this pricing rule for future checkouts? Existing orders and audit history will be preserved. Deleting the default transaction rule can stop new paid checkouts.')) return;
+    if (!window.confirm('Delete this pricing rule for future checkouts? Existing orders and audit history will be preserved. Deleting a transaction rule removes its Tivorah fee from future checkouts.')) return;
     setBusy(true); setError('');
     try { await request(`/api/v1/admin/pricing-rules/${rule.id}`, { method: 'DELETE', body: JSON.stringify({ version: rule.version }) }); setRules(rows => rows.filter(row => row.id !== rule.id)); setMessage('Pricing rule deleted.'); if (editing?.id === rule.id) close(); }
     catch (e) { setError(e instanceof Error ? e.message : 'Could not delete pricing.'); } finally { setBusy(false); }
@@ -40,6 +40,7 @@ export default function PricingManager({ request }: { request: (path: string, in
     <div className="workspace-tabs" role="group" aria-label="Pricing feature">{features.map(item => <button key={item.key} aria-pressed={feature === item.key} disabled={busy} onClick={() => { setFeature(item.key); setEditing(null); setError(''); }}><strong>{item.title}</strong><span>{rules.filter(row => row.feature === item.key).length} rules</span></button>)}</div>
     <div className="workspace-list-heading"><div><h3>{features.find(item => item.key === feature)?.title}</h3><p>{features.find(item => item.key === feature)?.description}</p></div><button ref={createButton} disabled={loading || busy || !!error} onClick={() => { setEditing(initial(feature)); setMessage(''); }}><span aria-hidden="true">＋ </span>Create rule</button></div>
     {feature === 'item' ? <p className="workspace-note">Item purchases currently happen outside Tivorah. Item rules define pricing but do not collect money until item checkout is available.</p> : null}
+    <p className="workspace-note">The Tivorah fee helps cover payment processing and platform costs. Stripe charges Tivorah separately; switching this fee off does not switch off Stripe’s charges. Choose Buyer to add the fee to checkout, or Seller / provider / organiser to deduct it from their earnings.</p>
     <p className="workspace-note">Specific categories override “All categories”; within a category, an exact item condition overrides “All conditions”. Only one transaction rule applies.</p>
     <p className="workspace-note">Saving or removing the active “All categories / All conditions” transaction rate sends connected sellers a one-time notice they must acknowledge on next login.</p>
     {error ? <div className="workspace-error" role="alert">{error} <button className="admin-secondary" disabled={loading} onClick={() => void load()}>Retry loading</button></div> : null}

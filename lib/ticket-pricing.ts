@@ -6,8 +6,8 @@
 // re-quotes and snapshots the fee when the order is created, so the charged amount stays
 // server-authoritative.
 
-export type FeeRate = { percentageBps: number; fixedFeeCents: number; chargedTo: "buyer" | "provider" };
-export type TicketTotals = { subtotalCents: number; platformFeeCents: number; buyerTotalCents: number; chargedTo: "buyer" | "provider" };
+export type FeeRate = { percentageBps: number; fixedFeeCents: number; chargedTo: "buyer" | "provider"; taxTreatment?: string };
+export type TicketTotals = { subtotalCents: number; platformFeeCents: number; buyerTotalCents: number; chargedTo: "buyer" | "provider"; ticketGstCents: number | null; taxTreatment?: string };
 
 /** Mirrors calculatePlatformFee on the API: basis points on the subtotal plus a fixed fee per order. */
 export function platformFee(subtotalCents: number, rate: FeeRate): number {
@@ -17,8 +17,9 @@ export function platformFee(subtotalCents: number, rate: FeeRate): number {
 }
 
 /** Reads the fee rate from a server quote. Free quotes carry no rate, and none is needed. */
-export function feeRateFromQuote(quote: { platformFeeCents?: number; chargedTo?: string; percentageBps?: number; fixedFeeCents?: number }): FeeRate {
+export function feeRateFromQuote(quote: { platformFeeCents?: number; chargedTo?: string; percentageBps?: number; fixedFeeCents?: number; tax?: { treatment: string } }): FeeRate {
   return {
+    ...(quote.tax ? { taxTreatment: quote.tax.treatment } : {}),
     percentageBps: Number(quote.percentageBps) || 0,
     fixedFeeCents: Number(quote.fixedFeeCents) || 0,
     chargedTo: quote.chargedTo === "buyer" ? "buyer" : "provider",
@@ -28,11 +29,13 @@ export function feeRateFromQuote(quote: { platformFeeCents?: number; chargedTo?:
 /** Totals for a ticket selection, or null while a paid ticket's fee rate is still unknown. */
 export function ticketTotals(priceCents: number, quantity: number, rate: FeeRate | null): TicketTotals | null {
   const subtotalCents = Math.max(0, priceCents) * Math.max(0, Math.floor(quantity));
-  if (subtotalCents === 0) return { subtotalCents: 0, platformFeeCents: 0, buyerTotalCents: 0, chargedTo: "provider" };
+  if (subtotalCents === 0) return { subtotalCents: 0, platformFeeCents: 0, buyerTotalCents: 0, chargedTo: "provider", ticketGstCents: 0, taxTreatment: "not_applicable" };
   if (!rate) return null;
   const platformFeeCents = platformFee(subtotalCents, rate);
   return {
     subtotalCents,
+    ticketGstCents: rate.taxTreatment === "taxable" ? Math.round(subtotalCents / 11) : ["not_registered", "gst_free", "input_taxed"].includes(rate.taxTreatment || "") ? 0 : null,
+    taxTreatment: rate.taxTreatment,
     platformFeeCents,
     buyerTotalCents: subtotalCents + (rate.chargedTo === "buyer" ? platformFeeCents : 0),
     chargedTo: rate.chargedTo,

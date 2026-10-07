@@ -312,8 +312,8 @@ test("mobile filters preserve search and selected locality through API requests"
   await page.getByText('More filters', { exact: false }).click();
   await page.getByRole('combobox', { name: 'Condition', exact: true }).click();
   await page.getByRole('option', { name: 'Used — good', exact: true }).click();
-  await page.getByLabel('Minimum price (AUD)', { exact: true }).fill('10');
-  await page.getByLabel('Maximum price (AUD)', { exact: true }).fill('50');
+  await page.getByLabel('Minimum price', { exact: true }).fill('10');
+  await page.getByLabel('Maximum price', { exact: true }).fill('50');
   await page.getByRole('button', { name: 'Apply filters' }).click();
   await expect.poll(() => requests.some(url => url.searchParams.get('minPrice') === '1000' && url.searchParams.get('category') === 'Furniture & home' && url.searchParams.get('latitude') === '-34.9' && url.searchParams.get('query') === 'chair')).toBe(true);
   await page.getByRole('button', { name: 'Reset all' }).click();
@@ -334,13 +334,14 @@ for (const width of [390, 1440]) {
     await expect(page.getByRole('option')).toHaveCount(1);
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
+    await page.keyboard.press('Escape');
     await expect(category).toBeFocused();
     await expect(page.getByRole('button', { name: 'Remove Furniture & home' })).toBeVisible();
     const more = page.getByRole('button', { name: /More filters/ });
     await more.click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
-    await page.getByLabel('Minimum price (AUD)', { exact: true }).fill('200');
+    await page.getByLabel('Minimum price', { exact: true }).fill('200');
     await page.getByRole('combobox', { name: 'Condition', exact: true }).click();
     await page.keyboard.press('Escape');
     await expect(dialog).toBeVisible();
@@ -349,7 +350,7 @@ for (const width of [390, 1440]) {
     await expect(more).toBeFocused();
     expect(new URL(page.url()).searchParams.has('minPrice')).toBe(false);
     await more.click();
-    await expect(page.getByLabel('Minimum price (AUD)', { exact: true })).toHaveValue('');
+    await expect(page.getByLabel('Minimum price', { exact: true })).toHaveValue('');
     await dialog.screenshot({ path: `/tmp/tivorah-filter-dialog-${width}.png` });
     await page.getByRole('button', { name: 'Close filters' }).click();
     await category.click();

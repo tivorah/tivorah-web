@@ -196,3 +196,9 @@
 .event-booking-column .product-detail-enquiry textarea{width:100%;min-height:88px;padding:10px 12px;border:1px solid #c9becf;border-radius:14px;font:inherit;font-size:16px;resize:vertical}
 .event-booking-column .product-detail-enquiry label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
 .event-booking-column .product-detail-enquiry .product-secondary{width:100%;margin-top:12px;min-height:46px}
+
+.event-visit-detail { border-bottom: 1px solid var(--border, #e5e1eb); padding: 4px 0; }
+.event-visit-detail summary { min-height: 44px; cursor: pointer; display: flex; align-items: center; font-weight: 600; gap: 12px; }
+.event-visit-detail summary::after { content: '+'; margin-left: auto; }
+.event-visit-detail[open] summary::after { content: '−'; }
+.event-visit-detail p { margin: 8px 0 20px; }

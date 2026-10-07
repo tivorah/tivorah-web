@@ -223,6 +223,7 @@ input:focus-visible {
 }
 
 .footer-inner {
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 48px;
 }
@@ -260,6 +261,13 @@ input:focus-visible {
 
   .footer-links {
     width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .footer-links nav, .footer-links a {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 }
 

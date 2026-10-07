@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 3 October 2026
+        <strong>Last updated:</strong> 7 October 2026
       </p>
 
       <p>
@@ -420,6 +420,8 @@ export default function Privacy() {
         financial records may be retained after account deletion where needed
         for tax, refunds, disputes, fraud prevention or another lawful purpose.
       </p>
+
+      <p>Seller tax settings record your legal name, declared ABN and GST registration, and the time and available version of your declaration. We use these details for payment readiness and applicable booking records. Where supported, we may suggest a legal name from your connected Stripe account for you to confirm. This is not independent verification of your tax registration. Required tax reporting is separate from optional marketing consent; we request only information needed for an identified purpose. Do not send tax file numbers through messages or ordinary support email.</p>
 
       <h2>Automated decisions</h2>
       <p>

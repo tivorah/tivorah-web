@@ -37,7 +37,7 @@ export function BusinessOverview({ firstName }: { firstName: string }) {
     { label: "Items for sale", value: data?.listings.items, href: "/business?view=listings" },
     { label: "Services", value: data?.listings.services, href: "/business?view=listings" },
     { label: "Upcoming events", value: data?.events.upcoming, note: data?.events.drafts ? `${data.events.drafts} draft${data.events.drafts === 1 ? "" : "s"}` : undefined, href: "/business?view=events" },
-    { label: "Upcoming appointments", value: data?.appointments.upcoming, href: "/account/bookings" },
+    { label: "Upcoming appointments", value: data?.appointments.upcoming, href: "/account/bookings?role=provider" },
   ];
   const showcase = data?.showcase;
   const payouts = data?.payouts;

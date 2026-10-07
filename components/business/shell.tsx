@@ -27,7 +27,7 @@ export function BusinessShell({ children }: { children: ReactNode }) {
         <Link href="/business/create?type=item" aria-current={createType === "item" ? "page" : undefined}>Sell an item</Link>
       </div>
       <div className="business-sidebar-group"><p>Tools</p>
-        <Link href="/account/bookings">Customer appointments</Link>
+        <Link href="/account/bookings?role=provider">Customer appointments</Link>
         <Link href="/business/showcase" aria-current={path === "/business/showcase" ? "page" : undefined}>Your shop</Link>
         <Link href="/business/payouts" aria-current={path === "/business/payouts" ? "page" : undefined}>Payout settings</Link>
       </div>
@@ -44,7 +44,7 @@ export function BusinessShell({ children }: { children: ReactNode }) {
           <Link href="/business/create?type=item">Sell an item</Link>
         </div></details>
         <details className="business-mobile-create business-mobile-tools-menu"><summary>Business tools</summary><div>
-          <Link href="/account/bookings">Customer appointments</Link>
+          <Link href="/account/bookings?role=provider">Customer appointments</Link>
           <Link href="/business/showcase">Your shop</Link>
           <Link href="/business/payouts">Payout settings</Link>
         </div></details>

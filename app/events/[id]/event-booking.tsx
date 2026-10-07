@@ -10,7 +10,7 @@ import { OpenInApp } from "../../../components/ui/open-in-app";
 import { PublicOfferingVideos } from "../../../components/business/offering-videos";
 import { MediaGallery } from "../../../components/discovery/media-gallery";
 import { MoreEvents } from "../../../components/discovery/more-events";
-import { DirectionsLink } from "../../../components/discovery/directions-link";
+import { LocationMap } from "../../../components/discovery/location-map";
 import { Enquiry } from "../../../components/discovery/enquiry";
 import { useAccount } from "../../../hooks/use-account";
 import { eventPhotos, isEventOrganiser } from "../../../lib/event-detail";
@@ -45,7 +45,7 @@ export default function EventBookingPage({ event }: { event: PublicEvent }) {
   const photos = eventPhotos(event.img, event.images);
   const { account } = useAccount();
   const organiser = isEventOrganiser(account?.username, event.organizerUsername);
-  const minPrice = event.ticketTypes.length ? Math.min(...event.ticketTypes.map(item => item.priceCents)) : null;
+  const minPrice = event.ticketTypes.length ? Math.min(...event.ticketTypes.map(item => item.buyerPriceCents ?? item.priceCents)) : null;
   return <article className="page-shell event-page">
     <BackLink className="event-back" fallback="/events" />
     <MediaGallery photos={photos} title={event.title} />
@@ -53,10 +53,13 @@ export default function EventBookingPage({ event }: { event: PublicEvent }) {
     <div className="event-layout"><div className="event-details">
       <p className="event-eyebrow">TIVORAH EVENTS</p><h1>{event.title}</h1><p className="event-organizer">Organised by {event.organizerUsername && event.organizerShopOnline ? <Link href={`/shops/${encodeURIComponent(event.organizerUsername)}`}><strong>{event.organizerName}</strong></Link> : <strong>{event.organizerName}</strong>}</p>
       <dl className="event-facts"><div><dt>When</dt><dd>{eventDate(event.startsAt)}</dd></div><div><dt>Where</dt><dd>{event.locationType === 'online' ? 'Online. Joining details are provided with your ticket.' : location || 'See the organiser for location details.'}</dd></div></dl>
-      <section><h2>About this event</h2><p className="event-description">{event.description || 'The organiser has not added a description yet.'}</p></section>
+      <section><h2>About this event</h2>{event.description && event.description.length > 500 ? <><p className="event-description">{event.description.slice(0, 500).trimEnd()}…</p><details className="event-visit-detail"><summary>Read the full story</summary><p className="event-description">{event.description}</p></details></> : <p className="event-description">{event.description || 'The organiser has not added a description yet.'}</p>}</section>
+      {event.information && ['agePolicy', 'arrival', 'accessibility', 'refundPolicy'].some(key => !!event.information?.[key as 'arrival']) && <section><h2>Plan your visit</h2>{(['agePolicy', 'arrival', 'accessibility', 'refundPolicy'] as const).map(key => event.information?.[key] ? <details key={key} className="event-visit-detail"><summary>{({agePolicy: 'Age and ID', arrival: 'Arrival and parking', accessibility: 'Accessibility', refundPolicy: 'Refund policy'})[key]}</summary><p className="event-description">{event.information[key]}</p></details> : null)}</section>}
+      {!!event.information?.faqs?.length && <section><h2>Questions, answered</h2>{event.information.faqs.map((faq, index) => <details className="event-visit-detail" key={index}><summary>{faq.question}</summary><p className="event-description">{faq.answer}</p></details>)}</section>}
       <PublicOfferingVideos kind="event" id={event.id} />
-      {event.locationType !== 'online' && location ? <section className="event-location"><h2>Location</h2><p>{location}</p><div className="event-map"><iframe title={`Map showing ${location}`} src={`https://www.google.com/maps?q=${encodeURIComponent(location)}&output=embed`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /></div><DirectionsLink className="event-secondary" destination={location} /></section> : null}
-      <section><h2>Booking information</h2><p>Book as a guest with your name and email, or sign in to keep tickets in your Tivorah account. Your ticket link will be emailed to you.</p><p>For cancellation or refund questions, <a href={`/contact?eventId=${event.id}`}>contact Tivorah</a> with the event name and booking number.</p></section>
+      {event.locationType !== 'online' && location ? <section className="event-location"><h2>Location</h2><p>{location}</p><LocationMap key={event.id} destination={location} /></section> : null}
+      <p><Link href={`/contact?${new URLSearchParams({subject: `Report event ${event.id}`})}`}>Report this event</Link></p>
+      <section><h2>Booking information</h2><p>{event.guestBookingAvailable ? 'You can book as a guest or sign in to keep tickets in your Tivorah account.' : 'Sign in to book and keep tickets in your Tivorah account.'} Your ticket link will be emailed to you.</p><p>For cancellation or refund questions, <a href={`/contact?eventId=${event.id}`}>contact Tivorah</a> with the event name and booking number.</p></section>
       {event.organizerUsername && event.organizerShopOnline ? <ShowcaseCard username={event.organizerUsername} surface="events" /> : null}
     </div>
     <div className="event-booking-column"><section id="tickets" className="event-booking" aria-labelledby="ticket-heading"><h2 id="ticket-heading">Get tickets</h2>
@@ -64,6 +67,6 @@ export default function EventBookingPage({ event }: { event: PublicEvent }) {
     </section>{!organiser ? <Enquiry id={event.id} kind="events" primary={false} /> : null}</div></div>
     <MoreEvents eventId={event.id} />
     <EventAppInvite />
-    {!ticketsVisible ? <div className="event-ticket-dock"><span>{minPrice === null ? 'Event tickets' : minPrice === 0 ? 'Free tickets available' : `From ${ticketMoney(minPrice, event.ticketTypes.find(ticket => ticket.priceCents === minPrice)?.currency)}`}</span><a className="event-primary" href="#tickets">Get tickets</a></div> : null}
+    {!ticketsVisible ? <div className="event-ticket-dock"><span>{minPrice === null ? 'Event tickets' : minPrice === 0 ? 'Free tickets available' : `From ${ticketMoney(minPrice, event.ticketTypes.find(ticket => (ticket.buyerPriceCents ?? ticket.priceCents) === minPrice)?.currency)}`}</span><a className="event-primary" href="#tickets">Get tickets</a></div> : null}
   </article>;
 }

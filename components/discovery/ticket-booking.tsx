@@ -4,17 +4,24 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAccount } from "../../hooks/use-account";
-import { api } from "../../lib/api/client";
+import { api, ApiError } from "../../lib/api/client";
 import { BookingTermsConsent } from "./booking-terms-consent";
 import { SelectField } from "../ui/select-field";
 import { AnimatedMoney } from "../ui/animated-money";
 import { feeRateFromQuote, ticketTotals, type FeeRate } from "../../lib/ticket-pricing";
 import {
   BookingQuote,
+  EventApiError,
   eventApi,
+  MyEventBooking,
   PublicEvent,
   ticketMoney,
 } from "../../app/events/api";
+import { CheckoutHoldBanner } from "./checkout-hold-banner";
+import { verifiedStripeCheckoutUrl } from "../../lib/checkout-hold";
+
+/** The organiser's per-person limit, less what this signed-in buyer already holds. */
+const buyerAllowance = (ticket: { maxTicketsPerBuyer: number }, held = 0) => Math.max(0, ticket.maxTicketsPerBuyer - held);
 
 export function TicketBooking({ event }: { event: PublicEvent }) {
   // Packages can change after an access code unlocks hidden ones.
@@ -34,7 +41,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
       if (!next.accessCodeAccepted) { setCodeState("error"); return; }
       setPackages(next.ticketTypes); setAccessCode(code); setCodeState("ok");
       const unlocked = next.ticketTypes.find((item) => item.hidden && item.available);
-      if (unlocked) { setTicketId(unlocked.id); setQuantity(1); setMode(unlocked.kind === "group" ? "group" : "individual"); }
+      if (unlocked) { setQuantities({ [unlocked.id]: 1 }); setMode(unlocked.kind === "group" ? "group" : "individual"); }
     } catch { setCodeState("error"); }
   }
 
@@ -46,18 +53,38 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
     error: accountError,
     retry,
   } = useAccount();
-  const [ticketId, setTicketId] = useState(
-    () =>
-      packages.find(
-        (ticket) =>
-          ticket.id === Number(params.get("ticket")) && ticket.available,
-      )?.id ??
-      packages.find((ticket) => ticket.available)?.id ??
-      0,
-  );
-  const [quantity, setQuantity] = useState(() =>
-    Math.max(1, Math.min(20, Number(params.get("quantity")) || 1)),
-  );
+  // Loaded in the browser because the event page itself is rendered without the visitor's session.
+  const [myBooking, setMyBooking] = useState<MyEventBooking | null>(null);
+  const [myBookingVersion, setMyBookingVersion] = useState(0);
+  const [holdNotice, setHoldNotice] = useState("");
+  const signedInId = account?.id;
+  useEffect(() => {
+    if (!signedInId) return;
+    let cancelled = false;
+    eventApi<MyEventBooking>(`/${event.id}/my-booking`)
+      .then((data) => { if (!cancelled) setMyBooking(data); })
+      .catch(() => { if (!cancelled) setMyBooking(null); });
+    return () => { cancelled = true; };
+  }, [signedInId, event.id, myBookingVersion]);
+  const heldFor = (ticketTypeId: number) => (signedInId ? myBooking?.heldByYou[String(ticketTypeId)] ?? 0 : 0);
+  const [closedCheckoutId, setClosedCheckoutId] = useState<number | null>(null);
+  const currentCheckout = signedInId ? myBooking?.activeCheckout ?? null : null;
+  const activeCheckout = currentCheckout?.orderId === closedCheckoutId ? null : currentCheckout;
+  const [quantities, setQuantities] = useState<Record<number, number>>(() => {
+    try {
+      const saved = JSON.parse(params.get('cart') || 'null');
+      if (Array.isArray(saved) && saved.length && saved.every(item => Number.isInteger(item.ticketTypeId) && Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity <= 20) && saved.reduce((sum, item) => sum + item.quantity, 0) <= 20) return Object.fromEntries(saved.map(item => [item.ticketTypeId, item.quantity]));
+    } catch { /* Start with the first available ticket. */ }
+    const first = packages.find(item => item.id === Number(params.get('ticket')) && item.available) ?? packages.find(item => item.available);
+    return first ? { [first.id]: Math.min(buyerAllowance(first), first.remaining, Math.max(1, Math.min(20, Number(params.get('quantity')) || 1))) } : {};
+  });
+  const items = Object.entries(quantities).filter(([, count]) => count > 0).map(([id, count]) => ({ ticketTypeId: Number(id), quantity: count })).sort((a, b) => a.ticketTypeId - b.ticketTypeId);
+  const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const selected = items.map(item => ({ ...item, ticket: packages.find(option => option.id === item.ticketTypeId) }));
+  const ticket = selected.find(item => (item.ticket?.priceCents ?? 0) > 0)?.ticket ?? selected[0]?.ticket ?? packages.find(item => item.available);
+  const ticketId = ticket?.id ?? 0;
+  const validSelection = quantity > 0 && quantity <= 20 && selected.every(item => item.ticket?.available && item.ticket.currency === ticket?.currency && item.quantity <= Math.min(item.ticket.remaining, buyerAllowance(item.ticket, heldFor(item.ticket.id))));
+  const subtotal = selected.reduce((sum, item) => sum + (item.ticket?.priceCents ?? 0) * item.quantity, 0);
   // Fee rate for the selected ticket type, from one server quote. Quantity changes never refetch.
   const [rate, setRate] = useState<{ key: string; value: FeeRate } | null>(null);
   const [quoteError, setQuoteError] = useState("");
@@ -72,14 +99,13 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
   const requestKey = useRef<{ fingerprint: string; value: string } | null>(
     null,
   );
-  const selection = `${ticketId}:${quantity}`;
-  const ticket = packages.find((item) => item.id === ticketId);
+  const selection = JSON.stringify(items);
   const rateKey = `${ticketId}:${accessCode}`;
   const paid = (ticket?.priceCents ?? 0) > 0;
-  const currentQuote = ticket ? ticketTotals(ticket.priceCents, quantity, rate?.key === rateKey ? rate.value : null) : null;
-  const returnTo = `/events/${event.id}?ticket=${ticketId}&quantity=${quantity}#tickets`;
+  const currentQuote = ticket ? ticketTotals(subtotal, 1, rate?.key === rateKey ? rate.value : null) : null;
+  const returnTo = `/events/${event.id}?cart=${encodeURIComponent(selection)}#tickets`;
   useEffect(() => {
-    if (!ticketId || !paid) return;
+    if (!ticketId || !paid) { setQuoteError(""); return; }
     const controller = new AbortController();
     setQuoteError("");
     eventApi<BookingQuote>(`/${event.id}/quote`, {
@@ -105,7 +131,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
   async function submit(e: FormEvent) {
     e.preventDefault();
     const guest = signedOut && event.guestBookingAvailable;
-    if (submitting.current || !termsAccepted || (!account && !guest) || !currentQuote || !ticket?.available || (guest && (!guestName.trim() || !guestEmail.trim() || !adultConfirmed)))
+    if (submitting.current || !termsAccepted || (!account && !guest) || !currentQuote || !validSelection || (guest && (!guestName.trim() || !guestEmail.trim() || !adultConfirmed)))
       return;
     submitting.current = true;
     setBusy(true);
@@ -139,7 +165,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
         ticketUrl: string;
       }>(`/${event.id}/guest-orders`, {
         method: "POST",
-        body: JSON.stringify({ ticketTypeId: ticketId, quantity, idempotencyKey: requestKey.current!.value, name: guestName.trim(), email: guestEmail.trim(), adultConfirmed, termsAccepted, ...(accessCode ? { accessCode } : {}) }),
+        body: JSON.stringify({ items, expectedTotalCents: currentQuote.buyerTotalCents, idempotencyKey: requestKey.current!.value, name: guestName.trim(), email: guestEmail.trim(), adultConfirmed, termsAccepted, ...(accessCode ? { accessCode } : {}) }),
       }) : await api<{
         order: { id: number; status: string };
         checkoutUrl: string | null;
@@ -147,18 +173,17 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
       }>(`/web/account/events/${event.id}/orders`, {
         method: "POST",
         body: JSON.stringify({
-          ticketTypeId: ticketId,
-          quantity,
+          items,
+          expectedTotalCents: currentQuote.buyerTotalCents,
           idempotencyKey: requestKey.current!.value,
           termsAccepted,
           ...(accessCode ? { accessCode } : {}),
         }),
       });
       if (result.checkoutUrl) {
-        const url = new URL(result.checkoutUrl);
-        if (url.protocol !== "https:" || url.hostname !== "checkout.stripe.com")
-          throw new Error("The payment link could not be verified.");
-        window.location.assign(url.href);
+        const url = verifiedStripeCheckoutUrl(result.checkoutUrl);
+        if (!url) throw new Error("The payment link could not be verified.");
+        window.location.assign(url);
       } else {
         if (!guest && result.order.status !== "pending_payment") {
           try {
@@ -173,6 +198,12 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
         } else window.location.assign(`/account/orders/${result.order.id}`);
       }
     } catch (cause) {
+      if (cause instanceof Error && cause.message.includes("price has changed")) setAttempt(value => value + 1);
+      if ((cause instanceof EventApiError || cause instanceof ApiError) && cause.code === "ORDER_CLOSED") {
+        requestKey.current = null;
+        try { sessionStorage.removeItem(`tivorah-web-booking:${account?.id}:${event.id}`); } catch {}
+        setMyBookingVersion((value) => value + 1);
+      }
       setError(
         cause instanceof Error
           ? cause.message
@@ -208,7 +239,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
     const notYet = item.salesStartAt && new Date(item.salesStartAt).getTime() > Date.now();
     const ended = item.salesEndAt && new Date(item.salesEndAt).getTime() <= Date.now();
     const state = item.releaseAfterName ? `On sale when ${item.releaseAfterName} sells out` : item.remaining <= 0 ? "Sold out" : notYet ? `On sale ${new Date(item.salesStartAt!).toLocaleString("en-AU", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}` : ended ? "Sale ended" : !item.available ? "Unavailable" : item.remaining <= 10 ? `Only ${item.remaining} left` : "";
-    return { item, state, label: `${item.name} · ${item.priceCents ? ticketMoney(item.priceCents, item.currency) : "Free"}${state ? ` · ${state}` : ""}` };
+    return { item, state, label: `${item.name} · ${item.priceCents ? ticketMoney(item.buyerPriceCents ?? item.priceCents, item.currency) : quantity ? "Free" : ticketMoney(0, ticket?.currency)}${state ? ` · ${state}` : ""}` };
   });
   const chosenTicket = ticketChoices.find((choice) => choice.item.id === ticketId);
   const extras = <>
@@ -231,62 +262,79 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
   </>;
   return (
     <>
+    {activeCheckout ? <CheckoutHoldBanner key={activeCheckout.orderId} checkout={activeCheckout} onCancel={async () => {
+      const result = await api<{ outcome: string }>(`/web/account/events/orders/${activeCheckout.orderId}/cancel-checkout`, { method: 'POST' });
+      if (result.outcome === 'confirmed') { window.location.assign(`/account/orders/${activeCheckout.orderId}`); return; }
+      setClosedCheckoutId(activeCheckout.orderId);
+      requestKey.current = null;
+      try { sessionStorage.removeItem(`tivorah-web-booking:${account?.id}:${event.id}`); } catch {}
+      setHoldNotice('Tickets released. They’re back on sale, so you can book again any time.');
+      setMyBookingVersion(value => value + 1);
+    }} onExpire={() => {
+      setHoldNotice("Checkout time ran out. Your held tickets were released, so you can book again.");
+      requestKey.current = null;
+      try { sessionStorage.removeItem(`tivorah-web-booking:${account?.id}:${event.id}`); } catch {}
+      setMyBookingVersion((value) => value + 1);
+    }} /> : null}
+    {holdNotice && !activeCheckout ? <p className="event-help" role="status">{holdNotice}</p> : null}
     <form onSubmit={submit}>
       <fieldset disabled={busy}>
         <legend className="event-sr">Choose tickets</legend>
         {groupAllowed ? <div className="booking-mode" role="tablist" aria-label="How are you booking?">
           {(["individual", "group"] as const).map((value) => <button key={value} type="button" role="tab" aria-selected={mode === value} className={mode === value ? "is-selected" : ""}
-            onClick={() => { setMode(value); const first = packages.find((item) => item.available && (value === "group") === (item.kind === "group")); if (first) { setTicketId(first.id); setQuantity(1); } }}>
+            onClick={() => { setMode(value); const first = packages.find((item) => item.available && (value === "group") === (item.kind === "group")); if (first) { setQuantities({ [first.id]: 1 }); } }}>
             <strong>{value === "individual" ? "Individual" : "Group"}</strong><span>{value === "individual" ? "Tickets for you and friends" : "One booking for your whole group"}</span>
           </button>)}
         </div> : null}
-        <label htmlFor="event-ticket-type">Ticket type</label>
-        <SelectField id="event-ticket-type" label="Ticket type" value={String(ticketId ?? "")} onChange={(value) => { setTicketId(Number(value)); setQuantity(1); }}
-          options={ticketChoices.map(({ item, label }) => ({ value: String(item.id), label, disabled: !item.available }))} />
-        {chosenTicket ? <p className="event-help" role="status">
-          {chosenTicket.item.kind === "group" ? `${chosenTicket.item.groupSize} people per booking${chosenTicket.item.priceCents ? ` · ${ticketMoney(Math.round(chosenTicket.item.priceCents / Math.max(1, chosenTicket.item.groupSize ?? 1)), chosenTicket.item.currency)} each` : ""}. ` : ""}
-          {chosenTicket.item.description ? `${chosenTicket.item.description} ` : ""}
-          {chosenTicket.state ? chosenTicket.state : ""}
-        </p> : null}
-        <label htmlFor="event-quantity">Quantity</label>
-        <SelectField
-          id="event-quantity"
-          label="Quantity"
-          value={String(quantity)}
-          onChange={(value) => setQuantity(Number(value))}
-          options={Array.from(
-            { length: Math.min(20, ticket?.remaining || 1, ticket?.maxTicketsPerBuyer || 1) },
-            (_, i) => ({ value: String(i + 1), label: String(i + 1) }),
-          )}
-        />
-        {ticket ? (
-          <p className="event-help">
-            Up to {ticket.maxTicketsPerBuyer} tickets per buyer for this ticket
-            type.
-          </p>
-        ) : null}
+        <div className="ticket-cart-options">{ticketChoices.map(({ item, state }) => {
+          const count = quantities[item.id] ?? 0;
+          const held = heldFor(item.id);
+          const allowance = buyerAllowance(item, held);
+          const limit = Math.min(20, item.remaining, allowance);
+          const differentCurrency = quantity > 0 && item.currency !== ticket?.currency;
+          return <div className="ticket-cart-option" key={item.id}>
+            <div><strong>{item.name}</strong>{item.description ? <p className="event-help">{item.description}</p> : null}
+              <p><strong>{item.priceCents ? ticketMoney(item.buyerPriceCents ?? item.priceCents, item.currency) : 'Free'}</strong></p>
+              {item.buyerPriceCents != null && item.buyerPriceCents > item.priceCents ? <p className="event-help">{ticketMoney(item.priceCents, item.currency)} ticket + {ticketMoney(item.buyerPriceCents - item.priceCents, item.currency)} fee for one ticket</p> : null}
+              {item.kind === 'group' ? <p className="event-help">Admits {item.groupSize} people per ticket</p> : null}
+              {state ? <p className="event-help">{state}</p> : null}
+              {!state ? <p className="event-help" role={allowance === 0 ? 'status' : undefined}>{allowance === 0
+                ? `You've booked the most allowed for this ticket (${item.maxTicketsPerBuyer} per person).`
+                : held > 0 ? `You can book ${limit} more · limit ${item.maxTicketsPerBuyer} per person.` : `Up to ${limit} per person.`}</p> : null}
+            </div>
+            <div className="ticket-cart-stepper" aria-label={`${item.name} quantity`}>
+              <button type="button" aria-label={`Remove ${item.name}`} disabled={busy || !count} onClick={() => setQuantities(current => ({ ...current, [item.id]: Math.max(0, count - 1) }))}>−</button>
+              <output aria-label={`${item.name} selected`}>{count}</output>
+              <button type="button" aria-label={`Add ${item.name}`} disabled={busy || !item.available || count >= limit || quantity >= 20 || differentCurrency} onClick={() => setQuantities(current => ({ ...current, [item.id]: count + 1 }))}>+</button>
+            </div>
+          </div>;
+        })}</div>
+        {!quantity ? <p className="event-help">Choose at least one ticket to continue.</p> : !validSelection ? <p role="alert">Your selection is no longer available. Update the ticket quantities.</p> : null}
         <div className="event-total" aria-live="polite">
           {currentQuote ? (
             <>
-              <div>
-                <span>Tickets</span>
-                <AnimatedMoney cents={currentQuote.subtotalCents} format={(cents) => ticketMoney(cents, chosenTicket?.item.currency)} />
-              </div>
-              {currentQuote.chargedTo === "buyer" &&
-              currentQuote.platformFeeCents > 0 ? (
-                <div>
-                  <span>Booking fee</span>
-                  <AnimatedMoney cents={currentQuote.platformFeeCents} format={(cents) => ticketMoney(cents, chosenTicket?.item.currency)} />
-                </div>
-              ) : null}
               <div>
                 <strong>Total</strong>
                 <strong>
                   {currentQuote.buyerTotalCents
                     ? <AnimatedMoney cents={currentQuote.buyerTotalCents} format={(cents) => ticketMoney(cents, chosenTicket?.item.currency)} />
-                    : "Free"}
+                    : quantity ? "Free" : ticketMoney(0, ticket?.currency)}
                 </strong>
               </div>
+              <p className="event-help">Includes all mandatory booking fees.</p>
+              <details className="showcase-more">
+                <summary>Order summary</summary>
+              {selected.map(line => <div key={line.ticketTypeId}><span>{line.quantity} × {line.ticket?.name ?? 'Ticket'}</span><span>{ticketMoney((line.ticket?.priceCents ?? 0) * line.quantity, ticket?.currency)}</span></div>)}
+              {currentQuote.chargedTo === "buyer" &&
+              currentQuote.platformFeeCents > 0 ? (
+                <div>
+                  <span>Tivorah booking fee</span>
+                  <AnimatedMoney cents={currentQuote.platformFeeCents} format={(cents) => ticketMoney(cents, chosenTicket?.item.currency)} />
+                </div>
+              ) : null}
+                {currentQuote.chargedTo === "provider" && currentQuote.platformFeeCents > 0 ? <p className="event-help">The organiser pays Tivorah’s {ticketMoney(currentQuote.platformFeeCents, ticket?.currency)} fee. It is not added to your total.</p> : null}
+                {currentQuote.ticketGstCents !== null ? <div><span>Ticket GST included{currentQuote.taxTreatment === "not_registered" ? " · seller not registered" : currentQuote.taxTreatment === "gst_free" ? " · GST-free" : currentQuote.taxTreatment === "input_taxed" ? " · input taxed" : ""}</span><span>{ticketMoney(currentQuote.ticketGstCents, ticket?.currency)}</span></div> : <p className="event-help">Ticket GST details have not been supplied by the organiser.</p>}
+              </details>
             </>
           ) : (
             quoteError ? <p role="alert">{quoteError}</p> : <div aria-busy="true"><span>Total</span><span className="event-total-pending tivorah-shimmer" aria-label="Loading price" /></div>
@@ -312,7 +360,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
             <label htmlFor="guest-email">Email address</label>
             <input id="guest-email" name="guestEmail" type="email" autoComplete="email" maxLength={254} required value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
             <BookingTermsConsent confirmAge checked={adultConfirmed && termsAccepted} onChange={(value) => { setAdultConfirmed(value); setTermsAccepted(value); }} />
-            <button className="event-primary" disabled={busy || !currentQuote || !!quoteError || !adultConfirmed || !termsAccepted} type="submit">{busy ? "Opening your booking…" : currentQuote?.buyerTotalCents ? "Continue as guest to payment" : "Get free tickets as guest"}</button>
+            <button className="event-primary" disabled={busy || !validSelection || !currentQuote || !!quoteError || !adultConfirmed || !termsAccepted} type="submit">{busy ? "Opening your booking…" : currentQuote?.buyerTotalCents ? "Continue as guest to payment" : "Get free tickets as guest"}</button>
             <p className="event-signin-option">Want tickets in your account? <Link href={`/auth/signin?returnTo=${encodeURIComponent(returnTo)}`}>Sign in instead</Link></p>
           </div> : <><p>Guest booking is temporarily unavailable. Sign in to keep your tickets in your account.</p><Link className="event-primary" href={`/auth/signin?returnTo=${encodeURIComponent(returnTo)}`}>Sign in to book</Link></>
         ) : account ? (
@@ -324,7 +372,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
             <BookingTermsConsent checked={termsAccepted} onChange={setTermsAccepted} />
             <button
               className="event-primary"
-              disabled={busy || !currentQuote || !!quoteError || !termsAccepted}
+              disabled={busy || !validSelection || !currentQuote || !!quoteError || !termsAccepted}
               type="submit"
             >
               {busy

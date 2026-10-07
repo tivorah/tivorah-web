@@ -1,4 +1,5 @@
 "use client";
+import { BookingSetupNotice, type BookingSetupIssue } from "./booking-setup-notice";
 import { LoadingState } from "../ui/loading-state";
 import Link from "next/link";
 import { ServiceSettings, defaultServiceSettings, serviceTimezoneForState } from "./service-settings";
@@ -6,7 +7,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AccountGate } from "../account/gate";
 import { usePrivateResource } from "../../hooks/use-private-resource";
-import { api } from "../../lib/api/client";
+import { ApiError, api } from "../../lib/api/client";
 import { creationPayload, CreationKind } from "./create-payload";
 import { Locality, LocalityField } from "./locality-field";
 import { MediaField } from "./media-field";
@@ -26,6 +27,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [busy, setBusy] = useState(false);
   const [hubIds, setHubIds] = useState<number[]>([]);
   const [packages, setPackages] = useState<PackageDraft[]>(() => [newPackage({ name: "General admission" })]);
+  const [setupIssues, setSetupIssues] = useState<BookingSetupIssue[]>([]);
   const [error, setError] = useState("");
   const [created, setCreated] = useState(false);
   const [accepted, setAccepted] = useState(false);
@@ -72,6 +74,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
     if (busy || uploading || (!agreed && !accepted)) return;
     setBusy(true);
     setError("");
+    setSetupIssues([]);
     try {
       key.current ??= crypto.randomUUID();
       const payload = creationPayload(
@@ -104,6 +107,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       });
       setCreated(true);
     } catch (cause) {
+      setSetupIssues(cause instanceof ApiError ? cause.setupIssues : []);
       setError(
         cause instanceof Error
           ? cause.message
@@ -179,6 +183,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               Description
               <textarea name="description" required minLength={10} maxLength={10000} rows={4} placeholder={kind === "event" ? "What can people expect?" : kind === "service" ? "What is included, and how should customers prepare?" : "Condition, size, age and anything buyers should know"} />
             </label>
+            {kind === 'event' && <details className="showcase-more event-visit-fields"><summary>Plan your visit · optional</summary>{(['agePolicy','arrival','accessibility','refundPolicy'] as const).map(key => <label key={key}>{({agePolicy:'Age and ID requirements',arrival:'Arrival, parking and doors',accessibility:'Accessibility',refundPolicy:'Refund policy'})[key]}<textarea name={key} rows={3} maxLength={key === 'agePolicy' ? 200 : 1200} /></label>)}<p className="showcase-hint">Refund instructions cannot remove applicable consumer rights.</p>{Array.from({length:3},(_, index) => <div key={index}><label>Question {index + 1}<input name={`faq-question-${index}`} maxLength={200} minLength={3} /></label><label>Answer {index + 1}<textarea name={`faq-answer-${index}`} rows={3} maxLength={1600} minLength={2} /></label></div>)}</details>}
+
             <div className="showcase-row">
               <label>
                 Category
@@ -309,6 +315,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
             </ul>
           </div>
 
+          <BookingSetupNotice issues={setupIssues} />
           {error ? <p className="product-error" role="alert">{error}</p> : null}
           <button className="product-primary press-fx create-submit" disabled={submitDisabled}>
             {busy ? <span className="button-progress" aria-hidden="true" /> : null}{submitLabel}

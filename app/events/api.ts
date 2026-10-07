@@ -1,6 +1,6 @@
-export type EventTicketType = { id: number; name: string; description: string | null; priceCents: number; currency: string; remaining: number; maxTicketsPerBuyer: number; available: boolean; salesStartAt: string | null; salesEndAt: string | null; kind?: 'standard' | 'group'; groupSize?: number; regularPriceCents?: number | null; hidden?: boolean; releaseAfterName?: string | null };
-export type PublicEvent = { guestBookingAvailable: boolean; id: number; title: string; description: string | null; img: string | null; images: string[]; startsAt: string | null; endsAt: string | null; locationType: string; location: string | null; venueName: string | null; address: string | null; suburb: string | null; state: string | null; postcode: string | null; organizerName: string; organizerUsername?: string | null; organizerShopOnline?: boolean; externalTicketUrl: string | null; ticketTypes: EventTicketType[]; allowGroupBookings?: boolean; hasAccessCodePackages?: boolean; accessCodeAccepted?: boolean };
-export type BookingQuote = { subtotalCents: number; platformFeeCents: number; buyerTotalCents: number; chargedTo: string };
+export type EventTicketType = { id: number; name: string; description: string | null; priceCents: number; buyerPriceCents?: number; currency: string; remaining: number; maxTicketsPerBuyer: number; available: boolean; salesStartAt: string | null; salesEndAt: string | null; kind?: 'standard' | 'group'; groupSize?: number; regularPriceCents?: number | null; hidden?: boolean; releaseAfterName?: string | null };
+export type PublicEvent = { information?: { arrival?: string; accessibility?: string; agePolicy?: string; refundPolicy?: string; faqs?: {question: string; answer: string}[] } | null; guestBookingAvailable: boolean; id: number; title: string; description: string | null; img: string | null; images: string[]; startsAt: string | null; endsAt: string | null; locationType: string; location: string | null; venueName: string | null; address: string | null; suburb: string | null; state: string | null; postcode: string | null; organizerName: string; organizerUsername?: string | null; organizerShopOnline?: boolean; externalTicketUrl: string | null; ticketTypes: EventTicketType[]; allowGroupBookings?: boolean; hasAccessCodePackages?: boolean; accessCodeAccepted?: boolean };
+export type BookingQuote = { subtotalCents: number; platformFeeCents: number; buyerTotalCents: number; chargedTo: string; percentageBps?: number; fixedFeeCents?: number; tax?: { treatment: string; ticketGstCents: number | null } };
 import { adminApiBase } from '../admin/api-base';
 export class EventApiError extends Error { constructor(message: string, public status: number, public code?: string) { super(message); } }
 export async function eventApi<T>(path: string, init?: RequestInit): Promise<T> {
@@ -15,3 +15,8 @@ export const ticketMoney = (cents: number, currency = 'AUD') => new Intl.NumberF
 export function eventDate(value: string | null) {
   return value ? new Date(value).toLocaleString('en-AU', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Australia/Adelaide' }) + ' (Adelaide time)' : 'Date to be confirmed';
 }
+
+/** A paid checkout the signed-in buyer left unpaid; its tickets stay held until `expiresAt`. */
+export type ActiveCheckout = { orderId: number; checkoutUrl: string; startedAt?: string; expiresAt: string; ticketSummary: string | null; totalCents: number; currency: string };
+/** The signed-in buyer's own state for an event: tickets already held per type, and any held checkout. */
+export type MyEventBooking = { heldByYou: Record<string, number>; activeCheckout: ActiveCheckout | null };

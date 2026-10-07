@@ -38,7 +38,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
       ? { '@type': 'VirtualLocation', url }
       : { '@type': 'Place', name: event.venueName || event.suburb || 'Venue', address: { '@type': 'PostalAddress', streetAddress: event.address ?? undefined, addressLocality: event.suburb ?? undefined, addressRegion: event.state ?? undefined, postalCode: event.postcode ?? undefined, addressCountry: 'AU' } },
     organizer: { '@type': 'Organization', name: event.organizerName, ...(event.organizerUsername && event.organizerShopOnline ? { url: absoluteUrl(`/shops/${encodeURIComponent(event.organizerUsername)}`) } : {}) },
-    offers: tickets.map((ticket) => ({ '@type': 'Offer', name: ticket.name, url, price: (ticket.priceCents / 100).toFixed(2), priceCurrency: ticket.currency || 'AUD', availability: ticket.available ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut', ...(ticket.salesStartAt ? { validFrom: ticket.salesStartAt } : {}) })),
+    offers: tickets.map((ticket) => ({ '@type': 'Offer', name: ticket.name, url, price: ((ticket.buyerPriceCents ?? ticket.priceCents) / 100).toFixed(2), priceCurrency: ticket.currency || 'AUD', availability: ticket.available ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut', ...(ticket.salesStartAt ? { validFrom: ticket.salesStartAt } : {}) })),
   };
   return <><JsonLd data={structured} /><EventBookingPage event={event} /></>;
 }

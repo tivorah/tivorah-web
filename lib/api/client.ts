@@ -1,3 +1,4 @@
+import type { BookingSetupIssue } from '../../components/business/booking-setup-notice';
 import { adminApiBase } from "../../app/admin/api-base";
 
 export class ApiError extends Error {
@@ -5,6 +6,9 @@ export class ApiError extends Error {
     message: string,
     public status: number,
     public retryAfter = 0,
+    public setupIssues: BookingSetupIssue[] = [],
+    /** The API's machine-readable errorCode (e.g. ORDER_CLOSED), when it sent one. */
+    public code?: string,
   ) {
     super(message);
   }
@@ -48,6 +52,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
         const seconds = Number(header);
         return Number.isFinite(seconds) ? Math.max(0, seconds) : Math.max(0, Math.ceil((Date.parse(header) - Date.now()) / 1000)) || 0;
       })(),
+      Array.isArray(body?.setupIssues) ? body.setupIssues : [],
+      typeof body?.errorCode === "string" ? body.errorCode : undefined,
     );
   }
   if (typeof window !== "undefined" && !/^\/chat\/.*\/read$/.test(path) && init.method && !["GET", "HEAD"].includes(init.method.toUpperCase())) {

@@ -12,6 +12,7 @@ import { SelectField } from "../ui/select-field";
 type Availability = {
   slots: { startsAt: string; endsAt: string }[];
   timezone: string;
+  currency?: string;
   paymentRequired: boolean;
   paymentAvailable: boolean;
   quote: {
@@ -176,13 +177,13 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
             {slot ? <p className="appointment-selection" role="status">Selected: <strong>{new Intl.DateTimeFormat("en-AU", { dateStyle: "full", timeStyle: "short", timeZone }).format(new Date(slot.startsAt))}</strong> ({timeZone.replaceAll("_", " ")})</p> : null}
             {data.paymentRequired ? (
               <div>
-                <p>Service: {money(data.quote.subtotalCents)}</p>
+                <p>Service: {money(data.quote.subtotalCents, data.currency || "AUD")}</p>
                 {data.quote.chargedTo === "buyer" &&
                 data.quote.platformFeeCents > 0 ? (
-                  <p>Booking fee: {money(data.quote.platformFeeCents)}</p>
+                  <p>Tivorah booking fee: {money(data.quote.platformFeeCents, data.currency || "AUD")}</p>
                 ) : null}
                 <p>
-                  <strong>Total: {money(data.quote.buyerTotalCents)}</strong>
+                  <strong>Total: {money(data.quote.buyerTotalCents, data.currency || "AUD")}</strong>
                 </p>
               </div>
             ) : (

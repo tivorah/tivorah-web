@@ -1,9 +1,11 @@
 "use client";
+import type { BookingSetupIssue } from '../components/business/booking-setup-notice';
 import { useRef, useState } from "react";
-import { api } from "../lib/api/client";
+import { ApiError, api } from "../lib/api/client";
 export function useMutation(onSuccess?: () => void) {
   const lock = useRef(false);
   const [busy, setBusy] = useState(false);
+  const [setupIssues, setSetupIssues] = useState<BookingSetupIssue[]>([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   async function run(
@@ -16,6 +18,7 @@ export function useMutation(onSuccess?: () => void) {
     lock.current = true;
     setBusy(true);
     setError("");
+    setSetupIssues([]);
     setNotice("");
     try {
       await api(path, {
@@ -26,6 +29,7 @@ export function useMutation(onSuccess?: () => void) {
       onSuccess?.();
       return true;
     } catch (cause) {
+      setSetupIssues(cause instanceof ApiError ? cause.setupIssues : []);
       setError(
         cause instanceof Error
           ? cause.message
@@ -37,5 +41,5 @@ export function useMutation(onSuccess?: () => void) {
       setBusy(false);
     }
   }
-  return { busy, error, notice, run };
+  return { busy, error, notice, run, setupIssues };
 }

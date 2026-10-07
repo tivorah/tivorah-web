@@ -1,4 +1,5 @@
 "use client";
+import { BookingSetupNotice } from "./booking-setup-notice";
 import { AccountSurfaceLoading } from "../account/surface-loading";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
@@ -176,7 +177,8 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
                 <section className="showcase-step"><HubShareField value={hubIds} onChange={setHubIds} disabled={mutation.busy} /></section>
               </div>
             </fieldset>
-            {mutation.error ? <p className="product-error" role="alert">{mutation.error}</p> : null}
+            <BookingSetupNotice issues={mutation.setupIssues} />
+      {mutation.error ? <p className="product-error" role="alert">{mutation.error}</p> : null}
             {mutation.notice ? <p className="product-notice" role="status">{mutation.notice}</p> : null}
             {!images.length ? <p className="field-error" role="alert">Add at least one photo before saving.</p> : null}
             <div className="showcase-actions">

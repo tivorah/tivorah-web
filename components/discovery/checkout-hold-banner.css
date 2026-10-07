@@ -1,0 +1,21 @@
+/* Checkout hold: countdown while paid tickets are reserved during Stripe checkout. */
+.checkout-hold{--hold-accent:#65409f;--hold-tint:#f3edfb;margin:0 0 20px;padding:14px 16px 12px;border:1px solid #ece5f3;border-radius:20px;background:#fff;box-shadow:0 6px 18px rgba(28,20,34,.06)}
+.checkout-hold.is-urgent{--hold-accent:#c2410c;--hold-tint:#fff1e8}
+.checkout-hold-row{display:flex;align-items:center;gap:12px}
+.checkout-hold-badge{flex:0 0 34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--hold-tint);color:var(--hold-accent)}
+.checkout-hold-copy{flex:1;min-width:0}
+.checkout-hold-copy strong{display:block;font-size:15px;line-height:1.3}
+.checkout-hold-copy p{margin:1px 0 0;font-size:13px!important;line-height:1.4;color:#756e7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.checkout-hold-timer{flex:none;display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:14px;background:var(--hold-tint);color:var(--hold-accent);font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.checkout-hold-track{height:3px;margin-top:12px;border-radius:2px;background:#efeaf3;overflow:hidden}
+.checkout-hold-track span{display:block;height:100%;border-radius:2px;background:var(--hold-accent);transition:width 1s linear}
+.checkout-hold-actions{display:flex;align-items:center;gap:8px;margin-top:10px}
+.checkout-hold-resume{flex:1;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:0;border-radius:22px;background:var(--purple,#65409f);color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.checkout-hold-resume:disabled{background:#ddd6e5;color:#655b6e;cursor:not-allowed}
+.checkout-hold button:focus-visible{outline:3px solid #8050b3;outline-offset:3px}
+.checkout-hold-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.checkout-hold-release{min-height:44px;min-width:76px;padding:0 12px;border:0;background:none;color:#756e7a;font:inherit;font-size:14px;font-weight:700;cursor:pointer;border-radius:22px}
+.checkout-hold-release:hover{background:#f6f3f8}
+.checkout-hold-release:disabled{cursor:not-allowed;opacity:.6}
+.checkout-hold [role=alert]{color:#9f2032;font-size:14px!important;margin:10px 0 0}
+@media (prefers-reduced-motion: reduce){.checkout-hold-track span{transition:none}}

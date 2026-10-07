@@ -1,0 +1,18 @@
+/* Reuses the public content shell; readable guide content is bounded at 960px. */
+.guide.guide { max-width: 960px; font-size: 16px; line-height: 1.65; }
+.topics { display: block; margin: 32px 0; padding: 24px; background: #f8f5fc; border-radius: 16px; }
+.guide .topics ul { display: block; list-style: none; margin: 0; padding: 0; }
+.guide a { color: #65409f; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.topics a, .back { display: inline-flex; align-items: center; min-height: 44px; }
+.guide a:focus-visible { outline: 3px solid #65409f; outline-offset: 4px; border-radius: 3px; }
+.section { padding: 28px 0; border-top: 1px solid #ded6e7; }
+.section h2 { scroll-margin-top: 110px; }
+.section ol { padding-left: 24px; }
+.section li { padding-left: 6px; margin-bottom: 12px; }
+.where { color: #625369; }
+@media (max-width: 600px) { .topics { padding: 16px; } .guide .topics ul { grid-template-columns: 1fr; } }
+
+.groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+.groups summary { cursor: pointer; min-height: 44px; padding: 8px 0; color: #65409f; font-weight: 600; }
+.groups summary:focus-visible { outline: 3px solid #65409f; outline-offset: 3px; }
+@media (max-width: 600px) { .groups { grid-template-columns: 1fr; } }

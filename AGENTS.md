@@ -45,6 +45,7 @@ Primary stack:
 - `app/hub-organisers/` — organiser information, responsibilities, and rules.
 - `app/service-providers/` — provider listing, responsibility, and payment information.
 - `app/contact/` — contact/support surface.
+- `app/guide/` — public feature guide linked from mobile Settings and the web footer; keep steps aligned with shipped app behavior.
 - `app/admin/` — protected staff sign-in, MFA, dashboard, and operational UI.
 - `app/connect/return/` and `app/connect/refresh/` — Stripe Connect onboarding returns.
 - `app/newsletter/` — newsletter-related flows.
@@ -397,3 +398,29 @@ For a normal web change:
   the price number rolls (`components/ui/animated-money.tsx`).
 - Sign-up password guidance is one hint line plus a Suggest button (`lib/password-policy.ts`,
   shared wording and generator with mobile `utils/passwordPolicy.ts`).
+
+Business payouts includes `components/business/payout-statistics.tsx`, backed by
+the authenticated `/payments/connect/payout-summary` resource. Amounts are scoped
+to the signed-in business, grouped by currency, and explicitly labelled in test
+mode. Preserve loading, cached refresh, zero activity and retry states.
+
+Event creation and organiser Details collect optional arrival/accessibility/age/refund information and FAQs. Public event details render plain text in accessible disclosure rows; empty sections stay hidden. The API validates these fields and the JSON projection requires migration 0068.
+
+Seller earnings uses `/payments/connect/earnings-summary` and `SellerEarnings` for All, Events and Services. Keep currencies separate and distinguish earnings after Tivorah fees/refunds from Stripe balances and bank payouts. Seller tax declaration is shared across paid events and services; setup errors carry direct recovery links.
+
+Payout reporting shows gross Booking payments with All/Events/Services source totals and recent named booking references. Bank transfers & balance remains account-wide and explicitly unaffected by booking filters. Never describe gross booking payments as net earnings or assume automatic bank transfers belong to one feature.
+
+Web payouts mirrors mobile with Payouts, Payments and Settings views using established underline navigation. Hashes #payments/#settings persist the view; #event-tax opens Settings. Hidden panels retain form drafts and payment filters. Desktop uses four bank metric cards and a semantic recent-payments table, with stacked records on narrow screens and a two-column settings layout.
+
+## Event ticket cart
+
+`components/discovery/ticket-booking.tsx` supports quantities across ticket types in one checkout. Keep the full selection in the sign-in return URL and idempotency fingerprint. Price the combined subtotal with one fixed booking fee, itemise original ticket prices and included ticket GST before payment, and preserve the cart after errors. `tests/ticket-cart.spec.ts` creates and removes a temporary fixture route around the real event page for browser tests; it needs the existing development server and never starts one.
+
+
+Seller payment countries are configured in Admin → Payments, independently of account/community access. The API policy uses the existing environment-scoped feature configuration key `seller_payment_countries`: absent defaults to AU, empty/malformed blocks all new seller payments. Stripe connected-account country is authoritative for this gate; never use buyer location, phone prefix or currency. Web/mobile onboarding explicitly collects seller business country. Preserve non-payment bookings, enquiries, refunds and existing account/balance access. Existing open Checkout sessions are not revoked by this prospective policy. Country enablement requires separate Stripe corridor and legal readiness checks.
+
+
+Ticket hold cancellation uses the buyer-authorised `POST /events/orders/:orderId/cancel-checkout` (native) and `POST /web/account/events/orders/:orderId/cancel-checkout` (web). Reuse `closeEventCheckout`: expire Stripe before releasing inventory, preserve completed/settling payments, and do not clear the countdown on an unconfirmed cancellation. Native auth-session cancel/dismiss and Stripe back request release; success/locked results do not. Both signed-in hold banners expose Cancel hold. Clear retry keys only after a terminal server result.
+
+
+Event, item and service detail maps reuse `components/discovery/location-map.tsx`. A decorative blurred placeholder makes no map-provider request; View map mounts the embed and Hide map removes it. Item/service maps use the public locality and are labelled as a general area. Listed location text remains visible; this is not access control for private addresses.
