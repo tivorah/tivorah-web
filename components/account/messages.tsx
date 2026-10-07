@@ -102,7 +102,20 @@ function Thread({ id, accountId }: { id: number; accountId: number }) {
     if (file.size > 20 * 1024 * 1024) { setNotice("Photos must be 20 MB or smaller."); return; }
     setPendingFile(file); setNotice(""); messageId.current = crypto.randomUUID();
   }
-  useEffect(() => { if (current?.category === "enquiry" && latestMessages) void api(`/chat/conversations/${id}/read`, { method: "PUT" }).catch(() => {}); }, [current?.category, id, latestMessages]);
+  useEffect(() => {
+    if (current?.category !== "enquiry" || !latestMessages) return;
+    const messageId = Math.max(0, ...latestMessages.messages.filter(message => message.senderId !== accountId).map(message => message.id));
+    if (!messageId) return;
+    void api(`/chat/conversations/${id}/delivered`, { method: "PUT", body: JSON.stringify({ messageId }) }).catch(() => {});
+    const acknowledge = () => {
+      if (document.visibilityState === "visible" && document.hasFocus())
+        void api(`/chat/conversations/${id}/read`, { method: "PUT", body: JSON.stringify({ messageId }) }).catch(() => {});
+    };
+    acknowledge();
+    document.addEventListener("visibilitychange", acknowledge);
+    window.addEventListener("focus", acknowledge);
+    return () => { document.removeEventListener("visibilitychange", acknowledge); window.removeEventListener("focus", acknowledge); };
+  }, [current?.category, id, latestMessages, accountId]);
   useEffect(() => { const timer = window.setInterval(() => { if (document.visibilityState === "visible") retryMessages(); }, live ? 30000 : 6000); return () => window.clearInterval(timer); }, [live, retryMessages]);
   useEffect(() => { if (latestMessages) bottom.current?.scrollIntoView({ block: "nearest" }); }, [latestMessages]);
   async function send(event: FormEvent<HTMLFormElement>) {
