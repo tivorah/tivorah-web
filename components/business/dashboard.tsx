@@ -183,7 +183,7 @@ function BusinessList({ kind }: { kind: "events" | "products" }) {
       </aside></DetailPane> : null}
       </div> : null}
       {!loading && !error && !items?.length ? (
-        <p className="product-empty">{query || status || listingType ? "No results match these filters. Change a filter or search again." : kind === "events" ? "Your events will appear here." : "Your items and services will appear here."}</p>
+        <div className="product-empty"><p>{query || status || listingType ? "No results match these filters. Change a filter or search again." : kind === "events" ? "Your events will appear here." : "Your items and services will appear here."}</p>{!query && !status && !listingType ? <Link className="product-primary" href={kind === 'events' ? '/business/create?type=event' : '/business/create?type=item'}>{kind === 'events' ? 'Create your first event' : 'Create your first listing'}</Link> : null}</div>
       ) : null}
       {(skip > 0 || data?.pagination.isMoreData) ? <nav className="business-pagination" aria-label={`${kind === "events" ? "Event" : "Listing"} pages`}>
         {skip > 0 ? (

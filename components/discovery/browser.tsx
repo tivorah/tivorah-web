@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { OpenInApp } from "../ui/open-in-app";
 import { DiscoveryFilters } from "./filters";
 import { LocationSearch } from "./location-search";
 import { LoadingState } from "../ui/loading-state";
@@ -73,6 +75,8 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
     return () => window.clearTimeout(timer);
   }, [filters.query, filters.locality, query, locality, pathname, composing]);
   const pending = filters.query.trim() !== query || filters.locality.trim() !== locality;
+  const hasSearch = Boolean(query || locality || params.get('state') || params.get('latitude') || params.get('category') || params.get('radiusKm'));
+  const create = { events: { label: 'Create an event', href: '/business/create?type=event' }, items: { label: 'Sell an item', href: '/business/create?type=item' }, services: { label: 'Offer a service', href: '/business/create?type=service' } } as const;
   return (
     <>
       <form className="discover-search" onSubmit={(event) => event.preventDefault()} onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)} role="search">
@@ -147,11 +151,12 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
         )) : null}
       </div>
       {loadingMore && loading ? <p className="product-sr-only" role="status">Loading more {sections[kind].label.toLowerCase()}…</p> : null}
-      {!loading && !error && data?.items.length === 0 ? (
+      {!loading && !pending && !error && data?.items.length === 0 ? (
         <div className="product-empty">
           <span aria-hidden="true">⌕</span>
-          <h3>{sections[kind].empty}</h3>
-          <p>Try another search or browse a wider area.</p>
+          <h3>{hasSearch ? sections[kind].empty : kind === 'hubs' ? 'No Hubs yet' : kind === 'events' ? 'No events yet' : kind === 'services' ? 'No services yet' : 'No items yet'}</h3>
+          <p>{hasSearch ? 'Try another search or browse a wider area.' : kind === 'hubs' ? 'Bring people together around something you share.' : 'Be the first to add one to Tivorah.'}</p>
+          <div className="discover-empty-actions">{kind === 'hubs' ? <OpenInApp className={hasSearch ? 'product-secondary' : 'product-primary'} appPath="hubs/create-hub">Create a Hub in the app</OpenInApp> : <Link className={hasSearch ? 'product-secondary' : 'product-primary'} href={create[kind].href}>{create[kind].label}</Link>}</div>
         </div>
       ) : null}
       {data?.nextSkip !== null && data?.nextSkip !== undefined ? (

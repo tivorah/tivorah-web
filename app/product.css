@@ -297,6 +297,8 @@
 .product-empty p {
   color: #6c6074;
 }
+.discover-empty-actions { display: flex; justify-content: center; margin-top: 20px; }
+.product-empty > .product-primary { display: inline-flex; margin-top: 18px; }
 .discover-more {
   text-align: center;
   margin-top: 32px;
