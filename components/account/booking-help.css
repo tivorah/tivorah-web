@@ -1,0 +1,27 @@
+/* Refunds & problems: buyer panel on an event order or service appointment. */
+.booking-help{margin:22px 0 0;padding:18px 0 0;border-top:1px solid #eee8f2}
+.booking-help h3{margin:0 0 10px;font-size:16px}
+.booking-help h4{margin:0 0 10px;font-size:15px}
+.booking-help-policy{display:flex;flex-direction:column;gap:2px;margin:0 0 8px;padding:12px 14px;border-radius:16px;background:#f7f3fb}
+.booking-help-policy strong{font-size:14px}
+.booking-help-policy span,.booking-help-note,.booking-help-meta{font-size:13px!important;line-height:1.45;color:#756e7a}
+.booking-help-note{margin:0 0 10px}
+.booking-help-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px}
+.booking-help-link{min-height:44px;padding:0 4px;border:0;background:none;color:#65409f;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.booking-help-link:disabled{opacity:.6;cursor:not-allowed}
+.booking-help-link:focus-visible{outline:3px solid #8050b3;outline-offset:2px;border-radius:8px}
+.booking-help-form{display:grid;gap:12px;margin-top:12px;padding:14px;border:1px solid #ece5f3;border-radius:18px;background:#fff}
+.booking-help-form label{display:grid;gap:6px;font-size:14px;font-weight:700}
+.booking-help-form textarea{width:100%;box-sizing:border-box;font:inherit;font-weight:400;padding:12px 14px;border:1px solid #ddd5e4;border-radius:18px;resize:vertical}
+.booking-help-request{margin:10px 0 0;padding:12px 14px;border:1px solid #ece5f3;border-radius:16px}
+.booking-help-request-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.booking-help-request-head strong{font-size:14px;line-height:1.35}
+.booking-help-chip{flex:none;padding:3px 9px;border-radius:999px;background:#f3edfb;color:#65409f;font-size:12px;font-weight:800}
+.is-refunded .booking-help-chip,.is-resolved .booking-help-chip{background:#e8f6ee;color:#17663a}
+.is-declined .booking-help-chip,.is-closed .booking-help-chip{background:#f4f1f5;color:#5f5866}
+.is-escalated .booking-help-chip{background:#fff1e3;color:#9a4a0b}
+.booking-help-meta{margin:4px 0 0}
+.booking-help-reply{margin:8px 0 0;font-size:14px!important;line-height:1.5}
+.booking-help-reply span{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8b8490}
+.booking-help-error{margin:8px 0 0;color:#9f2032;font-size:14px!important}
+.booking-help-status{margin:10px 0 0;font-size:14px!important;color:#17663a}

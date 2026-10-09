@@ -28,12 +28,14 @@ export function BusinessShell({ children }: { children: ReactNode }) {
       </div>
       <div className="business-sidebar-group"><p>Tools</p>
         <Link href="/account/bookings?role=provider">Customer appointments</Link>
+        <Link href="/business/requests" aria-current={path === "/business/requests" ? "page" : undefined}>Refunds &amp; complaints</Link>
         <Link href="/business/showcase" aria-current={path === "/business/showcase" ? "page" : undefined}>Your shop</Link>
         <Link href="/business/payouts" aria-current={path === "/business/payouts" ? "page" : undefined}>Payout settings</Link>
       </div>
     </aside>
     <div className="business-workspace-main">
       <nav className="business-mobile-controls" aria-label="Business navigation on phones">
+        <Link className="business-mobile-account" href="/account"><span aria-hidden="true">←</span> Your account</Link>
         <div className="business-mobile-tabs">
           <Link href="/business?view=listings" aria-current={active("products") ? "page" : undefined}>Listings</Link>
           <Link href="/business?view=events" aria-current={active("events") ? "page" : undefined}>Events</Link>
@@ -45,6 +47,7 @@ export function BusinessShell({ children }: { children: ReactNode }) {
         </div></details>
         <details className="business-mobile-create business-mobile-tools-menu"><summary>Business tools</summary><div>
           <Link href="/account/bookings?role=provider">Customer appointments</Link>
+          <Link href="/business/requests">Refunds &amp; complaints</Link>
           <Link href="/business/showcase">Your shop</Link>
           <Link href="/business/payouts">Payout settings</Link>
         </div></details>

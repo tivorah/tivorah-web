@@ -3,6 +3,31 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const mediaCdnHost = process.env.NEXT_PUBLIC_MEDIA_CDN_HOST?.trim();
+const production = process.env.NODE_ENV === "production";
+
+// Content Security Policy: limits what a page can load or send, so an injected script can't run
+// or phone home. Next.js still needs inline scripts for hydration (no nonce setup yet).
+const origin = (value) => { try { return new URL(value).origin; } catch { return ""; } };
+const apiOrigin = origin(process.env.NEXT_PUBLIC_API_URL ?? "");
+const socketOrigin = apiOrigin.replace(/^http/, "ws");
+const posthogOrigins = ["https://us.i.posthog.com", "https://us-assets.i.posthog.com", "https://eu.i.posthog.com", "https://eu-assets.i.posthog.com"];
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${production ? "" : " 'unsafe-eval'"} ${posthogOrigins.join(" ")}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "media-src 'self' blob: https:",
+  "font-src 'self' data:",
+  // Development talks to the API on a LAN address over plain HTTP.
+  `connect-src 'self' ${[apiOrigin, socketOrigin, ...posthogOrigins].filter(Boolean).join(" ")}${production ? "" : " http: ws:"}`,
+  "frame-src https://www.google.com",
+  "worker-src 'self' blob:",
+  "form-action 'self' https://checkout.stripe.com",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  ...(production ? ["upgrade-insecure-requests"] : []),
+].join("; ");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -27,10 +52,8 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
-          {
-            key: "Content-Security-Policy",
-            value: "base-uri 'self'; object-src 'none'; frame-ancestors 'none'",
-          },
+          { key: "Content-Security-Policy", value: contentSecurityPolicy },
+          ...(production ? [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" }] : []),
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           {
             key: "Permissions-Policy",
@@ -56,4 +79,5 @@ const nextConfig = {
   },
 };
 
+export { contentSecurityPolicy };
 export default nextConfig;

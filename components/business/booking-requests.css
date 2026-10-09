@@ -1,0 +1,19 @@
+/* Seller inbox for refund requests and complaints (Manage event tabs, business page, admin). */
+.seller-requests{display:grid;gap:12px}
+.seller-requests-intro{margin:0;color:#6c6372;font-size:14px!important;line-height:1.5;max-width:680px}
+.seller-requests-empty{display:grid;gap:2px;padding:26px 18px;border:1px dashed #ddd4e6;border-radius:20px;text-align:center}
+.seller-requests-empty span{color:#756e7a;font-size:14px}
+.seller-requests-past{display:grid;gap:12px}
+.seller-requests-past>.booking-help-link{justify-self:start}
+.seller-requests-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:10px;background:#7542d9;color:#fff;font-size:12px;font-weight:800;vertical-align:1px}
+.seller-request{padding:16px;border:1px solid #ece5f3;border-radius:20px;background:#fff}
+.seller-request header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.seller-request header>div{display:grid;gap:2px;min-width:0}
+.seller-request header strong{font-size:15px}
+.seller-request header>div>span{color:#756e7a;font-size:13px}
+.seller-request-reason{margin:12px 0 2px;font-weight:700;font-size:14px!important}
+.seller-request-message{margin:0;font-size:14px!important;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.seller-request-warning{margin:0;padding:10px 12px;border-radius:12px;background:#fff6ec;color:#8a4410;font-size:13px!important;line-height:1.45}
+.seller-request.is-escalated{border-color:#f3d6b8}
+.seller-requests-page h1{margin:6px 0 18px}
+@media(max-width:600px){.seller-request{padding:14px}.seller-request .booking-help-actions .product-primary,.seller-request .booking-help-actions .product-secondary{flex:1 1 auto}}

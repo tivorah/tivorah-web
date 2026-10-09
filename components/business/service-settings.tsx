@@ -1,9 +1,12 @@
 "use client";
 import { SelectField } from "../ui/select-field";
+import { refundPolicyOptions } from "../../lib/refund-policy";
 export type ServiceSettingsValue = {
   availabilityTimezone?: string | null;
   bookingEnabled: boolean;
   paymentRequired: boolean;
+  refundPolicy?: string | null;
+  refundPolicyNote?: string | null;
   slotDurationMinutes: number;
   bookingNoticeHours: number;
   weeklyAvailability: {
@@ -210,7 +213,12 @@ export function ServiceSettings({
             <span className="showcase-switch-track" aria-hidden="true" />
             <span><strong>Collect payment at booking</strong><small>Otherwise, customers reserve a time without paying now.</small></span>
           </label>
-          {value.paymentRequired ? <p className="service-settings-note">Requires fixed or hourly pricing and completed payout setup.</p> : null}</div>
+          {value.paymentRequired ? <>
+            <p className="service-settings-note">Requires fixed or hourly pricing and completed payout setup.</p>
+            <label>Refund policy<SelectField label="Refund policy" value={value.refundPolicy ?? ""} placeholder="Choose a refund policy" onChange={(refundPolicy) => update({ refundPolicy })} options={[...refundPolicyOptions]} /></label>
+            <label>Refund details · optional<textarea rows={2} maxLength={1200} value={value.refundPolicyNote ?? ""} onChange={(e) => update({ refundPolicyNote: e.target.value })} placeholder="Anything customers should know, e.g. how to reschedule" /></label>
+            <p className="service-settings-note">Customers can request a refund from their booking while your policy allows it. Your policy can’t remove consumer rights.</p>
+          </> : null}</div>
         </>
       ) : null}
     </fieldset>

@@ -53,6 +53,7 @@ export function creationPayload(
       messagePrompts: [text("prompt1"), text("prompt2"), text("prompt3")].filter(Boolean),
       tickets,
       allowGroupBookings: form.get("allowGroupBookings") === "on",
+      refundPolicy: text("refundPolicyPreset") || null,
     };
   }
   if (!images.length)

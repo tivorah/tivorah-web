@@ -1,5 +1,8 @@
 "use client";
-export default function GlobalError({ reset }: { reset: () => void }) {
+import { useEffect } from "react";
+import { captureError } from "../lib/analytics";
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => { captureError(error, { source: "global_error" }); }, [error]);
   return <html lang="en"><body style={{ margin: 0, background: "#FAF8FD", color: "#241631", fontFamily: "system-ui, sans-serif" }}>
     <main style={{ maxWidth: 640, margin: "12vh auto", padding: 24 }}>
       <h1>Tivorah couldn’t load.</h1>

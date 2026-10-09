@@ -168,6 +168,9 @@ values include:
 - Public App Store and Play Store URLs where configured
 - `APPLE_TEAM_ID` and `APPLE_APP_BUNDLE_IDENTIFIER` — server-only iOS Universal Link verification
 - `ANDROID_APP_PACKAGE_NAME` and `ANDROID_APP_SHA256_CERT_FINGERPRINTS` — server-only Android App Link verification
+- `NEXT_PUBLIC_POSTHOG_KEY` / `NEXT_PUBLIC_POSTHOG_HOST` — optional PostHog analytics and error monitoring (`lib/analytics.ts`); disabled when empty. No autocapture or session replay; URLs are stripped of queries, fragments and tokens before sending
+
+The Content-Security-Policy in `next.config.mjs` allows network calls only to the API origin and PostHog. Add any new third-party origin there, or the browser will block it.
 
 Keep `.env.example` synchronized with actual runtime reads and remove unused entries
 only after repository search confirms there are no code or deployment references.
@@ -318,7 +321,9 @@ For a normal web change:
 - Social sign-in uses Better Auth `signIn.social`, public availability booleans
   from `/public/auth/providers` and a same-origin `/auth/complete` callback. Keep
   provider credentials on the API. Unconfigured providers remain disabled; email
-  sign-in stays available. Age confirmation uses the existing server endpoint.
+  sign-in stays available. New provider accounts finish username, adult age and
+  terms/privacy consent before protected routes; see
+  `../tivorah-api/docs/social-signup.md` for provider setup and live verification.
 - Existing listing photos include Pexels `/photos/**`; keep that bounded host/path
   allowed in Next image configuration along with the configured media CDN.
 - `components/ui/loading-state.tsx` reuses the shared `tivorah-shimmer` treatment

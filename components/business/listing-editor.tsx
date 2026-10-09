@@ -11,6 +11,7 @@ import { MediaField } from "./media-field";
 import { ListingActivity } from "./listing-activity";
 import { OfferingVideosEditor } from "./offering-videos";
 import { ServiceSettings, ServiceSettingsValue, serviceTimezoneForState } from "./service-settings";
+import { WorkspaceBottomBar } from "./workspace-bottom-bar";
 import { SelectField } from "../ui/select-field";
 import { HubShareField } from "./hub-share-field";
 import { conditionOptions, priceTypeOptions } from "./select-options";
@@ -54,6 +55,8 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
     availabilityTimezone: item.availabilityTimezone || serviceTimezoneForState(item.state),
     bookingEnabled: item.bookingEnabled,
     paymentRequired: item.paymentRequired,
+    refundPolicy: item.refundPolicy ?? null,
+    refundPolicyNote: item.refundPolicyNote ?? null,
     slotDurationMinutes: item.slotDurationMinutes,
     bookingNoticeHours: item.bookingNoticeHours,
     weeklyAvailability: item.weeklyAvailability,
@@ -124,6 +127,7 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
       <nav className="event-manage-tabs" aria-label={service ? "Manage service" : "Manage item"}>
         {tabsFor(service).map((value) => <button key={value} type="button" aria-pressed={tab === value} onClick={() => setTab(value)}>{value}</button>)}
       </nav>
+      <WorkspaceBottomBar label={service ? "Manage service" : "Manage item"} tabs={tabsFor(service)} primary={service ? ["Details", "Customers", "Enquiries", "Availability"] : ["Details", "Photos", "Enquiries", "Sharing"]} active={tab} onSelect={setTab} back={{ href: "/business?view=listings", label: "Back to your listings" }} />
 
       <div className="event-manage-content">
         {tab === "Customers" && service ? <ListingActivity id={item.id} kind="bookings" /> : null}

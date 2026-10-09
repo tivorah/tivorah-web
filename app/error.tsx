@@ -1,6 +1,9 @@
 "use client";
+import { useEffect } from "react";
+import { captureError } from "../lib/analytics";
 import Link from "next/link";
-export default function PageError({ reset }: { reset: () => void }) {
+export default function PageError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => { captureError(error, { source: "page_error" }); }, [error]);
   return <section className="content recovery-state" role="alert">
     <h1>This page couldn’t load.</h1>
     <p>Check your connection and try again. If the problem continues, contact Tivorah support.</p>

@@ -17,7 +17,7 @@ export type TicketType = {
   hasAccessCode?: boolean;
   releaseAfterTicketTypeId?: number | null;
 };
-export type ManagedEvent = { setupIssues?: import("../booking-setup-notice").BookingSetupIssue[]; information?: { arrival?: string; accessibility?: string; agePolicy?: string; refundPolicy?: string; faqs?: {question: string; answer: string}[] } | null;
+export type ManagedEvent = { refundPolicy?: string | null; setupIssues?: import("../booking-setup-notice").BookingSetupIssue[]; information?: { arrival?: string; accessibility?: string; agePolicy?: string; refundPolicy?: string; faqs?: {question: string; answer: string}[] } | null;
   gstTreatment?: "unspecified" | "taxable" | "gst_free" | "input_taxed";
   id: number;
   /** Hubs this event is shared to (only returned to the organiser). */

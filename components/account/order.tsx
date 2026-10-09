@@ -10,6 +10,7 @@ import { adminApiBase } from "../../app/admin/api-base";
 import { useState } from "react";
 import { CheckoutHoldBanner } from "../discovery/checkout-hold-banner";
 import { holdRemainingMs } from "../../lib/checkout-hold";
+import { BookingHelp } from "./booking-help";
 function Order({ id }: { id: string }) {
   const { data, loading, error, retry } = usePrivateResource<{
     order: { id: number; status: string; receiptLines?: string[]; quantity: number; totalCents: number; currency?: string; createdAt?: string };
@@ -91,11 +92,13 @@ function Order({ id }: { id: string }) {
           </div>
           {receiptHref ? <p><a href={receiptHref} download>Download receipt (PDF)</a> · your booking receipt from Tivorah</p> : null}
           {checkNotice ? <p role="status">{checkNotice}</p> : null}
-          <p>
-            Payment may take a moment to confirm. Contact support with your
-            booking number if you need help.
-          </p>
-          <Link href="/contact">Get help</Link>
+          {paid ? <BookingHelp subjectType="event_order" id={data.order.id} /> : <>
+            <p>
+              Payment may take a moment to confirm. Contact support with your
+              booking number if you need help.
+            </p>
+            <Link href="/contact">Get help</Link>
+          </>}
         </section>
       ) : null}
     </>

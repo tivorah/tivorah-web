@@ -15,6 +15,8 @@ import { EventGroups } from "./groups";
 import { EventCheckIn } from "./check-in";
 import { CancelEventDialog, RefundProgress } from "./cancellation";
 import { money } from "../../../lib/api/discovery";
+import { SellerRequests, openCount, useSellerRequests } from "../booking-requests";
+import { WorkspaceBottomBar } from "../workspace-bottom-bar";
 
 type Summary = { ticketsBooked: number; bookings: number; checkedIn?: number; groupBookings?: number; groupTickets?: number; remaining?: number; collectedCents?: number; attendees?: number; newGroupRequests?: number };
 
@@ -67,6 +69,8 @@ const tabs = [
   "Orders & attendees",
   "Groups",
   "Check-in",
+  "Refund requests",
+  "Complaints",
 ] as const;
 function Workspace({ id, accountId }: { id: string; accountId: number }) {
   const { data, loading, error, retry } = usePrivateResource<ManagedEvent>(
@@ -75,6 +79,8 @@ function Workspace({ id, accountId }: { id: string; accountId: number }) {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Details");
   const [version, setVersion] = useState(0);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const requests = useSellerRequests({ eventId: Number(id) });
+  const badge = (value: (typeof tabs)[number]) => value === "Refund requests" ? openCount(requests.data, "refund") : value === "Complaints" ? openCount(requests.data, "complaint") : 0;
   const mutation = useMutation(() => { retry(); setVersion((value) => value + 1); });
   if (loading && !data) return <AccountSurfaceLoading embedded route={`/business/events/${id}`} />;
   if (error || !data)
@@ -108,14 +114,17 @@ function Workspace({ id, accountId }: { id: string; accountId: number }) {
       {mutation.error ? <p className="product-notice" role="alert">{mutation.error}</p> : null}
       {mutation.notice ? <p className="product-notice" role="status">{mutation.notice}</p> : null}
       <nav className="event-manage-tabs" aria-label="Manage event">
-        {tabs.map(value => <button key={value} type="button" aria-pressed={tab === value} onClick={() => setTab(value)}>{value}</button>)}
+        {tabs.map(value => <button key={value} type="button" aria-pressed={tab === value} onClick={() => setTab(value)}>{value}{badge(value) ? <span className="seller-requests-badge" aria-label={`${badge(value)} need a reply`}>{badge(value)}</span> : null}</button>)}
       </nav>
+      <WorkspaceBottomBar label="Manage event" tabs={tabs} primary={["Details", "Tickets", "Orders & attendees", "Check-in"]} active={tab} badge={badge} onSelect={setTab} back={{ href: "/business?view=events", label: "Back to your events" }} />
       <div className="event-manage-content">
         {tab === "Details" ? <EventDetails key={`${id}:${data.startsAt}`} event={data} refresh={retry} />
           : tab === "Photos" ? <EventPhotos key={data.id} event={data} refresh={retry} />
           : tab === "Tickets" ? <EventTicketTypes event={data} refresh={retry} />
           : tab === "Orders & attendees" ? <EventRecords id={data.id} />
           : tab === "Groups" ? <EventGroups event={data} />
+          : tab === "Refund requests" ? <SellerRequests kind="refund" {...requests} />
+          : tab === "Complaints" ? <SellerRequests kind="complaint" {...requests} />
           : <EventCheckIn id={data.id} published={data.status === "published"} />}
       </div>
     </div>

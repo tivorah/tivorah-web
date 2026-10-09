@@ -1,5 +1,6 @@
 "use client";
 import { BookingSetupNotice } from "../booking-setup-notice";
+import { refundPolicyOptions } from "../../../lib/refund-policy";
 import { SelectField } from "../../ui/select-field";
 import { FormEvent, useState } from "react";
 import { useMutation } from "../../../hooks/use-mutation";
@@ -51,6 +52,7 @@ export function EventDetails({
         ...(locality || {}),
         communityIds: hubIds,
         allowGroupBookings: form.get("allowGroupBookings") === "on",
+        refundPolicy: String(form.get("refundPolicyPreset") || "") || null,
       },
       "Event updated.",
     );
@@ -97,7 +99,8 @@ export function EventDetails({
         <section className="showcase-step">
           <h2>Plan your visit</h2>
           <p className="showcase-hint">Optional details help people decide and arrive prepared. Only completed answers appear on your event page.</p>
-          {(['agePolicy', 'arrival', 'accessibility', 'refundPolicy'] as const).map(key => <label key={key}>{({agePolicy: 'Age and ID requirements', arrival: 'Arrival, parking and doors', accessibility: 'Accessibility', refundPolicy: 'Refund policy'})[key]}<textarea name={key} defaultValue={event.information?.[key] || ''} rows={key === 'agePolicy' ? 2 : 3} maxLength={key === 'agePolicy' ? 200 : 1200} /></label>)}
+          <label>Refund policy<SelectField name="refundPolicyPreset" label="Refund policy" defaultValue={event.refundPolicy || ""} placeholder="Choose a refund policy" options={[...refundPolicyOptions]} /></label>
+          {(['agePolicy', 'arrival', 'accessibility', 'refundPolicy'] as const).map(key => <label key={key}>{({agePolicy: 'Age and ID requirements', arrival: 'Arrival, parking and doors', accessibility: 'Accessibility', refundPolicy: 'Refund details'})[key]}<textarea name={key} defaultValue={event.information?.[key] || ''} rows={key === 'agePolicy' ? 2 : 3} maxLength={key === 'agePolicy' ? 200 : 1200} /></label>)}
           <p className="showcase-hint">Your policy cannot remove applicable consumer rights. Keep cancellation and refund instructions clear.</p>
           <details className="showcase-more"><summary>Frequently asked questions</summary>{Array.from({length: 8}, (_, index) => <div className="showcase-step" key={index}><label>Question {index + 1}<input name={`faq-question-${index}`} defaultValue={event.information?.faqs?.[index]?.question || ''} maxLength={200} minLength={3} /></label><label>Answer {index + 1}<textarea name={`faq-answer-${index}`} defaultValue={event.information?.faqs?.[index]?.answer || ''} maxLength={1600} minLength={2} rows={3} /></label></div>)}</details>
         </section>

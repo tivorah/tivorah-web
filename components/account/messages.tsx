@@ -29,7 +29,7 @@ function useConversationSocket(ids: number[], onMessage: (message: Message) => v
   useEffect(() => {
     const base = adminApiBase();
     if (!base || !ids.length) return;
-    const socket = io(base, { withCredentials: true, transports: ["websocket", "polling"], reconnectionAttempts: 8 });
+    const socket = io(base, { withCredentials: true, transports: ["websocket"], reconnectionAttempts: 8 });
     socket.on("connect", () => { setLive(true); ids.forEach((conversationId) => socket.emit("chat:join", { conversationId })); });
     socket.on("disconnect", () => setLive(false));
     socket.on("connect_error", () => setLive(false));

@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 7 October 2026
+        <strong>Last updated:</strong> 8 October 2026
       </p>
 
       <div className="legal-callout">
@@ -96,14 +96,22 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <h2>Messaging and encryption</h2>
       <p>
         Only an eligible personal one-to-one chat that Tivorah expressly marks
-        as end-to-end encrypted has that protection. Banter, posts, threads,
+        as end-to-end encrypted has that protection. This covers text messages,
+        voice recordings, photos, videos and files sent in that chat. Attachments
+        are encrypted on the sender&apos;s device before upload; their decryption
+        keys are shared inside the encrypted message with participating devices.
+        Banter, posts, threads,
         Hub messages, announcements, group conversations and conversations
         associated with listings, marketplace items, services, events, tickets,
-        jobs or other transactions are not end-to-end encrypted and may be
+        jobs or other transactions (including customer and seller enquiries)
+        are not end-to-end encrypted and may be
         stored, processed and reviewed as described in our Privacy Policy.
         Private membership, an audience restriction or the word
         &quot;private&quot; does not by itself mean that content is end-to-end
-        encrypted.
+        encrypted. This protection concerns message and attachment content,
+        not all account, device, delivery or read-status information. See the{" "}
+        <Link href="/privacy">Privacy Policy</Link> for metadata, storage,
+        reporting and notification practices.
       </p>
       <p>
         End-to-end encryption does not prevent another participant from saving,

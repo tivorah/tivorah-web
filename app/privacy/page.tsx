@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 7 October 2026
+        <strong>Last updated:</strong> 8 October 2026
       </p>
 
       <p>
@@ -221,10 +221,12 @@ export default function Privacy() {
         Tivorah distinguishes personal one-to-one private chats from community
         and transactional conversations. An eligible one-to-one chat is
         end-to-end encrypted only when the conversation screen expressly shows
-        that protection. In such a chat, message content and attachments are
+        that protection. This includes text messages, voice recordings, photos,
+        videos and files sent in the chat. In such a chat, content and attachments are
         encrypted on the sender&apos;s device and can ordinarily be decrypted only
-        by the participating devices. Tivorah may temporarily hold encrypted
-        envelopes for delivery, but does not hold the private device keys needed
+        by the participating devices. Tivorah stores encrypted messages, key
+        envelopes and encrypted attachments to support delivery and chat history,
+        but does not hold the private device keys needed
         to read that content.
       </p>
       <p>
@@ -242,7 +244,8 @@ export default function Privacy() {
       <p>
         Banter, posts, threads, Hub messages, announcements, group conversations
         and conversations connected to a listing, marketplace item, service,
-        event, ticket, job or other transaction are not end-to-end encrypted.
+        event, ticket, job or other transaction, including customer and seller
+        enquiries, are not end-to-end encrypted.
         Tivorah and relevant service providers store and process that content as
         reasonably necessary to deliver the feature, maintain transaction
         records, provide support, investigate reports, moderate content, prevent
@@ -256,11 +259,14 @@ export default function Privacy() {
         reporting content. Tivorah may process participant and device
         identifiers, key records containing public keys, delivery and read
         status, dates and times, encrypted-envelope size, IP address, abuse and
-        security signals, and device or application information. If a
-        participant reports an encrypted chat, Tivorah will ask that person to
-        choose the messages and associated information to submit. Submitted
-        report content becomes readable by authorised safety personnel and
-        providers for investigation.
+        security signals, and device or application information. Read-receipt
+        sharing can be controlled in the app&apos;s Privacy settings; disabling it
+        does not stop Tivorah from maintaining your own unread counts or
+        processing delivery information. If a participant supplies readable
+        copies of messages or attachments with a report or support request,
+        those supplied copies can be reviewed by authorised safety personnel
+        and service providers for that purpose. Reporting does not give Tivorah
+        access to the private keys or the rest of the encrypted conversation.
       </p>
       <p>
         Do not assume a conversation is end-to-end encrypted unless Tivorah
@@ -481,10 +487,12 @@ export default function Privacy() {
         purposes above.
       </p>
       <p>
-        For eligible end-to-end encrypted chats, encrypted delivery envelopes
-        are retained only until delivery or expiry under the applicable
-        delivery policy. Decrypted chat history is stored on participating
-        devices and may remain on another participant&apos;s device after you delete
+        For eligible end-to-end encrypted chats, encrypted messages, key envelopes
+        and encrypted attachments may remain on our systems to support delivery
+        and chat history, subject to the retention purposes above. A delivered
+        or read status does not by itself delete the stored encrypted content.
+        Decrypted copies are stored on participating devices and may remain on
+        another participant&apos;s device after you delete
         your account or your own copy. Non-encrypted community and transactional
         conversations may be retained for moderation, safety, fraud prevention,
         transaction integrity, legal obligations and dispute resolution.

@@ -11,12 +11,14 @@ export function SocialSignIn({
   disabled,
   onBusy,
   initialProviders = null,
+  socialFirst = false,
 }: {
   returnTo: string;
   disabled: boolean;
   // Loaded by the server page; the browser only checks when this is missing.
   initialProviders?: Providers | null;
   onBusy: (busy: boolean) => void;
+  socialFirst?: boolean;
 }) {
   const [providers, setProviders] = useState<Providers | null>(initialProviders);
   const [loading, setLoading] = useState(!initialProviders);
@@ -50,7 +52,7 @@ export function SocialSignIn({
     setError("");
     const callback = new URL("/auth/complete", window.location.origin);
     callback.searchParams.set("returnTo", returnTo);
-    const failure = new URL("/auth/signin", window.location.origin);
+    const failure = new URL(socialFirst ? "/auth/signup" : "/auth/signin", window.location.origin);
     failure.searchParams.set("returnTo", returnTo);
     failure.searchParams.set("socialError", "1");
     try {
@@ -80,7 +82,7 @@ export function SocialSignIn({
 
   return (
     <>
-      <p className="auth-divider">or</p>
+      {!socialFirst && <p className="auth-divider">or</p>}
       <div className="auth-social">
         {available.map((provider) => (
           <button
@@ -116,6 +118,7 @@ export function SocialSignIn({
           </p>
         )}
       </div>
+      {socialFirst && <p className="auth-divider">or use email</p>}
     </>
   );
 }

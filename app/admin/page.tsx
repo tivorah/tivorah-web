@@ -4,6 +4,7 @@ import { ShowcaseMediaReview } from "./showcase-media-review";
 import PricingManager from "./pricing-manager";
 import PaymentCountries from "./payment-countries";
 import FeatureManager from "./feature-manager";
+import { Escalations } from "./escalations";
 import Image from "next/image";
 import Link from "next/link";
 import "./admin.css";
@@ -97,6 +98,7 @@ type Section =
   | "payments"
   | "users"
   | "moderation"
+  | "escalations"
   | "notifications";
 const sections: { id: Section; label: string; description: string }[] = [
   {
@@ -129,6 +131,11 @@ const sections: { id: Section; label: string; description: string }[] = [
     id: "moderation",
     label: "Moderation",
     description: "Review reports and keep Tivorah safe.",
+  },
+  {
+    id: "escalations",
+    label: "Escalations",
+    description: "Review refund requests and complaints sent to Tivorah.",
   },
   {
     id: "notifications",
@@ -186,6 +193,12 @@ function AdminIcon({ name }: { name: Section }) {
       <>
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
         <path d="m9 12 2 2 4-4" />
+      </>
+    ),
+    escalations: (
+      <>
+        <path d="M21 12a9 9 0 1 1-3-6.7L21 8" />
+        <path d="M21 3v5h-5M12 7v5l3 2" />
       </>
     ),
     notifications: (
@@ -1407,6 +1420,7 @@ export default function AdminPage() {
               <Pagination page={reportPages.page} pageCount={reportPages.pageCount} label="Report" onChange={reportPages.setPage} />
             </section></>
           )}
+          {section === "escalations" && <Escalations request={request} />}
           {section === "notifications" && (
             <>
               <section className="panel">

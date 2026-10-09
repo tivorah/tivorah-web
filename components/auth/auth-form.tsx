@@ -12,10 +12,6 @@ import { DateField } from "../ui/date-field";
 import { birthDateProps } from "./birth-date";
 import { PasswordStrength, passwordMeetsRules } from "./password-strength";
 import { UsernameField } from "./username-field";
-import { SelectField } from "../ui/select-field";
-import { COUNTRIES, DEFAULT_COUNTRY, signupPhone } from "../../lib/phone";
-
-const countryOptions = COUNTRIES.map((country) => ({ value: country.code, label: `${country.emoji} ${country.name} (${country.dial})` }));
 export type AuthMode =
   "signin" | "signup" | "verify" | "recover" | "two-factor";
 const titles: Record<AuthMode, string> = {
@@ -59,9 +55,6 @@ export function AuthForm({
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [birthDate, setBirthDate] = useState("");
-  // Optional phone, like mobile: country + national number.
-  const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
-  const [phoneNumber, setPhoneNumber] = useState("");
   const birthRules = useMemo(() => birthDateProps(), []);
   const underage = !!birthDate && birthRules.validate(birthDate) !== "";
   const [error, setError] = useState("");
@@ -95,10 +88,13 @@ export function AuthForm({
           setMode("two-factor");
           return;
         }
+        const session = await memberAuth.getSession();
+        if (session.data?.user && (!session.data.user.adultConfirmed || !session.data.user.dateOfBirth || !session.data.user.termAndCondition || !session.data.user.privacyTerm)) {
+          window.location.assign(`/auth/complete?returnTo=${encodeURIComponent(returnTo)}`);
+          return;
+        }
         window.location.assign(returnTo);
       } else if (mode === "signup") {
-        const phone = signupPhone(phoneCountry, phoneNumber);
-        if (phone && "error" in phone) throw new Error(phone.error);
         const result = await memberAuth.signUp.email({
           // Same shape as the mobile app: the API splits this into first and last name.
           name: `${firstName.trim()} ${lastName.trim()}`.trim(),
@@ -109,7 +105,6 @@ export function AuthForm({
           adultConfirmed: form.get("terms") === "on",
           termAndCondition: form.get("terms") === "on",
           privacyTerm: form.get("terms") === "on",
-          ...(phone ?? {}),
         } as Parameters<typeof memberAuth.signUp.email>[0]);
         if (result.error)
           throw new Error(
@@ -202,16 +197,18 @@ export function AuthForm({
       <p>
         {createLabel && (mode === "signin" || mode === "signup") ? `You’ll return to your ${createType === "item" ? "listing" : createType} form after ${mode === "signin" ? "signing in" : "creating your account"}.` : mode === "signup" ? "Create your account to book events and services, and discover more nearby." : mode === "verify" ? "Enter the code sent to your email to confirm your account." : "Sign in to pick up where you left off."}
       </p>
-      {mode === "signin" && (
+      {(mode === "signin" || mode === "signup") && (
         <>
           {socialError && (
             <p className="product-notice" role="alert">
-              Social sign-in was not completed. Try again, or sign in with your
-              email. If you do not have an account yet, create one below.
+              {mode === "signup"
+                ? "Social sign-up was not completed. Try again, or create your account with email."
+                : "Social sign-in was not completed. Try again, or sign in with email."}
             </p>
           )}
         </>
       )}
+      {mode === "signup" && <SocialSignIn socialFirst returnTo={returnTo} disabled={busy} onBusy={setBusy} initialProviders={initialProviders} />}
       <form onSubmit={submit} key={mode}>
         {mode === "signup" ? (
           <>
@@ -259,25 +256,6 @@ export function AuthForm({
               onChange={(event) => setEmail(event.target.value)}
             />
           </label>
-        ) : null}
-        {mode === "signup" ? (
-          <div className="auth-phone">
-            <span className="auth-phone-label">Phone number <small>Optional</small></span>
-            <div className="auth-phone-row">
-              <SelectField label="Country code" options={countryOptions} value={phoneCountry} onChange={setPhoneCountry} searchable placeholder="Country" />
-              <input
-                name="phone"
-                type="tel"
-                aria-label="Phone number"
-                inputMode="tel"
-                autoComplete="tel-national"
-                placeholder="400 000 000"
-                maxLength={20}
-                value={phoneNumber}
-                onChange={(event) => setPhoneNumber(event.target.value.replace(/[^\d ]/g, ""))}
-              />
-            </div>
-          </div>
         ) : null}
         {needsCode ? (
           <label>

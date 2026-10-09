@@ -51,6 +51,15 @@ export function OpenInApp({ appPath, className, children = "Open in Tivorah" }: 
     window.location.href = appUrl;
   }
 
+  // Panels close with Escape as well as Close / tapping outside.
+  const panelOpen = state === "qr" || state === "missing";
+  useEffect(() => {
+    if (!panelOpen) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setState("idle"); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [panelOpen]);
+
   // Android fallback lands back here with ?app=missing.
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("app") === "missing") setState("missing");
@@ -61,6 +70,8 @@ export function OpenInApp({ appPath, className, children = "Open in Tivorah" }: 
     <a href={appUrl} className={className} onClick={open} aria-expanded={state === "qr" || state === "missing" ? true : undefined} aria-controls={panel}>
       {state === "opening" ? "Opening Tivorah…" : children}
     </a>
+    {/* Tapping outside closes the panel; on phones it also dims the page behind the bottom sheet. */}
+    {panelOpen ? <span className="open-in-app-backdrop" aria-hidden="true" onClick={() => setState("idle")} /> : null}
     {state === "missing" ? <span id={panel} className="open-in-app-panel" role="status">
       <strong>Tivorah isn’t on this phone yet.</strong>
       <span>Get the app, then come back to this page and tap Open in Tivorah again.</span>
@@ -73,7 +84,7 @@ export function OpenInApp({ appPath, className, children = "Open in Tivorah" }: 
       <strong>Open this on your phone</strong>
       <span>Scan with your phone’s camera, then tap Open in Tivorah.</span>
       <BrandedQrCode value={typeof window !== "undefined" ? window.location.href.split("#")[0] : ""} size={168} ariaLabel="Scan to open this page on your phone" />
-      <button type="button" className="showcase-link" onClick={() => setState("idle")}>Close</button>
+      <button type="button" className="showcase-link open-in-app-close" onClick={() => setState("idle")}>Close</button>
     </span> : null}
   </span>;
 }

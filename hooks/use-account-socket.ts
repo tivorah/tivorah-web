@@ -12,7 +12,7 @@ export function useAccountSocketEvent<T>(eventName: string, onEvent: (payload: T
   useEffect(() => {
     const base = adminApiBase();
     if (!base) return;
-    const socket = io(base, { withCredentials: true, transports: ["websocket", "polling"], reconnectionAttempts: 8 });
+    const socket = io(base, { withCredentials: true, transports: ["websocket"], reconnectionAttempts: 8 });
     socket.on(eventName, (payload: T) => handler.current(payload));
     return () => { socket.disconnect(); };
   }, [eventName]);

@@ -20,7 +20,7 @@ export function CompleteSignIn() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
-    if (!isPending && !sessionError && data?.user.adultConfirmed)
+    if (!isPending && !sessionError && data?.user.adultConfirmed && data.user.dateOfBirth && data.user.termAndCondition && data.user.privacyTerm)
       window.location.replace(returnTo);
   }, [data, isPending, sessionError, returnTo]);
   async function confirm(event: FormEvent<HTMLFormElement>) {
@@ -36,6 +36,8 @@ export function CompleteSignIn() {
             new FormData(event.currentTarget).get("dateOfBirth"),
           ),
           adultConfirmed: true,
+          termsAccepted: true,
+          username: String(new FormData(event.currentTarget).get("username") || "").trim().toLowerCase(),
         }),
       });
       window.location.replace(returnTo);
@@ -48,7 +50,7 @@ export function CompleteSignIn() {
       setBusy(false);
     }
   }
-  if (isPending || (data?.user.adultConfirmed && !sessionError))
+  if (isPending || (data?.user.adultConfirmed && data.user.dateOfBirth && data.user.termAndCondition && data.user.privacyTerm && !sessionError))
     return <LoadingState label="Completing sign-in…" variant="form" />;
   if (sessionError)
     return (
@@ -74,19 +76,22 @@ export function CompleteSignIn() {
     );
   return (
     <section className="product-form auth-form">
-      <h1>One last step.</h1>
+      <h1>Finish your account.</h1>
       <p>
-        Tivorah is for adults aged 18 and over. Confirm your age to continue.
-        Your date of birth is not shown publicly.
+        Choose how people find you and confirm you’re 18 or older. Your date of birth stays private.
       </p>
       <form onSubmit={confirm}>
+        <label>
+          Username
+          <input name="username" required minLength={3} maxLength={30} pattern="[a-z0-9](?:[a-z0-9]|[._](?=[a-z0-9]))*" autoComplete="username" autoCapitalize="none" defaultValue={data.user.username ?? ""} disabled={busy} />
+        </label>
         <label>
           Date of birth
           <DateField name="dateOfBirth" required disabled={busy} {...birthDateProps()} />
         </label>
         <label className="product-checkbox">
-          <input type="checkbox" required disabled={busy} />I confirm I am at
-          least 18 years old.
+          <input type="checkbox" required disabled={busy} />
+          <span>I’m 18 or older and agree to the <Link href="/terms" target="_blank">Terms of Use</Link> and <Link href="/privacy" target="_blank">Privacy Policy</Link>.</span>
         </label>
         <button className="product-primary" disabled={busy}>
           {busy ? "Checking…" : "Continue"}

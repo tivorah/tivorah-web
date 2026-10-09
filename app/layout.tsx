@@ -1,4 +1,5 @@
 import "./product.css";
+import { Analytics } from "../components/analytics/analytics";
 import { SiteFooter } from "../components/site-footer";
 import { AccountProvider } from "../hooks/use-account";
 import "./discovery-filters.css";
@@ -64,7 +65,7 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        <AccountProvider><DiscoveryFeatures initialConfig={initialFeatures}>
+        <AccountProvider><Analytics /><DiscoveryFeatures initialConfig={initialFeatures}>
           <a className="skip-link" href="#main-content">
             Skip to content
           </a>
