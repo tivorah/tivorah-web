@@ -25,7 +25,7 @@ export function ShowcaseCard({ username, surface }: { username: string; surface:
   const [watching, setWatching] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
-    api<Card | null>(`/public/shops/${encodeURIComponent(username)}/card?surface=${surface}`, { signal: controller.signal })
+    api<Card | null>(`/public/showcases/${encodeURIComponent(username)}/card?surface=${surface}`, { signal: controller.signal })
       .then((value) => setCard(value ?? null))
       .catch(() => setCard(null)); // Optional extra: hide quietly on failure.
     return () => controller.abort();
@@ -57,7 +57,7 @@ export function ShowcaseCard({ username, surface }: { username: string; surface:
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg>
           Watch introduction
         </button> : null}
-      <Link className="showcase-card-link" href={`/shops/${encodeURIComponent(card.slug)}`}>Visit {card.name} <span aria-hidden="true">→</span></Link>
+      <Link className="showcase-card-link" href={`/showcase/${encodeURIComponent(card.slug)}`}>Visit {card.name} <span aria-hidden="true">→</span></Link>
     </div>
   </section>;
 }

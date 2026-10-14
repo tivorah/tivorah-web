@@ -2,10 +2,12 @@
 import { AccountSurfaceLoading } from "../../account/surface-loading";
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useState } from "react";
+import { moveItem, useSortable } from "../../ui/use-sortable";
 import { AccountGate } from "../../account/gate";
 import { usePrivateResource } from "../../../hooks/use-private-resource";
 import { api } from "../../../lib/api/client";
+import { directUpload, directUploadUnavailable } from "../../../lib/direct-upload";
 import {
   ShowcaseAsset,
   ShowcaseContent,
@@ -17,7 +19,7 @@ import {
   emptyShowcase,
 } from "./types";
 
-// The showcase is the promotional part of a seller's shop: a name, a short
+// The showcase is the promotional part of a seller's showcase: a name, a short
 // introduction and photos, plus where it should also appear (item, service and
 // event pages). Everything else is optional and tucked away so it is quick to publish.
 
@@ -37,7 +39,14 @@ const placementLabels = [
 ] as const;
 
 const MAX_MEDIA = 20;
-const MAX_VIDEO_SECONDS = 60;
+// Direct uploads (phone/browser → storage) allow longer, larger videos; the older form upload is
+// kept as a fallback when direct uploads are switched off or storage CORS isn't configured.
+const MAX_VIDEO_SECONDS = 180;
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 18 * 1024 * 1024;
+const FALLBACK_MAX_BYTES = 25 * 1024 * 1024;
+const FALLBACK_VIDEO_SECONDS = 60;
+const mb = (bytes: number) => `${Math.round(bytes / 1024 / 1024)} MB`;
 function videoDuration(file: File) {
   return new Promise<number>((resolve) => {
     const url = URL.createObjectURL(file);
@@ -48,10 +57,21 @@ function videoDuration(file: File) {
     video.src = url;
   });
 }
-async function uploadFile(file: File) {
-  const form = new FormData();
-  form.set("file", file);
-  return (await api<{ asset: ShowcaseAsset }>("/web/business/showcase/media", { method: "POST", body: form })).asset;
+async function uploadFile(file: File, onProgress?: (fraction: number) => void) {
+  const kind = file.type.startsWith("video/") ? "video" : "image";
+  const seconds = kind === "video" ? await videoDuration(file) : 0;
+  try {
+    const result = await directUpload<{ asset?: ShowcaseAsset }>(file, { purpose: "showcase", kind, durationSeconds: seconds || undefined, onProgress });
+    if (result.asset) return result.asset;
+    throw new Error("Upload finished but the file wasn’t added. Please try again.");
+  } catch (error) {
+    if (!directUploadUnavailable(error)) throw error;
+    if (file.size > FALLBACK_MAX_BYTES) throw new Error(`${file.name} is too large to upload right now. Choose a file under ${mb(FALLBACK_MAX_BYTES)}.`);
+    if (kind === "video" && seconds > FALLBACK_VIDEO_SECONDS) throw new Error(`${file.name} is too long to upload right now. Keep it under ${FALLBACK_VIDEO_SECONDS} seconds.`);
+    const form = new FormData();
+    form.set("file", file);
+    return (await api<{ asset: ShowcaseAsset }>("/web/business/showcase/media", { method: "POST", body: form })).asset;
+  }
 }
 
 function Editor({ record, media, username, eligibility }: { record: ShowcaseRecord | null; media: ShowcaseAsset[]; username: string; eligibility: ShowcaseEligibility }) {
@@ -79,14 +99,16 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
     if (!list.length) return;
     setError("");
     for (const [index, file] of list.entries()) {
-      if (file.size > 25 * 1024 * 1024) { setError(`${file.name} is larger than 25 MB.`); continue; }
-      if (file.type.startsWith("video/")) {
+      const video = file.type.startsWith("video/");
+      if (file.size > (video ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES)) { setError(`${file.name} is larger than ${mb(video ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES)}.`); continue; }
+      if (video) {
         const seconds = await videoDuration(file);
-        if (seconds > MAX_VIDEO_SECONDS) { setError(`${file.name} is ${Math.round(seconds)} seconds long. Keep videos to ${MAX_VIDEO_SECONDS} seconds or less.`); continue; }
+        if (seconds > MAX_VIDEO_SECONDS) { setError(`${file.name} is ${Math.round(seconds)} seconds long. Keep videos to 3 minutes or less.`); continue; }
       }
-      setUploading(`Uploading ${index + 1} of ${list.length}…`);
+      const label = `Uploading ${list.length > 1 ? `${index + 1} of ${list.length}` : file.name}`;
+      setUploading(`${label}…`);
       try {
-        const uploaded = await uploadFile(file);
+        const uploaded = await uploadFile(file, (fraction) => setUploading(`${label}… ${Math.round(fraction * 100)}%`));
         setAssets((rows) => [uploaded, ...rows]);
         if (uploaded.kind === "video" || uploaded.status === "approved") setContent((current) => ({
           ...current,
@@ -101,7 +123,7 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
   async function setBrandImage(key: "coverId" | "logoId", file: File | undefined) {
     if (!file) return;
     if (!file.type.startsWith("image/")) { setError("Choose a photo (JPG, PNG, WebP or AVIF)."); return; }
-    if (file.size > 25 * 1024 * 1024) { setError("Choose a photo smaller than 25 MB."); return; }
+    if (file.size > MAX_IMAGE_BYTES) { setError(`Choose a photo smaller than ${mb(MAX_IMAGE_BYTES)}.`); return; }
     setUploading(key === "coverId" ? "Uploading cover image…" : "Uploading logo…");
     setError("");
     try {
@@ -112,24 +134,30 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed. Please try again."); }
     finally { setUploading(""); }
   }
-  function moveSection(index: number, delta: number) {
-    setContent((current) => {
-      const order = normalizeSectionOrder(current.sectionOrder);
-      const target = index + delta;
-      if (target < 0 || target >= order.length) return current;
-      [order[index], order[target]] = [order[target], order[index]];
-      return { ...current, sectionOrder: order };
-    });
-  }
+  const sectionOrder = normalizeSectionOrder(content.sectionOrder);
+  const moveSection = useCallback((from: number, to: number) => setContent((current) => ({ ...current, sectionOrder: moveItem(normalizeSectionOrder(current.sectionOrder), from, to) })), []);
+  const sectionSort = useSortable({ count: sectionOrder.length, onMove: moveSection, describe: useCallback((index: number) => sectionLabels[sectionOrder[index]] ?? "Section", [sectionOrder]) });
   async function addVideo(file: File | undefined) {
     if (!file) return;
-    if (file.size > 25 * 1024 * 1024) { setError("Choose a video smaller than 25 MB."); return; }
+    if (file.size > MAX_VIDEO_BYTES) { setError(`Choose a video smaller than ${mb(MAX_VIDEO_BYTES)}.`); return; }
+    if (await videoDuration(file) > MAX_VIDEO_SECONDS) { setError("Keep your introduction video to 3 minutes or less."); return; }
     setUploading("Uploading video…");
     setError("");
-    try { const uploaded = await uploadFile(file); setAssets((rows) => [uploaded, ...rows]); set({ videoId: uploaded.id }); }
+    try { const uploaded = await uploadFile(file, (fraction) => setUploading(`Uploading video… ${Math.round(fraction * 100)}%`)); setAssets((rows) => [uploaded, ...rows]); set({ videoId: uploaded.id }); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Upload failed. Please try again."); }
     finally { setUploading(""); }
   }
+  // Rows follow the gallery order; ids keep the move right even if an upload is still missing.
+  const moveMedia = useCallback((from: number, to: number) => setContent((current) => {
+    const ids = current.gallery.map((item) => item.assetId);
+    const fromIndex = ids.indexOf(galleryMedia[from]?.id ?? -1);
+    const toIndex = ids.indexOf(galleryMedia[to]?.id ?? -1);
+    if (fromIndex < 0 || toIndex < 0) return current;
+    return { ...current, gallery: moveItem(current.gallery, fromIndex, toIndex) };
+  }), [galleryMedia]);
+  const mediaSort = useSortable({ count: galleryMedia.length, onMove: moveMedia, describe: useCallback((index: number) => `${galleryMedia[index]?.kind === "video" ? "Video" : "Photo"} ${index + 1}`, [galleryMedia]) });
+  const altFor = (id: number) => content.gallery.find((item) => item.assetId === id)?.alt ?? "";
+  const setAlt = (id: number, alt: string) => setContent((current) => ({ ...current, gallery: current.gallery.map((item) => item.assetId === id ? { ...item, alt } : item) }));
   function removePhoto(id: number) {
     setContent((current) => ({ ...current, gallery: current.gallery.filter((item) => item.assetId !== id) }));
   }
@@ -139,12 +167,12 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
     await persist((event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") || "publish");
   }
 
-  // "unpublish" takes the whole shop offline; "publish" puts it (back) online.
+  // "unpublish" takes the whole showcase offline; "publish" puts it (back) online.
   async function persist(action: string) {
     if (busy || uploading) return;
     setBusy(true); setError(""); setNotice("");
-    // Photos get a simple description from the shop name unless one was written.
-    const ready = { ...content, gallery: content.gallery.map((item, index) => ({ ...item, alt: item.alt.trim().length >= 2 ? item.alt : `${content.name || "Shop"} photo ${index + 1}` })) };
+    // Photos get a simple description from the showcase name unless one was written.
+    const ready = { ...content, gallery: content.gallery.map((item, index) => ({ ...item, alt: item.alt.trim().length >= 2 ? item.alt : `${content.name || "Showcase"} photo ${index + 1}` })) };
     try {
       const result = await api<{ showcase: ShowcaseRecord }>("/web/business/showcase", { method: "PUT", body: JSON.stringify({ version, content: ready, action }) });
       setContent(ready);
@@ -153,9 +181,9 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
       setPublishedSlug(result.showcase.published?.slug || "");
       setOffline(!!result.showcase.draft?.offline && !result.showcase.published);
       setConfirmOffline(false);
-      setNotice(action === "publish" ? "Your shop is live." : action === "unpublish" ? "Your shop is offline. Customers can no longer see it." : "Draft saved.");
+      setNotice(action === "publish" ? "Your showcase is live." : action === "unpublish" ? "Your showcase is offline. Customers can no longer see it." : "Draft saved.");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not save your shop.");
+      setError(cause instanceof Error ? cause.message : "Could not save your showcase.");
     } finally { setBusy(false); }
   }
 
@@ -165,7 +193,7 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
     if (busy || uploading) return;
     const tab = window.open("about:blank", "_blank");
     setBusy(true); setError("");
-    const ready = { ...content, gallery: content.gallery.map((item, index) => ({ ...item, alt: item.alt.trim().length >= 2 ? item.alt : `${content.name || "Shop"} photo ${index + 1}` })) };
+    const ready = { ...content, gallery: content.gallery.map((item, index) => ({ ...item, alt: item.alt.trim().length >= 2 ? item.alt : `${content.name || "Showcase"} photo ${index + 1}` })) };
     try {
       const result = await api<{ showcase: ShowcaseRecord }>("/web/business/showcase", { method: "PUT", body: JSON.stringify({ version, content: ready, action: "draft" }) });
       setVersion(result.showcase.version);
@@ -178,38 +206,35 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
   }
 
   const header = <header className="showcase-editor-head">
-    <div>
-      <Link className="showcase-editor-back" href="/business">← Your business</Link>
-      <h1>Your shop</h1>
-      <p>Your shop shows your items, services and events. Add photos, short videos and an introduction so customers get to know you.</p>
-    </div>
-    <div className="showcase-editor-head-actions">
+    <Link className="showcase-editor-back" href="/business"><span aria-hidden="true">‹</span> Your business</Link>
+    <div className="showcase-editor-title">
+      <h1>Your showcase</h1>
       <span className={`showcase-status${published ? " is-live" : offline ? " is-offline" : ""}`}>{published ? "Live" : offline ? "Offline" : "Draft"}</span>
-      {published ? <>
-        <Link className="product-secondary" href={`/shops/${encodeURIComponent(publishedSlug)}`}>View shop</Link>
-        <button type="button" className="showcase-link" aria-expanded={confirmOffline} aria-controls="shop-offline-confirm" onClick={() => setConfirmOffline((value) => !value)} disabled={busy}>Take offline</button>
-      </> : null}
     </div>
+    {published ? <div className="showcase-editor-head-actions">
+      <Link className="showcase-chip" href={`/showcase/${encodeURIComponent(publishedSlug)}`}>View showcase <span aria-hidden="true">↗</span></Link>
+      <button type="button" className="showcase-chip is-quiet" aria-expanded={confirmOffline} aria-controls="shop-offline-confirm" onClick={() => setConfirmOffline((value) => !value)} disabled={busy}>Take offline</button>
+    </div> : null}
   </header>;
   const offlinePanels = <>
-    {confirmOffline && published ? <section id="shop-offline-confirm" className="shop-offline-panel" role="region" aria-label="Take your shop offline">
+    {confirmOffline && published ? <section id="shop-offline-confirm" className="shop-offline-panel" role="region" aria-label="Take your showcase offline">
       <div>
-        <strong>Take your shop offline?</strong>
-        <p>Customers won’t be able to open your shop page, and shop links and cards are removed from your items, services and events. Your listings stay on Tivorah. You can put your shop back online at any time.</p>
+        <strong>Take your showcase offline?</strong>
+        <p>Customers won’t be able to open your showcase page, and showcase links and cards are removed from your items, services and events. Your listings stay on Tivorah. You can put your showcase back online at any time.</p>
       </div>
       <span>
         <button type="button" className="product-secondary" onClick={() => setConfirmOffline(false)} disabled={busy}>Cancel</button>
-        <button type="button" className="product-primary is-danger" onClick={() => void persist("unpublish")} disabled={busy}>{busy ? "Taking offline…" : "Take shop offline"}</button>
+        <button type="button" className="product-primary is-danger" onClick={() => void persist("unpublish")} disabled={busy}>{busy ? "Taking offline…" : "Take showcase offline"}</button>
       </span>
     </section> : null}
-    {offline ? <p className="shop-offline-note" role="status"><strong>Your shop is offline.</strong> Customers can’t see your shop page or links to it. Preview is visible only to you. Choose “Put shop back online” when you’re ready.</p> : null}
+    {offline ? <p className="shop-offline-note" role="status"><strong>Your showcase is offline.</strong> Customers can’t see your showcase page or links to it. Preview is visible only to you. Choose “Put showcase back online” when you’re ready.</p> : null}
   </>;
 
   if (!eligibility.eligible) return <>
     {header}
     <section className="showcase-locked">
-      <h2>Add something to unlock your shop</h2>
-      <p>Your shop shows what you offer, so it opens once you have at least one item, service or event on Tivorah.</p>
+      <h2>Add something to unlock your showcase</h2>
+      <p>Your showcase shows what you offer, so it opens once you have at least one item, service or event on Tivorah.</p>
       <div><Link className="product-primary" href="/business/create?type=item">Sell an item</Link><Link className="product-secondary" href="/business/create?type=service">Offer a service</Link><Link className="product-secondary" href="/business/create?type=event">Create an event</Link></div>
     </section>
   </>;
@@ -218,60 +243,87 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
     {header}
     {offlinePanels}
     <form className="showcase-form" onSubmit={save} aria-busy={busy || !!uploading}>
-      <section className="showcase-step">
-        <h2>Cover image &amp; logo</h2>
-        <p className="showcase-hint">Without a cover, your shop uses Tivorah’s colours. Without a logo, it shows your first initial.</p>
-        <div className="showcase-brand">
-          {(["coverId", "logoId"] as const).map((key) => {
-            const image = asset(content[key]);
-            const label = key === "coverId" ? "Cover image" : "Logo";
-            return <div key={key} className={`showcase-brand-slot ${key === "coverId" ? "is-cover" : "is-logo"}`}>
-              <span className="showcase-brand-label">{label}</span>
-              <div className="showcase-brand-frame">
-                {image?.url ? <Image src={image.url} alt={`Your ${label.toLowerCase()}`} fill sizes={key === "coverId" ? "480px" : "120px"} /> : <span aria-hidden="true">{key === "coverId" ? "1600 × 400 recommended" : content.name.trim().charAt(0).toUpperCase() || "+"}</span>}
+      {/* Looks like the top of the showcase itself: the cover banner with the logo overlapping it. */}
+      <section className="showcase-step showcase-brand-step" aria-label="Cover image and logo">
+        {(() => {
+          const cover = asset(content.coverId);
+          const logo = asset(content.logoId);
+          const picker = (key: "coverId" | "logoId", label: string, has: boolean) => <label className={`showcase-brand-pick is-${key === "coverId" ? "cover" : "logo"}`}>
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.2" /></svg>
+            {key === "coverId" ? <span>{has ? "Change cover" : "Add cover"}</span> : null}
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" aria-label={has ? `Change ${label}` : `Add ${label}`} onChange={(e) => { void setBrandImage(key, e.target.files?.[0]); e.target.value = ""; }} disabled={!!uploading || busy} />
+          </label>;
+          return <>
+            <div className="showcase-brand-cover">
+              {cover?.url ? <Image src={cover.url} alt="Your cover image" fill sizes="(max-width: 760px) 100vw, 760px" /> : <span className="showcase-brand-empty">Cover image · 1600 × 400 works best</span>}
+              {picker("coverId", "cover image", !!cover)}
+            </div>
+            <div className="showcase-brand-row">
+              <div className="showcase-brand-logo">
+                {logo?.url ? <Image src={logo.url} alt="Your logo" fill sizes="96px" /> : <span aria-hidden="true">{content.name.trim().charAt(0).toUpperCase() || "+"}</span>}
+                {picker("logoId", "logo", !!logo)}
               </div>
-              <div className="showcase-brand-actions">
-                <label className="showcase-link-button">{image ? "Change" : `Add ${label.toLowerCase()}`}<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" aria-label={image ? `Change ${label.toLowerCase()}` : `Add ${label.toLowerCase()}`} onChange={(e) => { void setBrandImage(key, e.target.files?.[0]); e.target.value = ""; }} disabled={!!uploading || busy} /></label>
-                {image ? <button type="button" className="showcase-link-button" onClick={() => set({ [key]: null })}>Remove</button> : null}
+              <div className="showcase-brand-remove">
+                {cover ? <button type="button" className="showcase-link-button" onClick={() => set({ coverId: null })}>Remove cover</button> : null}
+                {logo ? <button type="button" className="showcase-link-button" onClick={() => set({ logoId: null })}>Remove logo</button> : null}
               </div>
-            </div>;
-          })}
-        </div>
+            </div>
+            <p className="showcase-hint">No cover? Your showcase uses Tivorah’s colours. No logo? It shows your first initial.</p>
+          </>;
+        })()}
       </section>
 
       <section className="showcase-step">
         <h2>Basics</h2>
-        <label>Shop name<input value={content.name} onChange={(e) => set({ name: e.target.value })} required minLength={2} maxLength={100} placeholder="e.g. Ada’s Kitchen" /></label>
+        <label>Showcase name<input value={content.name} onChange={(e) => set({ name: e.target.value })} required minLength={2} maxLength={100} placeholder="e.g. Ada’s Kitchen" /></label>
         <label>Short introduction
           <textarea rows={3} value={content.about} onChange={(e) => set({ about: e.target.value })} required maxLength={240} placeholder="What you offer, in one or two sentences." />
           <span className="showcase-hint">{content.about.length}/240</span>
         </label>
-        <label>Shop address
-          <span className="showcase-slug"><span aria-hidden="true">tivorah.com/shops/</span><input aria-label="Shop address" value={content.slug} onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} required minLength={3} maxLength={60} pattern="[a-z0-9]+(-[a-z0-9]+)*" /></span>
+        <label>Showcase address
+          <span className="showcase-slug"><span aria-hidden="true">tivorah.com/showcase/</span><input aria-label="Showcase address" value={content.slug} onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} required minLength={3} maxLength={60} pattern="[a-z0-9]+(-[a-z0-9]+)*" /></span>
         </label>
       </section>
 
       <section className="showcase-step">
         <h2>Gallery <span>{content.gallery.length}/{MAX_MEDIA}</span></h2>
-        <p className="showcase-hint">Show your products, your space or a quick ad for your business. Videos can be up to {MAX_VIDEO_SECONDS} seconds and appear once Tivorah has reviewed them.</p>
-        <div className="showcase-photos">
-          {galleryMedia.map((item) => <figure key={item.id} className={content.coverId === item.id ? "is-cover" : ""}>
-            {item.kind === "video"
-              ? (item.url ? <video src={item.url} muted playsInline preload="metadata" aria-hidden="true" /> : <span className="showcase-video-placeholder" aria-hidden="true">Video</span>)
-              : item.url ? <Image src={item.url} alt="" width={240} height={180} /> : null}
-            {item.kind === "video" ? <span className="showcase-badge">{item.status === "approved" ? "Video" : "Video · in review"}</span> : null}
-            <button type="button" className="showcase-remove" aria-label={item.kind === "video" ? "Remove video" : "Remove photo"} onClick={() => removePhoto(item.id)}>×</button>
-          </figure>)}
-          {content.gallery.length < MAX_MEDIA ? <label className="showcase-add-photo">
-            <input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm,video/quicktime" onChange={(e) => { void addMedia(e.target.files); e.target.value = ""; }} disabled={!!uploading || busy} />
-            <span aria-hidden="true">+</span>Add photos or videos
-          </label> : null}
-        </div>
-        {uploading ? <p className="showcase-hint" role="status">{uploading}</p> : null}
+        <p className="showcase-hint">Drag <GripIcon /> to reorder. Videos (up to 3 min) appear once reviewed.</p>
+        {galleryMedia.length ? <ol className="showcase-sort-list showcase-media-list" ref={mediaSort.listRef} aria-label="Gallery order">
+          {galleryMedia.map((item, index) => {
+            const video = item.kind === "video";
+            const tags = [index === 0 ? "First" : null, content.coverId === item.id ? "Cover" : null, content.videoId === item.id ? "Intro video" : null, video && item.status !== "approved" ? "In review" : null].filter(Boolean);
+            return <li key={item.id} className="showcase-sort-row showcase-media-row" {...mediaSort.itemProps(index)}>
+              <button type="button" className="showcase-sort-handle" {...mediaSort.handleProps(index)}><GripIcon /></button>
+              <span className="showcase-media-thumb">
+                {video ? (item.url ? <video src={item.url} muted playsInline preload="metadata" aria-hidden="true" /> : <span aria-hidden="true">▶</span>) : item.url ? <Image src={item.url} alt="" width={128} height={128} /> : null}
+                {video ? <span className="showcase-media-play" aria-hidden="true">▶</span> : null}
+              </span>
+              <span className="showcase-media-copy">
+                <span className="showcase-media-title">
+                  <strong>{video ? "Video" : "Photo"} {index + 1}</strong>
+                  {tags.map((tag) => <em key={tag}>{tag}</em>)}
+                  {!video && content.coverId !== item.id ? <button type="button" className="showcase-row-action" onClick={() => set({ coverId: item.id })}>Set as cover</button> : null}
+                  {video && content.videoId !== item.id ? <button type="button" className="showcase-row-action" onClick={() => set({ videoId: item.id })}>Use as intro</button> : null}
+                </span>
+                <input aria-label={`Describe ${video ? "video" : "photo"} ${index + 1} for screen readers`} placeholder="Add a description" maxLength={160} value={altFor(item.id)} onChange={(e) => setAlt(item.id, e.target.value)} />
+              </span>
+              <button type="button" className="showcase-row-remove" aria-label={`Remove ${video ? "video" : "photo"} ${index + 1}`} onClick={() => removePhoto(item.id)}>
+                <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+              </button>
+            </li>;
+          })}
+        </ol> : null}
+        {content.gallery.length < MAX_MEDIA ? <label className="showcase-add-media">
+          <input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm,video/quicktime" onChange={(e) => { void addMedia(e.target.files); e.target.value = ""; }} disabled={!!uploading || busy} />
+          <span aria-hidden="true">+</span>
+          <span><strong>Add photos or videos</strong><small>{MAX_MEDIA - content.gallery.length} left · photos up to {mb(MAX_IMAGE_BYTES)}</small></span>
+        </label> : null}
+        {uploading ? <p className="showcase-upload-status" role="status"><span className="showcase-upload-spinner" aria-hidden="true" />{uploading}</p> : null}
+        <p className="showcase-sr" aria-live="polite">{mediaSort.announcement}</p>
       </section>
 
       <section className="showcase-step">
-        <h2>Also show my shop card on</h2>
+        <h2>Also show my showcase card on</h2>
         <div className="showcase-switches">
           {placementLabels.map(([key, label, hint]) => <label key={key} className="showcase-switch">
             <input type="checkbox" role="switch" checked={placements[key]} onChange={(e) => set({ placements: { ...placements, [key]: e.target.checked } })} />
@@ -290,35 +342,36 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
       </section>
 
       <section className="showcase-step">
-        <h2>Shop layout</h2>
-        <p className="showcase-hint">Choose what customers see first, and switch off anything you don’t want to show.</p>
-        <ol className="showcase-order">
-          {normalizeSectionOrder(content.sectionOrder).map((key, index, order) => {
+        <h2>Showcase layout</h2>
+        <p className="showcase-hint">Drag to set the order. Switch off what you don’t want to show.</p>
+        <ol className="showcase-sort-list showcase-order" ref={sectionSort.listRef} aria-label="Showcase section order">
+          {sectionOrder.map((key, index) => {
             const hidden = (content.hiddenSections ?? []).includes(key);
-            return <li key={key} className={hidden ? "is-hidden" : ""}>
-            <span className="showcase-order-index" aria-hidden="true">{index + 1}</span>
-            <strong>{sectionLabels[key]}{hidden ? <small> · Hidden</small> : null}</strong>
-            <label className="showcase-switch showcase-order-show">
-              <input type="checkbox" role="switch" checked={!hidden} aria-label={`Show ${sectionLabels[key]} on my shop`} onChange={(event) => set({ hiddenSections: event.target.checked ? (content.hiddenSections ?? []).filter((item) => item !== key) : [...(content.hiddenSections ?? []), key] })} />
-              <span className="showcase-switch-track" aria-hidden="true" />
-            </label>
-            <span className="showcase-order-actions">
-              <button type="button" aria-label={`Move ${key} up`} disabled={index === 0} onClick={() => moveSection(index, -1)}><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 15 6-6 6 6" /></svg></button>
-              <button type="button" aria-label={`Move ${key} down`} disabled={index === order.length - 1} onClick={() => moveSection(index, 1)}><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg></button>
-            </span>
-          </li>; })}
+            return <li key={key} className={`showcase-sort-row${hidden ? " is-hidden" : ""}`} {...sectionSort.itemProps(index)}>
+              <button type="button" className="showcase-sort-handle" {...sectionSort.handleProps(index)}><GripIcon /></button>
+              <span className="showcase-order-index" aria-hidden="true">{index + 1}</span>
+              <strong>{sectionLabels[key]}{hidden ? <small>Hidden</small> : null}</strong>
+              <label className="showcase-switch showcase-order-show">
+                <input type="checkbox" role="switch" checked={!hidden} aria-label={`Show ${sectionLabels[key]} on my showcase`} onChange={(event) => set({ hiddenSections: event.target.checked ? (content.hiddenSections ?? []).filter((item) => item !== key) : [...(content.hiddenSections ?? []), key] })} />
+                <span className="showcase-switch-track" aria-hidden="true" />
+              </label>
+            </li>;
+          })}
         </ol>
+        <p className="showcase-sr" aria-live="polite">{sectionSort.announcement}</p>
       </section>
 
       <details className="showcase-step showcase-more">
-        <summary>More details <span>Optional</span></summary>
+        <summary><span><strong>More details</strong><small>Story, hours, service area, intro video</small></span><svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg></summary>
+        <div className="showcase-more-body">
         {optionalFields.map(([key, label, max, placeholder]) => <label key={key}>{label}
-          {max > 120 ? <textarea rows={key === "story" ? 4 : 2} maxLength={max} value={content[key]} placeholder={placeholder} onChange={(e) => set({ [key]: e.target.value })} /> : <input maxLength={max} value={content[key]} placeholder={placeholder} onChange={(e) => set({ [key]: e.target.value })} />}
+          {max > 120 ? <textarea rows={key === "story" ? 3 : 1} maxLength={max} value={content[key]} placeholder={placeholder} onChange={(e) => set({ [key]: e.target.value })} /> : <input maxLength={max} value={content[key]} placeholder={placeholder} onChange={(e) => set({ [key]: e.target.value })} />}
         </label>)}
         <div className="showcase-video">
           <strong>Introduction video</strong>
-          <p className="showcase-hint">Up to 25 MB. Videos are reviewed by Tivorah before they appear. Captions and a transcript are optional and help more people follow along.</p>
-          {content.videoId ? <p className="showcase-hint">Video #{content.videoId} · {asset(content.videoId)?.status ?? "uploaded"} <button type="button" className="showcase-link" onClick={() => set({ videoId: null })}>Remove</button></p> : null}
+          <p className="showcase-hint">Up to 3 minutes and {mb(MAX_VIDEO_BYTES)}. Shown once Tivorah has reviewed it.</p>
+          {content.videoId && asset(content.videoId)?.url ? <video className="showcase-intro-preview" src={asset(content.videoId)!.url!} controls preload="metadata" aria-label="Introduction video preview" /> : null}
+          {content.videoId ? <p className="showcase-hint">Video #{content.videoId} · {asset(content.videoId)?.status === "approved" ? "approved" : asset(content.videoId)?.status === "rejected" ? "not approved — upload a revised video" : "in review"} <button type="button" className="showcase-link" onClick={() => set({ videoId: null })}>Remove</button></p> : null}
           {!content.videoId && videos.length ? <p className="showcase-hint">Earlier uploads: {videos.map((video) => <button key={video.id} type="button" className="showcase-link" onClick={() => set({ videoId: video.id })}>Use video #{video.id} ({video.status})</button>)}</p> : null}
           <label className="product-secondary showcase-video-upload">Upload a video<input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={(e) => { void addVideo(e.target.files?.[0]); e.target.value = ""; }} disabled={!!uploading || busy} /></label>
           {content.videoId ? <>
@@ -326,19 +379,24 @@ function Editor({ record, media, username, eligibility }: { record: ShowcaseReco
             <label>Timed captions (WebVTT, optional)<textarea rows={4} maxLength={100000} value={content.videoCaptions || ""} placeholder={"WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nWelcome to our shop."} onChange={(e) => set({ videoCaptions: e.target.value })} /></label>
           </> : null}
         </div>
+        </div>
       </details>
 
       {error ? <p className="product-error" role="alert">{error}</p> : null}
       {notice ? <p className="product-notice" role="status">{notice}</p> : null}
-      <div className="showcase-actions">
+      <div className="showcase-actions" data-sticky-save="">
         <button type="button" className="showcase-link" disabled={busy || !!uploading} onClick={() => void openPreview()}>Preview <span aria-hidden="true">↗</span></button>
         <span>
           {published ? null : <button className="product-secondary" value="draft" disabled={busy || !!uploading}>Save draft</button>}
-          <button className="product-primary" value="publish" disabled={busy || !!uploading}>{busy ? <><span className="button-progress" aria-hidden="true" />Saving…</> : published ? "Update shop" : offline ? "Put shop back online" : "Publish shop"}</button>
+          <button className="product-primary" value="publish" disabled={busy || !!uploading}>{busy ? <><span className="button-progress" aria-hidden="true" />Saving…</> : published ? "Update" : offline ? "Put showcase back online" : "Publish showcase"}</button>
         </span>
       </div>
     </form>
   </>;
+}
+
+function GripIcon() {
+  return <svg className="showcase-grip" aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" /><circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" /><circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" /></svg>;
 }
 
 function Load({ username }: { username: string }) {

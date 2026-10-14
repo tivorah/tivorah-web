@@ -10,11 +10,14 @@ import { Locality, LocalityField } from "./locality-field";
 import { MediaField } from "./media-field";
 import { ListingActivity } from "./listing-activity";
 import { OfferingVideosEditor } from "./offering-videos";
-import { ServiceSettings, ServiceSettingsValue, serviceTimezoneForState } from "./service-settings";
+import { ServiceSettings, ServiceSettingsValue, serviceSettingsPayload, serviceTimezoneForState } from "./service-settings";
 import { WorkspaceBottomBar } from "./workspace-bottom-bar";
 import { SelectField } from "../ui/select-field";
 import { HubShareField } from "./hub-share-field";
 import { conditionOptions, priceTypeOptions } from "./select-options";
+import categories from "../../lib/discovery-categories.json";
+import { ServiceMenuEditor, useServiceTemplate } from "./service-menu-editor";
+import { draftFromMenu, hasMenuItems, menuPayload, type ServiceMenuItem, type ServiceMenuValue } from "../../lib/service-menu";
 import { money } from '../../lib/api/discovery';
 import { centsOrThrow } from "../../lib/money";
 type Listing = ServiceSettingsValue & {
@@ -34,6 +37,7 @@ type Listing = ServiceSettingsValue & {
   communityIds?: number[];
   communityId?: number | null;
   serviceMode: string | null;
+  serviceMenu?: ServiceMenuItem[];
   suburb: string | null;
   state: string | null;
   postcode: string | null;
@@ -55,12 +59,24 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
     availabilityTimezone: item.availabilityTimezone || serviceTimezoneForState(item.state),
     bookingEnabled: item.bookingEnabled,
     paymentRequired: item.paymentRequired,
+    paymentTiming: item.paymentTiming ?? "upfront",
     refundPolicy: item.refundPolicy ?? null,
     refundPolicyNote: item.refundPolicyNote ?? null,
     slotDurationMinutes: item.slotDurationMinutes,
     bookingNoticeHours: item.bookingNoticeHours,
     weeklyAvailability: item.weeklyAvailability,
+    bookingApproval: item.bookingApproval ?? "instant",
+    bufferMinutes: item.bufferMinutes ?? 0,
+    maxBookingsPerDay: item.maxBookingsPerDay ?? null,
+    gstTreatment: item.gstTreatment ?? "unspecified",
+    testimonials: item.testimonials ?? [],
   });
+  const [category, setCategory] = useState(item.category);
+  const [menu, setMenu] = useState<ServiceMenuValue>(() => draftFromMenu(item.serviceMenu));
+  // Menu categories (food, hairstyles, packages) take a list of priced items; others keep one price.
+  const template = useServiceTemplate(service ? category : null);
+  const usesMenu = !!template && hasMenuItems(menu);
+  const [menuError, setMenuError] = useState("");
   const mutation = useMutation(refresh);
   const { data: stats } = usePrivateResource<ListingStats>(`/market/products/${item.id}/business-summary`);
   const [hubIds, setHubIds] = useState<number[]>(item.communityIds ?? (item.communityId ? [item.communityId] : []));
@@ -69,6 +85,11 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
+    let menuFields: ReturnType<typeof menuPayload> | null = null;
+    setMenuError("");
+    if (service) {
+      try { menuFields = menuPayload(menu, !!template); } catch (cause) { setMenuError(cause instanceof Error ? cause.message : "Check your menu."); setTab("Details"); return; }
+    }
     await mutation.run(
       `/market/products/${item.id}`,
       "PATCH",
@@ -80,12 +101,13 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
         categories: [f.get("category")],
         images,
         communityIds: hubIds,
-        priceCents: centsOrThrow(f.get("price")),
+        // With a menu, the API prices the service from its items ("from" the cheapest).
+        ...(usesMenu ? {} : { priceCents: centsOrThrow(f.get("price")), priceType: f.get("priceType") }),
         currency: String(f.get("currency") || item.currency || "AUD"),
-        priceType: f.get("priceType"),
+        ...(menuFields ?? {}),
         ...(locality || {}),
         ...(service
-          ? { ...settings, serviceMode: f.get("serviceMode"), availableOnline: f.get("serviceMode") === "online" }
+          ? { ...serviceSettingsPayload(settings), serviceMode: f.get("serviceMode"), availableOnline: f.get("serviceMode") === "online" }
           : { condition: f.get("condition"), pickupNotes: f.get("pickupNotes") }),
       },
       service ? "Service updated." : "Listing updated.",
@@ -142,21 +164,23 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
                   <label>Title<input name="title" defaultValue={item.title} minLength={3} maxLength={160} required /></label>
                   <label>Description<textarea name="description" defaultValue={item.description} minLength={10} maxLength={10000} rows={6} required /></label>
                   <div className="showcase-row">
-                    <label>Category<input name="category" defaultValue={item.category} minLength={2} maxLength={100} required /></label>
+                    <label>Category<SelectField name="category" label="Category" required value={category} onChange={setCategory} placeholder="Choose a category" options={[...new Set([...(service ? categories.services : categories.items), category].filter(Boolean))].map((value) => ({ value, label: value }))} /></label>
                     <label><span className="showcase-label">Business name <span className="showcase-optional">Optional</span></span><input name="businessName" defaultValue={item.businessName || ""} maxLength={100} /></label>
                   </div>
                 </section>
                 <section className="showcase-step">
-                  <h2>Price</h2>
+                  <h2>{template ? template.menuLabel : "Price"}</h2>
+                  {template ? <ServiceMenuEditor template={template} value={menu} onChange={setMenu} disabled={mutation.busy} /> : null}
+                  {menuError ? <p className="field-error" role="alert">{menuError}</p> : null}
                   <div className="showcase-row">
-                    <label>Price<input name="price" type="number" min={0} max={1000000} step="0.01" defaultValue={item.priceCents / 100} required /></label>
+                    {usesMenu ? null : <label>Price<input name="price" type="number" min={0} max={1000000} step="0.01" defaultValue={item.priceCents / 100} required /></label>}
                     <label>Currency<SelectField name="currency" label="Currency" defaultValue={item.currency || "AUD"} options={["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map(value => ({ value, label: value }))} /></label>
-                    <label>Price basis<SelectField name="priceType" label="Price basis" defaultValue={item.priceType || "fixed"} options={service ? priceTypeOptions : priceTypeOptions.slice(0, 1)} /></label>
+                    {usesMenu ? null : <label>Price basis<SelectField name="priceType" label="Price basis" defaultValue={item.serviceMenu?.length ? "fixed" : item.priceType || "fixed"} options={service ? priceTypeOptions : priceTypeOptions.slice(0, 1)} /></label>}
                   </div>
                 </section>
                 <section className="showcase-step">
                   <h2>{service ? "Where you work" : "Condition & pickup"}</h2>
-                  {service ? <label>Service location<SelectField name="serviceMode" label="Service location" defaultValue={item.serviceMode || "at_provider"} options={[{ value: "at_provider", label: "At my location" }, { value: "mobile", label: "I travel to customers" }, { value: "online", label: "Online" }, { value: "flexible", label: "In person or online" }]} /></label>
+                  {service ? <label>{template?.modeQuestion ?? "Service location"}<SelectField key={template ? category : "default"} name="serviceMode" label={template?.modeQuestion ?? "Service location"} defaultValue={template && !(String(item.serviceMode) in template.modeLabels) ? Object.keys(template.modeLabels)[0] : item.serviceMode || "at_provider"} options={template ? (Object.entries(template.modeLabels) as [string, string][]).map(([value, label]) => ({ value, label })) : [{ value: "at_provider", label: "At my location" }, { value: "mobile", label: "I travel to customers" }, { value: "online", label: "Online" }, { value: "flexible", label: "In person or online" }]} /></label>
                     : <label>Condition<SelectField name="condition" label="Condition" defaultValue={item.condition || "new"} options={conditionOptions} /></label>}
                   <p className="event-current-locality"><span>Suburb</span><strong>{[item.suburb, item.state, item.postcode].filter(Boolean).join(", ") || "Online"}</strong></p>
                   <details className="showcase-more event-change-locality"><summary>Change suburb</summary><LocalityField required={false} onChange={setLocality} /></details>
@@ -203,7 +227,7 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
             </div>
             <div className="event-glance-card">
               <span className="event-glance-label">Sharing</span>
-              <p>{hubIds.length ? `Also shown in ${hubIds.length} ${hubIds.length === 1 ? "Hub" : "Hubs"}.` : "Only on your shop and Tivorah search."}</p>
+              <p>{hubIds.length ? `Also shown in ${hubIds.length} ${hubIds.length === 1 ? "Hub" : "Hubs"}.` : "Only on your showcase and Tivorah search."}</p>
               {service ? <p>{settings.bookingEnabled ? "Customers can book appointments online." : "Customers send you an enquiry to book."}</p> : null}
             </div>
           </aside> : null}

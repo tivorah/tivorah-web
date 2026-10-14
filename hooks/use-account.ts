@@ -9,6 +9,8 @@ export type Account = {
   email: string;
   firstName: string;
   lastName: string | null;
+  /** Staff can open the admin portal (it still requires a staff sign-in and, for admins, MFA). */
+  isStaff?: boolean;
 };
 function useAccountSource() {
   const {

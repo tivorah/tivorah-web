@@ -29,6 +29,14 @@
   .app-bottom-sheet-chevron{color:#b2a9b8;font-size:22px;line-height:1}
   .app-bottom-sheet-badge{min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:#d6336c;color:#fff;font-size:12px;font-weight:800;line-height:22px;text-align:center}
 }
+/* Height of the visible bar, for sticky bars that sit on top of it (0 when there is no bar or it
+   has slid away while scrolling). --app-bottom-safe is the safe-area padding those bars still need. */
+:root{--app-bottom-bar-offset:0px;--app-bottom-safe:env(safe-area-inset-bottom)}
+@media(max-width:600px){
+  :root[data-bottom-bar="shown"]{--app-bottom-bar-offset:calc(62px + env(safe-area-inset-bottom));--app-bottom-safe:0px}
+  .app-bottom-bar{transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+  :root[data-bottom-bar="hidden"] .app-bottom-bar:not(:focus-within){transform:translateY(100%)}
+}
 @keyframes app-sheet-up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes app-sheet-fade{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){.app-bottom-sheet,.app-bottom-sheet-backdrop{animation:none}}
+@media(prefers-reduced-motion:reduce){.app-bottom-sheet,.app-bottom-sheet-backdrop{animation:none}.app-bottom-bar{transition:none}}

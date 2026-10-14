@@ -1,0 +1,65 @@
+/* Service page sections: rating, at a glance, testimonials, reviews, cancellation policy. */
+.service-rating{display:inline-flex;align-items:center;gap:6px;min-height:32px;margin:0 0 8px;color:#3d3542;font-size:15px;text-decoration:none}
+.service-rating span[aria-hidden]{color:#b7860b;letter-spacing:1px}
+.service-rating-new{color:#6f6874;font-size:14px}
+a.service-rating:hover strong{text-decoration:underline}
+.service-glance,.service-testimonials,.service-reviews,.service-policy{margin:28px 0 0}
+.service-glance dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:0}
+.service-glance dl div{padding:14px 16px;border:1px solid #ece5f3;border-radius:18px;background:#fff}
+.service-glance dt{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#7a7280}
+.service-glance dd{margin:4px 0 0;font-size:15px;line-height:1.45;color:#2b252f}
+.service-section-note{margin:4px 0 12px;font-size:13px;color:#6f6874}
+.service-testimonials>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.service-testimonials figure{margin:0;padding:18px;border-radius:20px;background:#f7f3fb}
+.service-testimonials blockquote{margin:0;font-size:16px;line-height:1.55;color:#2b252f}
+.service-testimonials figcaption{margin-top:10px;font-size:14px;font-weight:700;color:#5b3a8f}
+.service-reviews ul{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.service-reviews li{padding:16px;border:1px solid #ece5f3;border-radius:18px}
+.service-review-head{display:flex;justify-content:space-between;gap:10px}
+.service-review-head span{color:#b7860b;letter-spacing:1px}
+.service-review-date{margin:2px 0 6px;font-size:12px;color:#7a7280}
+.service-reviews li>p{margin:6px 0 0;line-height:1.55}
+.service-review-reply{margin-top:10px;padding:10px 12px;border-radius:14px;background:#f7f3fb}
+.service-review-reply span{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7a7280}
+.service-review-reply p{margin:4px 0 0}
+.service-policy{padding:18px;border-radius:20px;background:#f7f3fb}
+.service-policy h2{margin-top:0}
+.service-policy p{margin:6px 0 0;line-height:1.5}
+/* Booking form additions: address, note, summary, request and quote copy. */
+.service-address{display:grid;gap:10px;margin:18px 0 0;padding:16px;border:1px solid #ece5f3;border-radius:20px}
+.service-address legend{padding:0 6px;font-size:15px;font-weight:800}
+.service-address label,.service-booking-note,.service-quote-form label{display:grid;gap:6px;font-size:14px;font-weight:700}
+.service-address input,.service-booking-note textarea,.service-quote-form textarea,.service-quote-form input{width:100%;box-sizing:border-box;min-height:46px;padding:10px 14px;border:1px solid #ddd5e4;border-radius:16px;font:inherit;font-weight:400;background:#fff}
+.service-booking-note textarea,.service-quote-form textarea{resize:vertical}
+.service-address-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+@media (max-width:560px){.service-address-row{grid-template-columns:1fr 1fr}.service-address-row label:first-child{grid-column:1/-1}}
+.service-booking-note{margin:18px 0 0}
+.service-booking-summary{display:grid;gap:6px;margin:18px 0 0;padding:14px 16px;border-radius:18px;background:#f7f3fb}
+.service-booking-summary p{display:flex;justify-content:space-between;gap:12px;margin:0}
+.service-booking-callout{margin:0 0 14px;padding:12px 14px;border-radius:16px;background:#fff6e5;color:#6b4708;font-size:14px;line-height:1.45}
+.service-quote-form{display:grid;gap:14px}
+.service-booking-done{display:grid;gap:8px;justify-items:start}
+.service-booking-done h3{margin:0}
+/* Booking form, kept minimal: menu picker, date and time, address only when needed, optional note. */
+.service-booking-legend,.service-menu legend{margin:0 0 8px;padding:0;font-size:15px;font-weight:800;color:#241c2b}
+.service-menu{display:grid;gap:0;margin:0 0 18px;padding:0;border:0;min-width:0}
+.service-menu-item{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;padding:10px 0;border-bottom:1px solid #f0eaf4}
+.service-menu-item:last-of-type{border-bottom:0}
+.service-menu-item>span:first-child{display:grid;gap:2px;min-width:0}
+.service-menu-item strong{font-size:15px;font-weight:700}
+.service-menu-item small{color:#6f6874;font-size:13px;line-height:1.35}
+.service-menu-item em{color:#4f2f86;font-size:14px;font-style:normal;font-weight:750}
+.service-menu-add{flex:none;min-width:64px;min-height:40px;padding:0 14px;border:1px solid #d8cbe6;border-radius:999px;background:#fff;color:#4f2f86;font:inherit;font-size:14px;font-weight:750;cursor:pointer}
+.service-menu-add:hover{background:#f6f1fb}
+.service-menu-stepper{display:inline-flex;flex:none;align-items:center;gap:2px;padding:2px;border-radius:999px;background:#65409f;color:#fff}
+.service-menu-stepper button{display:grid;width:36px;height:36px;place-items:center;border:0;border-radius:50%;background:transparent;color:#fff;font:inherit;font-size:20px;font-weight:600;line-height:1;cursor:pointer}
+.service-menu-stepper button:hover{background:rgba(255,255,255,.14)}
+.service-menu-stepper button:disabled{opacity:.45;cursor:default}
+.service-menu-stepper output{min-width:20px;font-size:15px;font-weight:800;text-align:center}
+.service-menu-add:focus-visible,.service-menu-stepper button:focus-visible,.service-link:focus-visible{outline:3px solid #c8a7f5;outline-offset:2px}
+.service-zone{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 4px;color:#6f6874;font-size:13px}
+.service-zone-select{display:grid;gap:6px;margin:0 0 12px;font-size:14px;font-weight:700}
+.service-link{min-height:36px;padding:0 4px;border:0;background:none;color:#4f2f86;font:inherit;font-size:14px;font-weight:750;cursor:pointer}
+.service-link:hover{text-decoration:underline;text-underline-offset:3px}
+.service-note-toggle{display:block;margin:10px 0 0;padding:0}
+.product-detail-booking .service-address{margin-top:14px}

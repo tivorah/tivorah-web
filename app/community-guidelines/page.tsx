@@ -90,7 +90,7 @@ export default function Guidelines() {
 
       <h2>Shops, photos and videos</h2>
       <p>
-        Your shop, listings and media must show what you genuinely offer. Only
+        Your showcase, listings and media must show what you genuinely offer. Only
         upload photos, videos, music, logos and text you own or have permission
         to use. Get agreement from anyone who can be identified, and never show
         an identifiable child without their parent or guardian&apos;s consent.

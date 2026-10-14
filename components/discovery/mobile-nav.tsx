@@ -29,7 +29,7 @@ function ContextNav() {
   if (path.startsWith("/business/events/") || path.startsWith("/business/listings/") || path === "/business/showcase/preview") return null;
   if (path.startsWith("/business")) return <BusinessNav path={path} />;
   if (path === "/account" || path.startsWith("/account/")) return <AccountNav path={path} />;
-  if (destinations.some(([href]) => path === href || path.startsWith(`${href}/`)) || path.startsWith("/shops/")) return <ExploreNav path={path} />;
+  if (destinations.some(([href]) => path === href || path.startsWith(`${href}/`)) || path.startsWith("/showcase/")) return <ExploreNav path={path} />;
   return null;
 }
 
@@ -37,7 +37,7 @@ function ExploreNav({ path }: { path: string }) {
   const { enabled } = useDiscoveryFeatures();
   const items = destinations
     .filter(([href]) => href === "/account" || enabled((href === "/shop" ? "items" : href.slice(1)) as DiscoveryKind))
-    .map(([href, label, icon]) => ({ key: href, href, label, icon, current: path === href || path.startsWith(`${href}/`) || (href === "/shop" && path.startsWith("/shops/")) }));
+    .map(([href, label, icon]) => ({ key: href, href, label, icon, current: path === href || path.startsWith(`${href}/`) || (href === "/shop" && path.startsWith("/showcase/")) }));
   return <BottomBar label="Explore and account" items={items} />;
 }
 
@@ -74,8 +74,8 @@ function BusinessNav({ path }: { path: string }) {
         { key: "item", href: "/business/create?type=item", label: "Sell an item", hint: "List something for local buyers", icon: "shop" },
       ]} />
       <BottomSheet open={sheet === "more"} title="Business tools" onClose={() => setSheet(null)} items={[
-        { key: "appointments", href: "/account/bookings?role=provider", label: "Customer appointments", icon: "appointments" },
-        { key: "shop", href: "/business/showcase", label: "Your shop", icon: "shop", current: path === "/business/showcase" },
+        { key: "appointments", href: "/business/appointments", label: "Appointments", hint: "Calendar, requests, quotes, time off", icon: "appointments", current: path === "/business/appointments" },
+        { key: "shop", href: "/business/showcase", label: "Your showcase", icon: "shop", current: path === "/business/showcase" },
         { key: "payouts", href: "/business/payouts", label: "Payout settings", icon: "payouts", current: path === "/business/payouts" },
         { key: "account", href: "/account", label: "Your account", hint: "Tickets, bookings and messages", icon: "account" },
         { key: "explore", href: "/events", label: "Explore Tivorah", icon: "explore" },

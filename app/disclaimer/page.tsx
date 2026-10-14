@@ -36,7 +36,7 @@ export default function Disclaimer() {
       <h2>Listings, events and people</h2>
       <p>
         Tivorah does not guarantee a member, organiser, shop, listing, item, service, venue or
-        event. A shop page, photo or video approved for display is not a Tivorah endorsement or a
+        event. A showcase page, photo or video approved for display is not a Tivorah endorsement or a
         check that the seller&apos;s claims are true.
         Inspect items, use traceable payments, meet safely, tell someone your plans and follow
         venue and public-safety instructions. Rights that cannot be excluded under the Australian

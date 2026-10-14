@@ -37,16 +37,16 @@ export function BusinessOverview({ firstName }: { firstName: string }) {
     { label: "Items for sale", value: data?.listings.items, href: "/business?view=listings" },
     { label: "Services", value: data?.listings.services, href: "/business?view=listings" },
     { label: "Upcoming events", value: data?.events.upcoming, note: data?.events.drafts ? `${data.events.drafts} draft${data.events.drafts === 1 ? "" : "s"}` : undefined, href: "/business?view=events" },
-    { label: "Upcoming appointments", value: data?.appointments.upcoming, href: "/account/bookings?role=provider" },
+    { label: "Upcoming appointments", value: data?.appointments.upcoming, href: "/business/appointments" },
   ];
   const showcase = data?.showcase;
   const payouts = data?.payouts;
   const showcaseCopy = {
-    live: ["Live", "Your shop is live with photos, videos and your introduction.", "Edit your shop"],
-    draft: ["Draft", "Finish and publish your shop page so customers can meet you.", "Finish your shop"],
-    offline: ["Offline", "Your shop is hidden from customers. Put it back online when you’re ready.", "Manage your shop"],
-    none: ["Not set up", "Add photos, short videos and an introduction to stand out.", "Set up your shop"],
-    locked: ["Locked", "Add your first item, service or event to open your shop page.", "Sell an item"],
+    live: ["Live", "Your showcase is live with photos, videos and your introduction.", "Edit your showcase"],
+    draft: ["Draft", "Finish and publish your showcase page so customers can meet you.", "Finish your showcase"],
+    offline: ["Offline", "Your showcase is hidden from customers. Put it back online when you’re ready.", "Manage your showcase"],
+    none: ["Not set up", "Add photos, short videos and an introduction to stand out.", "Set up your showcase"],
+    locked: ["Locked", "Add your first item, service or event to open your showcase page.", "Sell an item"],
   } as const;
   const payoutCopy = {
     ready: ["Ready", "You can receive payments for paid tickets and bookings.", "Manage payouts"],
@@ -59,7 +59,7 @@ export function BusinessOverview({ firstName }: { firstName: string }) {
       <div>
         <p className="product-eyebrow">YOUR BUSINESS</p>
         <h1>{greeting()}, {firstName}</h1>
-        <p>Here’s what’s happening across your shop, services and events.</p>
+        <p>Here’s what’s happening across your showcase, services and events.</p>
       </div>
       <div className="biz-quick-actions" aria-label="Create">
         <Link className="product-primary" href="/business/create?type=item">+ Sell an item</Link>
@@ -78,11 +78,11 @@ export function BusinessOverview({ firstName }: { firstName: string }) {
 
     <div className="biz-status-grid">
       <article className="biz-status">
-        <div className="biz-status-top"><h2>Your shop</h2>{showcase ? <span className={`biz-pill is-${showcase.status}`}>{showcaseCopy[showcase.status][0]}</span> : null}</div>
-        {showcase ? <p>{showcaseCopy[showcase.status][1]}</p> : <span className="biz-skel-line tivorah-shimmer" aria-label="Checking your shop" role="status" />}
+        <div className="biz-status-top"><h2>Your showcase</h2>{showcase ? <span className={`biz-pill is-${showcase.status}`}>{showcaseCopy[showcase.status][0]}</span> : null}</div>
+        {showcase ? <p>{showcaseCopy[showcase.status][1]}</p> : <span className="biz-skel-line tivorah-shimmer" aria-label="Checking your showcase" role="status" />}
         <div className="biz-status-actions">
-          <Link className="product-secondary" href={showcase?.status === "locked" ? "/business/create?type=item" : "/business/showcase"}>{showcase ? showcaseCopy[showcase.status][2] : "Open your shop"}</Link>
-          {showcase?.status === "live" && showcase.slug ? <Link className="biz-text-link" href={`/shops/${encodeURIComponent(showcase.slug)}`}>View your shop ↗</Link> : null}
+          <Link className="product-secondary" href={showcase?.status === "locked" ? "/business/create?type=item" : "/business/showcase"}>{showcase ? showcaseCopy[showcase.status][2] : "Open your showcase"}</Link>
+          {showcase?.status === "live" && showcase.slug ? <Link className="biz-text-link" href={`/showcase/${encodeURIComponent(showcase.slug)}`}>View your showcase ↗</Link> : null}
         </div>
       </article>
       <article className="biz-status">

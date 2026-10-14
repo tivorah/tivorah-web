@@ -1,6 +1,6 @@
 /* Seller shop page, showcase card (item/service/event pages) and the simple showcase editor. */
 
-/* ---------- Shop page (/shops/[slug]) ---------- */
+/* ---------- Shop page (/showcase/[slug]) ---------- */
 .shop-page { padding-bottom: 80px; }
 .shop-back { display: inline-flex; align-items: center; min-height: 44px; margin: 8px 0 12px; color: #563580; font-weight: 700; text-decoration: none; }
 .shop-back:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -273,3 +273,10 @@ label > .showcase-hint { justify-self: end; }
 /* Card heading text starts below the cover; only the logo overlaps it. */
 .showcase-card-head { align-items: flex-start; }
 .showcase-card-head > div { padding-top: 34px; min-width: 0; }
+/* Gallery item tools: description, reorder, cover/intro shortcuts. */
+.showcase-photos .showcase-media-tools{display:grid;gap:6px;padding:8px}
+.showcase-photos .showcase-media-tools input{width:100%;box-sizing:border-box;min-height:36px;padding:6px 10px;border:1px solid #ddd5e4;border-radius:10px;font:inherit;font-size:13px}
+.showcase-photos .showcase-media-tools span{display:flex;flex-wrap:wrap;gap:4px}
+.showcase-photos .showcase-media-tools button{min-width:36px;min-height:36px;padding:0 10px;border:1px solid #e3d9ea;border-radius:999px;background:#fff;color:#56347e;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.showcase-photos .showcase-media-tools button:disabled{opacity:.4;cursor:not-allowed}
+.showcase-intro-preview{width:100%;max-width:420px;border-radius:16px;background:#111}

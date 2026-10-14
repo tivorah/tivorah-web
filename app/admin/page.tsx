@@ -1,7 +1,10 @@
 "use client";
+import { NotificationsWorkspace } from "./notifications-workspace";
+import { ReportCard, type DetailedReport } from "./report-card";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { ShowcaseMediaReview } from "./showcase-media-review";
 import PricingManager from "./pricing-manager";
+import SellerFees from "./seller-fees";
 import PaymentCountries from "./payment-countries";
 import FeatureManager from "./feature-manager";
 import { Escalations } from "./escalations";
@@ -57,14 +60,7 @@ type UserPagination = {
   totalPages: number;
   hasMore: boolean;
 };
-type Report = {
-  id: number;
-  targetType: string;
-  targetId: string;
-  reason: string;
-  details?: string;
-  status: string;
-};
+type Report = DetailedReport;
 type Broadcast = {
   id: number;
   title: string;
@@ -311,9 +307,6 @@ export default function AdminPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   // Admin lists page at 10, the shared web list size.
   const reportPages = usePagedList(reports);
-  const templatePages = usePagedList(templates);
-  const broadcastPages = usePagedList(broadcasts);
-  const deliveryPages = usePagedList(deliveries);
   const [featureBusy, setFeatureBusy] = useState<number | null>(null);
   const [featureHistory, setFeatureHistory] = useState<Record<number, any[]>>(
     {},
@@ -631,61 +624,20 @@ export default function AdminPage() {
       setError(e instanceof Error ? e.message : "Update failed");
     }
   }
-  async function updateReport(report: Report, status: string) {
+  async function updateReport(report: Report, status: string, resolution?: string) {
     try {
-      const updated = await request(`/api/v1/admin/reports/${report.id}`, {
+      await request(`/api/v1/admin/reports/${report.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, ...(resolution ? { resolution } : {}) }),
       });
-      setReports((all) =>
-        all.map((item) => (item.id === report.id ? updated : item)),
-      );
+      // Reload the detailed list: the update response is the bare report, without people or evidence.
+      setReports(await request("/api/v1/admin/reports"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Update failed");
     }
   }
-  async function createBroadcast(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    try {
-      await request("/api/v1/admin/broadcasts", {
-        method: "POST",
-        body: JSON.stringify({
-          title: form.get("title"),
-          body: form.get("body"),
-          category: form.get("category"),
-          deepLink: form.get("deepLink") || undefined,
-          targetRoles: form.getAll("roles"),
-        }),
-      });
-      e.currentTarget.reset();
-      await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Broadcast was not queued");
-    }
-  }
-  async function saveTemplate(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    try {
-      await request("/api/v1/admin/notification-templates", {
-        method: "POST",
-        body: JSON.stringify({
-          key: form.get("key"),
-          name: form.get("name"),
-          category: form.get("category"),
-          title: form.get("title"),
-          body: form.get("body"),
-          deepLink: form.get("deepLink") || undefined,
-          active: true,
-        }),
-      });
-      e.currentTarget.reset();
-      await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Template was not saved");
-    }
-  }
+  // A failure belongs to the screen it happened on; switching sections starts clean.
+  const goTo = (next: Section) => { setError(""); setSection(next); };
   const visibleError = error || sectionErrors[section];
   if (recoveryCodes.length)
     return (
@@ -988,7 +940,7 @@ export default function AdminPage() {
                 className={section === item.id ? "active" : ""}
                 key={item.id}
                 aria-current={section === item.id ? "page" : undefined}
-                onClick={() => setSection(item.id)}
+                onClick={() => goTo(item.id)}
               >
                 <AdminIcon name={item.id} />
                 <span>{item.label}</span>
@@ -997,6 +949,10 @@ export default function AdminPage() {
                 ) : null}
               </button>
             ))}
+          </nav>
+          <nav className="admin-switch" aria-label="Other Tivorah workspaces">
+            <a href="/account">Your account <span aria-hidden="true">↗</span></a>
+            <a href="/business">Manage your business <span aria-hidden="true">↗</span></a>
           </nav>
           <div className="admin-sidebar-foot">
             <span className="status-dot" />
@@ -1139,21 +1095,21 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <div className="attention-list">
-                    <button onClick={() => setSection("moderation")}>
+                    <button onClick={() => goTo("moderation")}>
                       <span>
                         <b>{reports.length}</b>
                         <small>Open reports</small>
                       </span>
                       <em>Review</em>
                     </button>
-                    <button onClick={() => setSection("users")}>
+                    <button onClick={() => goTo("users")}>
                       <span>
                         <b>{dashboard?.totals.suspendedUsers ?? 0}</b>
                         <small>Suspended users</small>
                       </span>
                       <em>Manage</em>
                     </button>
-                    <button onClick={() => setSection("notifications")}>
+                    <button onClick={() => goTo("notifications")}>
                       <span>
                         <b>
                           {
@@ -1243,7 +1199,7 @@ export default function AdminPage() {
             </div>
           )}
           {section === "features" && <FeatureManager flags={features} loading={dashboardBusy} busy={featureBusy} update={updateFlag} history={featureHistory} toggleHistory={toggleHistory} />}
-          {section === "payments" && <><PaymentCountries request={request} /><PricingManager request={request} /></>}
+          {section === "payments" && <><PaymentCountries request={request} /><PricingManager request={request} /><SellerFees request={request} /></>}
           {section === "users" && (
             <section className="panel user-directory" aria-busy={usersBusy}>
               <div className="directory-heading">
@@ -1397,160 +1353,16 @@ export default function AdminPage() {
               {reports.length === 0 ? (
                 <p>No open reports.</p>
               ) : (
-                reportPages.visible.map((report) => (
-                  <div className="feature" key={report.id}>
-                    <div>
-                      <strong>{report.reason}</strong>
-                      <small>
-                        <br />
-                        {report.targetType} #{report.targetId} ·{" "}
-                        {report.details}
-                      </small>
-                    </div>
-                    <span>{report.status}</span>
-                    <button onClick={() => updateReport(report, "reviewing")}>
-                      Review
-                    </button>
-                    <button onClick={() => updateReport(report, "resolved")}>
-                      Resolve
-                    </button>
-                  </div>
-                ))
+                <div className="report-list">{reportPages.visible.map((report) => (
+                  <ReportCard key={report.id} report={report} onUpdate={(status, resolution) => updateReport(report, status, resolution)} />
+                ))}</div>
               )}
               <Pagination page={reportPages.page} pageCount={reportPages.pageCount} label="Report" onChange={reportPages.setPage} />
             </section></>
           )}
           {section === "escalations" && <Escalations request={request} />}
           {section === "notifications" && (
-            <>
-              <section className="panel">
-                <h3>Notification template</h3>
-                <form onSubmit={saveTemplate}>
-                  <p>
-                    <input
-                      name="key"
-                      placeholder="Key, e.g. order.shipped"
-                      pattern="[a-z0-9_.-]+"
-                      required
-                    />{" "}
-                    <input name="name" placeholder="Template name" required />
-                  </p>
-                  <p>
-                    <SelectField name="category" label="Category" defaultValue="activity" options={["activity", "chat", "communities", "events", "marketplace", "safety", "marketing"].map((value) => ({ value, label: value }))} />
-                  </p>
-                  <p>
-                    <input name="title" placeholder="Title" required />
-                  </p>
-                  <p>
-                    <textarea name="body" placeholder="Message body" required />
-                  </p>
-                  <p>
-                    <input
-                      name="deepLink"
-                      placeholder="Optional internal path"
-                    />
-                  </p>
-                  <button>Save template</button>
-                </form>
-                {templatePages.visible.map((item) => (
-                  <div className="feature" key={item.id}>
-                    <div>
-                      <strong>{item.name}</strong>
-                      <small>
-                        <br />
-                        {item.key} · {item.category}
-                      </small>
-                    </div>
-                    <span>{item.active ? "Active" : "Inactive"}</span>
-                  </div>
-                ))}
-                <Pagination page={templatePages.page} pageCount={templatePages.pageCount} label="Template" onChange={templatePages.setPage} />
-              </section>
-              <section className="panel">
-                <h3>Queue broadcast</h3>
-                <form onSubmit={createBroadcast}>
-                  <p>
-                    <input
-                      name="title"
-                      placeholder="Notification title"
-                      maxLength={100}
-                      required
-                    />
-                  </p>
-                  <p>
-                    <textarea
-                      name="body"
-                      placeholder="Message"
-                      maxLength={1000}
-                      required
-                    />
-                  </p>
-                  <p>
-                    <SelectField name="category" label="Category" defaultValue="activity" options={["activity", "chat", "communities", "events", "marketplace", "safety", "marketing"].map((value) => ({ value, label: value }))} />
-                  </p>
-                  <p>
-                    <input
-                      name="deepLink"
-                      placeholder="Optional internal path, e.g. /notifications/notifications"
-                    />
-                  </p>
-                  <fieldset>
-                    <legend>Audience (none means all active users)</legend>
-                    {[
-                      "user",
-                      "tester",
-                      "moderator",
-                      "support",
-                      "finance",
-                      "event_operations",
-                      "analyst",
-                      "admin",
-                      "owner",
-                    ].map((role) => (
-                      <label key={role}>
-                        <input type="checkbox" name="roles" value={role} />{" "}
-                        {role}{" "}
-                      </label>
-                    ))}
-                  </fieldset>
-                  <button>Queue broadcast</button>
-                </form>
-              </section>
-              <section className="panel">
-                <h3>Broadcast history</h3>
-                {broadcastPages.visible.map((item) => (
-                  <div className="feature" key={item.id}>
-                    <div>
-                      <strong>{item.title}</strong>
-                      <small>
-                        <br />
-                        {item.category} ·{" "}
-                        {new Date(item.createdAt).toLocaleString()}
-                      </small>
-                    </div>
-                    <span>{item.status}</span>
-                    <span>
-                      {item.deliveredCount}/{item.recipientCount} devices ·{" "}
-                      {item.failedCount} failed
-                    </span>
-                  </div>
-                ))}
-                <Pagination page={broadcastPages.page} pageCount={broadcastPages.pageCount} label="Broadcast" onChange={broadcastPages.setPage} />
-              </section>
-              <section className="panel">
-                <h3>Recent delivery attempts</h3>
-                {deliveryPages.visible.map((item) => (
-                  <div className="feature" key={item.id}>
-                    <span>{item.status}</span>
-                    <small>
-                      {item.errorCode} {item.errorMessage}
-                    </small>
-                    <small>{new Date(item.attemptedAt).toLocaleString()}</small>
-                  </div>
-                ))}
-                <Pagination page={deliveryPages.page} pageCount={deliveryPages.pageCount} label="Delivery" onChange={deliveryPages.setPage} />
-              </section>
-            </>
+            <NotificationsWorkspace request={request} templates={templates} broadcasts={broadcasts} deliveries={deliveries} onChanged={load} />
           )}
         </section>
       </div>

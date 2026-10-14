@@ -42,7 +42,10 @@ export function AccountDashboard() {
               <div>
                 <h2 id="account-create-title">Create on Tivorah</h2>
               </div>
-              <Link href="/business" className="account-create-manage">Manage your business <span aria-hidden="true">↗</span></Link>
+              <div className="account-create-links">
+                {account.isStaff ? <Link href="/admin" className="account-create-manage">Admin portal <span aria-hidden="true">↗</span></Link> : null}
+                <Link href="/business" className="account-create-manage">Manage your business <span aria-hidden="true">↗</span></Link>
+              </div>
             </div>
             <div className="account-create-options">
               <Link href="/business/create?type=event"><CreateIcon kind="event" /><strong>Create an event</strong><span>Bring people together</span><span className="account-create-arrow" aria-hidden="true">›</span></Link>

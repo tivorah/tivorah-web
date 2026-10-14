@@ -51,6 +51,11 @@ Primary stack:
 - `app/newsletter/` — newsletter-related flows.
 - `app/legal/` — legal hub and individual policy pages.
 - `components/` — reusable public-site components, header, forms, and visual sections.
+- `components/business/hubs/` — Hub management in the business dashboard (`/business/hubs`, `/new`,
+  `/[id]`): list of owned/moderated Hubs, create, edit details and images, members (moderators,
+  mute/suspend/remove), join requests and settings, all via the shared `/community` API.
+- `app/admin/report-card.tsx` and `app/admin/notifications-workspace.tsx` — moderation report
+  detail (reporter, reported person, snapshot, screenshot) and the notifications workspace.
 - `lib/` — API, authentication, configuration, and shared web infrastructure.
 - `public/` — static brand/media assets.
 - `*.css` and shared style files — established brand and layout systems.
@@ -323,7 +328,7 @@ For a normal web change:
   provider credentials on the API. Unconfigured providers remain disabled; email
   sign-in stays available. New provider accounts finish username, adult age and
   terms/privacy consent before protected routes; see
-  `../tivorah-api/docs/social-signup.md` for provider setup and live verification.
+  `../docs/api/social-signup.md` for provider setup and live verification.
 - Existing listing photos include Pexels `/photos/**`; keep that bounded host/path
   allowed in Next image configuration along with the configured media CDN.
 - `components/ui/loading-state.tsx` reuses the shared `tivorah-shimmer` treatment
@@ -416,6 +421,22 @@ Seller earnings uses `/payments/connect/earnings-summary` and `SellerEarnings` f
 Payout reporting shows gross Booking payments with All/Events/Services source totals and recent named booking references. Bank transfers & balance remains account-wide and explicitly unaffected by booking filters. Never describe gross booking payments as net earnings or assume automatic bank transfers belong to one feature.
 
 Web payouts mirrors mobile with Payouts, Payments and Settings views using established underline navigation. Hashes #payments/#settings persist the view; #event-tax opens Settings. Hidden panels retain form drafts and payment filters. Desktop uses four bank metric cards and a semantic recent-payments table, with stacked records on narrow screens and a two-column settings layout.
+
+## Service bookings on web
+
+- Customers: `/account/bookings` (`components/account/bookings.tsx`) with shared actions in
+  `components/bookings/booking-actions.tsx` (pay invoice, reschedule via `SlotPicker`, cancel
+  with refund preview, review, receipt PDF) and `quotes-panel.tsx`. Email deep links:
+  `?pay=`, `?review=`, `?quote=`, `?tab=quotes`, `?requested=1`.
+- Providers: `/business/appointments` (`components/business/appointments.tsx`): week
+  agenda across all services, requests, quotes, time off and reviews. Mirrors mobile
+  `app/profile/bookings.tsx`; keep both in step.
+- Booking form `components/discovery/service-booking.tsx` handles request-to-book, the
+  service address for mobile services, notes, the cancellation policy and quote requests.
+  Service page sections live in `components/discovery/service-highlights.tsx`.
+- `lib/direct-upload.ts` sends files straight to R2 in chunks (CSP `connect-src` allows
+  `*.r2.cloudflarestorage.com`; bucket CORS must allow PUT and expose `ETag`). Callers fall
+  back to their form upload when `directUploadUnavailable(error)` is true.
 
 ## Event ticket cart
 

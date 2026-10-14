@@ -33,6 +33,9 @@ export function useDiscovery(
       const search = new URLSearchParams(filters);
       search.delete("when");
       search.set("query", query); search.set("locality", locality); search.set("skip", String(skip));
+      // Feeds near a place never look empty: the API continues with the next-closest events,
+      // items and services across the country. Hubs stay a strict radius search.
+      if (kind !== "hubs" && search.get("latitude")) search.set("fill", "1");
       const key = JSON.stringify([kind, query, locality, filters, skip]);
       try {
         const cached = cache.get(key);

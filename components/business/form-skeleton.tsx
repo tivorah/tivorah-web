@@ -1,4 +1,4 @@
-// Loading state shaped like the business forms (Your shop, Sell an item,
+// Loading state shaped like the business forms (Your showcase, Sell an item,
 // Offer a service, Create an event): page header, then white step cards.
 const bar = (name: string) => <span className={`${name} tivorah-shimmer`} />;
 const field = (key: number) => <div key={key} className="form-skel-field">{bar("form-skel-label")}{bar("form-skel-input")}</div>;
@@ -14,7 +14,7 @@ export function BusinessFormSkeleton({ shop = false }: { shop?: boolean }) {
     {bar("form-skel-heading")}{bar("form-skel-hint")}
     <div className="showcase-photos">{Array.from({ length: count }, (_, index) => <span key={index} className="form-skel-tile tivorah-shimmer" />)}</div>
   </section>;
-  return <div className={`showcase-page form-skel${shop ? "" : " business-create-page"}`} role="status" aria-busy="true" aria-label={shop ? "Loading your shop" : "Loading form"}>
+  return <div className={`showcase-page form-skel${shop ? "" : " business-create-page"}`} role="status" aria-busy="true" aria-label={shop ? "Loading your showcase" : "Loading form"}>
     <header className="showcase-editor-head" aria-hidden="true">
       <div>{bar("form-skel-back")}{bar("form-skel-title")}{bar("form-skel-intro")}{bar("form-skel-intro short")}</div>
       {shop ? <div className="showcase-editor-head-actions">{bar("form-skel-pill")}{bar("form-skel-button")}</div> : null}

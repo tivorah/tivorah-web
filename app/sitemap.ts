@@ -54,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!data) return entries;
   const add = (rows: Entry[], path: (row: Entry) => string, priority: number, changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]) =>
     rows.forEach((row) => entries.push({ url: url(path(row)), lastModified: row.updatedAt ? new Date(row.updatedAt) : undefined, changeFrequency, priority }));
-  add(data.shops, (row) => `/shops/${encodeURIComponent(row.slug ?? "")}`, 0.8, "weekly");
+  add(data.shops, (row) => `/showcase/${encodeURIComponent(row.slug ?? "")}`, 0.8, "weekly");
   add(data.events, (row) => `/events/${row.id}`, 0.8, "daily");
   add(data.items, (row) => `/shop/items/${row.id}`, 0.6, "weekly");
   add(data.services, (row) => `/services/${row.id}`, 0.7, "weekly");

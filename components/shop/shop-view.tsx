@@ -8,7 +8,7 @@ import { AboutSummary } from "./about-summary";
 import { MediaGallery } from "./media-gallery";
 import { MessageShopLink } from "./message-shop-link";
 
-// A seller's shop, shared by the public page (/shops/[slug]) and the owner's
+// A seller's shop, shared by the public page (/showcase/[slug]) and the owner's
 // preview (/business/showcase/preview) so both look exactly the same.
 // Overview: hero → short About (read more) → photos & videos → the seller's
 // sections in the order they chose. Gallery has every photo and video.

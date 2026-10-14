@@ -15,6 +15,9 @@ type PublicProfile = {
   city?: string | null;
   country?: string | null;
   photo?: { url?: string } | null;
+  memberSince?: string | null;
+  /** True when they have a showcase worth visiting (items, services or events). */
+  showcaseAvailable?: boolean;
 };
 
 type ProfileResult = { profile: PublicProfile | null; unavailable: boolean };
@@ -77,7 +80,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
   return <section className="profile-page">
     <div className="profile-shell">
-      <div className="profile-context"><span className="eyebrow">Shared Tivorah profile</span><p>Connect with people through trusted Hubs across Australia.</p></div>
+      <div className="profile-context"><span className="eyebrow">Tivorah profile</span><p>Connect with people through trusted Hubs across Australia.</p></div>
       <article className="public-profile-card">
         <div className="profile-avatar">
           {profile.photo?.url ? <Image src={profile.photo.url} alt={`${name}'s profile photo`} width={112} height={112} sizes="112px" /> : <span aria-hidden="true">{name.charAt(0).toUpperCase()}</span>}
@@ -86,6 +89,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         <strong>@{profile.username}</strong>
         {location ? <p className="profile-location"><span aria-hidden="true">⌖</span>{location}</p> : null}
         <p className="profile-bio">{profile.bio || "Connect through Tivorah and find the communities you share."}</p>
+        {profile.memberSince ? <p className="profile-since">Member since {new Date(profile.memberSince).toLocaleDateString("en-AU", { month: "long", year: "numeric" })}</p> : null}
+        {/* The profile is about the person; what they sell, offer and host lives on their showcase. */}
+        {profile.showcaseAvailable ? <a className="profile-showcase" href={`/showcase/${encodeURIComponent(profile.username)}`}>
+          <span className="profile-showcase-icon" aria-hidden="true">▤</span>
+          <span><strong>{profile.firstName || `@${profile.username}`}’s showcase</strong><small>Items, services and events they offer</small></span>
+          <span aria-hidden="true">›</span>
+        </a> : null}
         <OpenAppButton username={profile.username} downloadUrl={downloadUrl} iosUrl={process.env.NEXT_PUBLIC_IOS_APP_URL} androidUrl={process.env.NEXT_PUBLIC_ANDROID_APP_URL} />
       </article>
       <div className="profile-privacy"><span aria-hidden="true">✓</span><p><strong>Public profile only.</strong> Contact details, private Hubs and account information are never shown here.</p></div>

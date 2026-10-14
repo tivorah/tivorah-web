@@ -1,3 +1,4 @@
+import { AppReturnBar } from "../components/app-return-bar";
 import "./product.css";
 import { Analytics } from "../components/analytics/analytics";
 import { SiteFooter } from "../components/site-footer";
@@ -21,6 +22,7 @@ import "./showcase.css";
 import "./refine.css";
 import "./sheet.css";
 import "./form-shape.css";
+import "./showcase-editor.css";
 import { SiteHeader } from "./site-header";
 import { loadInitialFeatures } from "../lib/api/server-features";
 import { Suspense } from "react";
@@ -72,6 +74,7 @@ export default async function RootLayout({
           <Suspense fallback={null}><NavigationTracker /></Suspense>
           <PressEffect />
           <Suspense fallback={null}><NavProgress /></Suspense>
+          <AppReturnBar />
           <SiteHeader />
           <MobileProductNav />
           <main id="main-content" tabIndex={-1}>

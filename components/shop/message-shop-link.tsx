@@ -13,7 +13,7 @@ export function MessageShopLink({ slug, ownerUsername }: { slug: string; ownerUs
 
   if (loading) return <span className="shop-message-placeholder" aria-label="Checking messaging availability" />;
   if (account && ownerUsername && account.username.toLowerCase() === ownerUsername.toLowerCase()) return null;
-  if (signedOut) return <Link className="shop-message-link" href={`/auth/signin?returnTo=${encodeURIComponent(`/shops/${slug}`)}`}>{label} <span aria-hidden="true">→</span></Link>;
+  if (signedOut) return <Link className="shop-message-link" href={`/auth/signin?returnTo=${encodeURIComponent(`/showcase/${slug}`)}`}>{label} <span aria-hidden="true">→</span></Link>;
   if (!account) return <span className="shop-message-error" role="alert">{error || "Messaging is unavailable."} <button type="button" className="shop-message-link" onClick={retry}>Try again</button></span>;
 
   async function openEnquiry() {
@@ -21,7 +21,7 @@ export function MessageShopLink({ slug, ownerUsername }: { slug: string; ownerUs
     setBusy(true);
     setNotice("");
     try {
-      const result = await api<{ conversationId: number }>(`/market/shops/${encodeURIComponent(slug)}/contact`, { method: "POST", body: JSON.stringify({}) });
+      const result = await api<{ conversationId: number }>(`/market/showcases/${encodeURIComponent(slug)}/contact`, { method: "POST", body: JSON.stringify({}) });
       window.location.assign(`/account/messages/${result.conversationId}`);
     } catch (cause) {
       setNotice(cause instanceof Error ? cause.message : "Could not open the enquiry. Try again.");

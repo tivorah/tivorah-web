@@ -29,6 +29,18 @@ export type DiscoveryItem = {
   sellerShopOnline?: boolean;
   bookingEnabled?: boolean;
   serviceMode?: string;
+  /** Events: outside the chosen radius, shown after the nearby ones. */
+  beyondRadius?: boolean;
+  serviceAreaKm?: number | null;
+  slotDurationMinutes?: number;
+  bookingApproval?: "instant" | "request";
+  paymentRequired?: boolean;
+  paymentTiming?: "upfront" | "after_service" | "customer_choice";
+  refundPolicyLabel?: string;
+  refundPolicyNote?: string | null;
+  testimonials?: { quote: string; author: string; context?: string }[];
+  rating?: { average: number | null; count: number };
+  reviews?: { id: number; rating: number; comment: string | null; providerReply: string | null; createdAt: string; author: { firstName: string } }[];
   guidelines?: { key: string; text: string }[];
   creatorUsername?: string;
   memberCount?: number;

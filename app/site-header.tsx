@@ -15,7 +15,7 @@ export function SiteHeader() {
   const accountLink = !!session;
   const active = path.startsWith("/events")
     ? "events"
-    : /^\/shops?(\/|$)/.test(path)
+    : /^\/(shops?|showcase)(\/|$)/.test(path)
       ? "items"
       : path.startsWith("/services")
         ? "services"

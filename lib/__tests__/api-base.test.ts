@@ -19,6 +19,21 @@ describe("adminApiBase", () => {
     setHost(null);
     assert.equal(adminApiBase(), "http://192.168.0.4:6001");
   });
+  it("uses loopback for a local API during server-side development", () => {
+    setHost(null);
+    const env = process.env as Record<string, string | undefined>;
+    const previous = env["NODE_ENV"];
+    env["NODE_ENV"] = "development";
+    try {
+      assert.equal(adminApiBase(), "http://127.0.0.1:6001");
+      process.env.API_INTERNAL_URL = "http://localhost:7000/";
+      assert.equal(adminApiBase(), "http://localhost:7000");
+    } finally {
+      if (previous === undefined) delete env["NODE_ENV"];
+      else env["NODE_ENV"] = previous;
+      delete process.env.API_INTERNAL_URL;
+    }
+  });
   it("reaches a local API through the page's own local hostname so session cookies are sent", () => {
     setHost("localhost");
     assert.equal(adminApiBase(), "http://localhost:6001");

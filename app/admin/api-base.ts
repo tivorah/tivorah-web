@@ -17,7 +17,22 @@ const isLocalDevHost = (hostname: string) =>
 // URLs are never rewritten.
 export function adminApiBase() {
   if (typeof window === "undefined") {
-    return process.env.API_INTERNAL_URL?.replace(/\/$/, "") || configured;
+    const internal = process.env.API_INTERNAL_URL?.replace(/\/$/, "");
+    if (internal) return internal;
+    // A local API remains reachable on loopback when the Mac's LAN address
+    // changes. Preserve the configured port for non-default local setups.
+    if (process.env.NODE_ENV === "development" && configured) {
+      try {
+        const url = new URL(configured);
+        if (isLocalDevHost(url.hostname)) {
+          url.hostname = "127.0.0.1";
+          return url.origin;
+        }
+      } catch {
+        // Return the configured value below so the caller can report the error.
+      }
+    }
+    return configured;
   }
   if (!configured) return configured;
   try {

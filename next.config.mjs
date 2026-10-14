@@ -18,8 +18,9 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   "font-src 'self' data:",
-  // Development talks to the API on a LAN address over plain HTTP.
-  `connect-src 'self' ${[apiOrigin, socketOrigin, ...posthogOrigins].filter(Boolean).join(" ")}${production ? "" : " http: ws:"}`,
+  // Development talks to the API on a LAN address over plain HTTP. Direct uploads PUT file
+  // chunks straight to Cloudflare R2 with presigned URLs (lib/direct-upload.ts).
+  `connect-src 'self' ${[apiOrigin, socketOrigin, ...posthogOrigins, "https://*.r2.cloudflarestorage.com"].filter(Boolean).join(" ")}${production ? "" : " http: ws:"}`,
   "frame-src https://www.google.com",
   "worker-src 'self' blob:",
   "form-action 'self' https://checkout.stripe.com",
@@ -46,6 +47,11 @@ const nextConfig = {
       { protocol: "https", hostname: "images.pexels.com", pathname: "/photos/**" },
       { protocol: "https", hostname: "randomuser.me" },
     ],
+  },
+  // Showcases moved from /shops/<name> to /showcase/<name>; old links, QR codes and search results
+  // keep working.
+  async redirects() {
+    return [{ source: "/shops/:slug", destination: "/showcase/:slug", permanent: true }];
   },
   async headers() {
     return [

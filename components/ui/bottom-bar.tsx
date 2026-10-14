@@ -44,7 +44,33 @@ export type BarItem = {
   href?: string; onClick?: () => void; expanded?: boolean; accent?: boolean;
 };
 
+/**
+ * On phones the bar slides away while people scroll down (more room to read) and comes back as
+ * soon as they scroll up. It stays put on pages with a sticky save bar ([data-sticky-save]), which
+ * sits on top of it via --app-bottom-bar-offset.
+ */
+function useHideOnScroll() {
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.bottomBar = "shown";
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const delta = y - last;
+      if (Math.abs(delta) < 8) return;
+      const atEnd = window.innerHeight + y >= document.documentElement.scrollHeight - 4;
+      // Pages with a sticky save bar keep the bar still: both moving at once looks broken.
+      const pinned = !!document.querySelector("[data-sticky-save]");
+      root.dataset.bottomBar = delta > 0 && y > 64 && !atEnd && !pinned ? "hidden" : "shown";
+      last = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); delete root.dataset.bottomBar; };
+  }, []);
+}
+
 export function BottomBar({ label, items }: { label: string; items: BarItem[] }) {
+  useHideOnScroll();
   return (
     <nav className="app-bottom-bar" aria-label={label}>
       {items.map((item) => {

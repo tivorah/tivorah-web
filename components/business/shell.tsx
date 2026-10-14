@@ -20,16 +20,18 @@ export function BusinessShell({ children }: { children: ReactNode }) {
       <nav className="business-sidebar-nav" aria-label="Manage business">
         <Link href="/business?view=listings" aria-current={active("products") ? "page" : undefined}>Listings</Link>
         <Link href="/business?view=events" aria-current={active("events") ? "page" : undefined}>Events</Link>
+        <Link href="/business/hubs" aria-current={path.startsWith("/business/hubs") && path !== "/business/hubs/new" ? "page" : undefined}>Hubs</Link>
       </nav>
       <div className="business-sidebar-group"><p>Create</p>
         <Link href="/business/create?type=event" aria-current={createType === "event" ? "page" : undefined}>Create an event</Link>
         <Link href="/business/create?type=service" aria-current={createType === "service" ? "page" : undefined}>Offer a service</Link>
         <Link href="/business/create?type=item" aria-current={createType === "item" ? "page" : undefined}>Sell an item</Link>
+        <Link href="/business/hubs/new" aria-current={path === "/business/hubs/new" ? "page" : undefined}>Create a Hub</Link>
       </div>
       <div className="business-sidebar-group"><p>Tools</p>
-        <Link href="/account/bookings?role=provider">Customer appointments</Link>
+        <Link href="/business/appointments" aria-current={path === "/business/appointments" ? "page" : undefined}>Appointments</Link>
         <Link href="/business/requests" aria-current={path === "/business/requests" ? "page" : undefined}>Refunds &amp; complaints</Link>
-        <Link href="/business/showcase" aria-current={path === "/business/showcase" ? "page" : undefined}>Your shop</Link>
+        <Link href="/business/showcase" aria-current={path === "/business/showcase" ? "page" : undefined}>Your showcase</Link>
         <Link href="/business/payouts" aria-current={path === "/business/payouts" ? "page" : undefined}>Payout settings</Link>
       </div>
     </aside>
@@ -39,16 +41,18 @@ export function BusinessShell({ children }: { children: ReactNode }) {
         <div className="business-mobile-tabs">
           <Link href="/business?view=listings" aria-current={active("products") ? "page" : undefined}>Listings</Link>
           <Link href="/business?view=events" aria-current={active("events") ? "page" : undefined}>Events</Link>
+          <Link href="/business/hubs" aria-current={path.startsWith("/business/hubs") ? "page" : undefined}>Hubs</Link>
         </div>
         <details className="business-mobile-create"><summary>Create on Tivorah</summary><div>
           <Link href="/business/create?type=event">Create an event</Link>
           <Link href="/business/create?type=service">Offer a service</Link>
           <Link href="/business/create?type=item">Sell an item</Link>
+          <Link href="/business/hubs/new">Create a Hub</Link>
         </div></details>
         <details className="business-mobile-create business-mobile-tools-menu"><summary>Business tools</summary><div>
-          <Link href="/account/bookings?role=provider">Customer appointments</Link>
+          <Link href="/business/appointments">Appointments</Link>
           <Link href="/business/requests">Refunds &amp; complaints</Link>
-          <Link href="/business/showcase">Your shop</Link>
+          <Link href="/business/showcase">Your showcase</Link>
           <Link href="/business/payouts">Payout settings</Link>
         </div></details>
       </nav>

@@ -2,7 +2,7 @@
 import { BookingSetupNotice, type BookingSetupIssue } from "./booking-setup-notice";
 import { LoadingState } from "../ui/loading-state";
 import Link from "next/link";
-import { ServiceSettings, defaultServiceSettings, serviceTimezoneForState } from "./service-settings";
+import { ServiceSettings, defaultServiceSettings, serviceSettingsPayload, serviceTimezoneForState } from "./service-settings";
 import { refundPolicyOptions } from "../../lib/refund-policy";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -18,6 +18,8 @@ import { HubShareField } from "./hub-share-field";
 import { TicketPackageList, newPackage, packagesPayload, type PackageDraft } from "./events/packages-editor";
 import { Sheet } from "../ui/sheet";
 import { conditionOptions, priceTypeOptions } from "./select-options";
+import { ServiceMenuEditor, useServiceTemplate } from "./service-menu-editor";
+import { hasMenuItems, menuPayload, type ServiceMenuValue } from "../../lib/service-menu";
 import categories from "../../lib/discovery-categories.json";
 function CreationForm({ kind }: { kind: CreationKind }) {
   const [settings, setSettings] = useState(defaultServiceSettings);
@@ -34,6 +36,16 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [accepted, setAccepted] = useState(false);
   const [draft, setDraft] = useState<DraftFields>({ title: "", description: "", category: "", price: "", onlineUrl: "", startsAt: "", endsAt: "" });
   const [prompts, setPrompts] = useState(["", "", ""]);
+  const [menu, setMenu] = useState<ServiceMenuValue>([]);
+  // Menu categories (food, hairstyles, packages) ask what's on the list; the rest keep one price.
+  const template = useServiceTemplate(kind === "service" ? draft.category : null);
+  const usesMenu = !!template && hasMenuItems(menu);
+  // A category with its own options (e.g. food: Pickup / I deliver) starts on one of them.
+  const [modeTemplate, setModeTemplate] = useState(template);
+  if (template !== modeTemplate) {
+    setModeTemplate(template);
+    if (template && !(mode in template.modeLabels)) setMode(Object.keys(template.modeLabels)[0]);
+  }
   const [promptsOpen, setPromptsOpen] = useState(false);
   const [activeStage, setActiveStage] = useState("create-basics");
   // Highlight the step being read: the last section whose top has passed just below the sticky tracker.
@@ -103,7 +115,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
         body: JSON.stringify({
           ...payload,
           communityIds: hubIds,
-          ...(kind === "service" ? { ...settings, availabilityTimezone: settings.availabilityTimezone || serviceTimezoneForState(locality?.state) } : {}),
+          ...(kind === "service" ? { ...serviceSettingsPayload(settings), availabilityTimezone: settings.availabilityTimezone || serviceTimezoneForState(locality?.state), ...menuPayload(menu, !!template) } : {}),
         }),
       });
       setCreated(true);
@@ -119,15 +131,15 @@ function CreationForm({ kind }: { kind: CreationKind }) {
     }
   }
   const copy = {
-    item: { title: "Sell an item", intro: "Add clear photos, a fair price and where to collect it. Your item appears in your shop and on Tivorah Shop.", noun: "item" },
-    service: { title: "Offer a service", intro: "Explain what you do, where you work and how customers book. Your service appears in your shop and on Tivorah Services.", noun: "service" },
+    item: { title: "Sell an item", intro: "Add clear photos, a fair price and where to collect it. Your item appears in your showcase and on Tivorah Shop.", noun: "item" },
+    service: { title: "Offer a service", intro: "Explain what you do, where you work and how customers book. Your service appears in your showcase and on Tivorah Services.", noun: "service" },
     event: { title: "Create an event", intro: "Set the details, place and tickets. Your event is saved as a draft so you can review it before publishing.", noun: "event" },
   }[kind];
   const header = <header className="showcase-editor-head">
     <div>
       <Link className="showcase-editor-back" href="/business">← Your business</Link>
       <h1>{created ? (kind === "event" ? "Your event draft is ready" : "Your listing is live") : copy.title}</h1>
-      <p>{created ? (kind === "event" ? "Review it and publish from your business workspace." : "Customers can now find it in your shop and on Tivorah.") : copy.intro}</p>
+      <p>{created ? (kind === "event" ? "Review it and publish from your business workspace." : "Customers can now find it in your showcase and on Tivorah.") : copy.intro}</p>
     </div>
   </header>;
   if (created)
@@ -136,11 +148,12 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       <div className="showcase-actions business-create-done"><span><Link className="product-primary" href="/business">Back to your business</Link></span></div>
     </div>;
   // Live summary: what's filled in so far (drives the preview card and the checklist).
-  const checklist = checklistFor(kind, { ...draft, mode, images, locality, packages });
+  const checklist = checklistFor(kind, { ...draft, mode, images, locality, packages, menuItems: usesMenu ? menu.filter((item) => item.name.trim() && item.price.trim()).length : null });
   const doneCount = checklist.filter((item) => item.done).length;
   const allDone = doneCount === checklist.length;
   const priceLabel = kind === "event"
     ? (() => { const prices = packages.map((item) => Number(item.price || 0)); if (!prices.length) return ""; const min = Math.min(...prices); return min ? `From $${min.toFixed(2).replace(/\.00$/, "")}` : prices.every((value) => !value) ? "Free" : "From free"; })()
+    : usesMenu ? (() => { const prices = menu.map((item) => Number(item.price)).filter((value) => Number.isFinite(value) && value > 0); return prices.length ? `From $${Math.min(...prices).toFixed(2).replace(/\.00$/, "")}` : ""; })()
     : draft.price && Number(draft.price) > 0 ? `$${Number(draft.price).toFixed(2).replace(/\.00$/, "")}` : draft.price === "0" ? "Free" : "";
   const when = draft.startsAt ? new Date(draft.startsAt).toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
   const where = kind !== "item" && mode === "online" ? "Online" : locality ? `${locality.suburb}, ${locality.state}` : "";
@@ -210,10 +223,13 @@ function CreationForm({ kind }: { kind: CreationKind }) {
 
           <section id="create-place" className="showcase-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">3</span>{kind === "event" ? "Where" : kind === "service" ? "Where you work" : "Pickup"}</h2>
-            {kind !== "item" ? <div className="create-segmented" role="radiogroup" aria-label={kind === "event" ? "Location type" : "How do you provide this service?"}>
+            {template ? <p className="create-question">{template.modeQuestion}</p> : null}
+            {kind !== "item" ? <div className="create-segmented" role="radiogroup" aria-label={kind === "event" ? "Location type" : template?.modeQuestion ?? "How do you provide this service?"}>
               {(kind === "event"
                 ? [{ value: "venue", label: "In person" }, { value: "online", label: "Online" }]
-                : [{ value: "at_provider", label: "At my place" }, { value: "mobile", label: "I travel" }, { value: "flexible", label: "Either" }, { value: "online", label: "Online" }]
+                : template
+                  ? (Object.entries(template.modeLabels) as [string, string][]).map(([value, label]) => ({ value, label }))
+                  : [{ value: "at_provider", label: "At my place" }, { value: "mobile", label: "I travel" }, { value: "flexible", label: "Either" }, { value: "online", label: "Online" }]
               ).map((option) => <button key={option.value} type="button" role="radio" aria-checked={mode === option.value} className={mode === option.value ? "is-selected" : ""} onClick={() => setMode(option.value)}>{option.label}</button>)}
               <input type="hidden" name="mode" value={mode} />
             </div> : null}
@@ -242,10 +258,13 @@ function CreationForm({ kind }: { kind: CreationKind }) {
             </section>
           </> : <section id="create-price" className="showcase-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">4</span>{kind === "service" ? "Price & bookings" : "Price"}</h2>
+            {/* Menu categories: the items carry the prices. Other categories keep a single price. */}
+            {template ? <ServiceMenuEditor template={template} value={menu} onChange={setMenu} disabled={busy} /> : null}
+            {usesMenu ? <><input type="hidden" name="price" value="0" /><input type="hidden" name="priceType" value="fixed" /></> : null}
             <div className="showcase-row">
-              <label>Price<input name="price" type="number" min={0} max={1000000} step="0.01" required placeholder="0.00" /></label>
+              {usesMenu ? null : <label>Price<input name="price" type="number" min={0} max={1000000} step="0.01" required placeholder="0.00" /></label>}
               <label>Currency<SelectField name="currency" label="Currency" defaultValue="AUD" options={["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map(value => ({ value, label: value }))} /></label>
-              {kind === "service" ? <label>Pricing<SelectField name="priceType" label="Pricing" defaultValue="fixed" options={priceTypeOptions} /></label> : null}
+              {kind === "service" && !usesMenu ? <label>Pricing<SelectField name="priceType" label="Pricing" defaultValue="fixed" options={priceTypeOptions} /></label> : null}
             </div>
             {kind === "service" ? <>
               <p className="showcase-hint">Customers can discuss custom quotes with you in messages.</p>
@@ -322,12 +341,12 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           <button className="product-primary press-fx create-submit" disabled={submitDisabled}>
             {busy ? <span className="button-progress" aria-hidden="true" /> : null}{submitLabel}
           </button>
-          <p className="create-submit-hint">{kind === "event" ? "Saved as a draft — publish when you're ready." : "Goes live in your shop straight away."}</p>
+          <p className="create-submit-hint">{kind === "event" ? "Saved as a draft — publish when you're ready." : "Goes live in your showcase straight away."}</p>
           <Link className="create-cancel" href="/business">Cancel</Link>
         </aside>
 
         {/* Phones: a slim bar with progress and the one primary action. */}
-        <div className="create-mobile-bar">
+        <div className="create-mobile-bar" data-sticky-save="">
           <span className="create-mobile-progress"><strong>{doneCount}/{checklist.length}</strong> done</span>
           <button className="product-primary press-fx" disabled={submitDisabled}>{submitLabel}</button>
         </div>
@@ -353,7 +372,7 @@ function PreviewImage({ src }: { src: string }) {
 }
 
 type DraftFields = { title: string; description: string; category: string; price: string; onlineUrl: string; startsAt: string; endsAt: string };
-type ChecklistInput = DraftFields & { mode: string; images: string[]; locality: Locality | null; packages: PackageDraft[] };
+type ChecklistInput = DraftFields & { mode: string; images: string[]; locality: Locality | null; packages: PackageDraft[]; menuItems: number | null };
 // What must be done before this listing can be saved, in the order of the form.
 function checklistFor(kind: CreationKind, data: ChecklistInput) {
   const online = kind !== "item" && data.mode === "online";
@@ -368,7 +387,9 @@ function checklistFor(kind: CreationKind, data: ChecklistInput) {
     { id: "date", section: "create-when", label: "Date and time", done: !!data.startsAt && !!data.endsAt && new Date(data.endsAt) > new Date(data.startsAt) },
     { id: "tickets", section: "create-tickets", label: "Tickets", done: data.packages.length > 0 },
   );
-  else items.push({ id: "price", section: "create-price", label: "Price", done: data.price !== "" && Number(data.price) >= 0 });
+  else items.push(data.menuItems !== null
+    ? { id: "price", section: "create-price", label: "Menu items", done: data.menuItems > 0 }
+    : { id: "price", section: "create-price", label: "Price", done: data.price !== "" && Number(data.price) >= 0 });
   return items;
 }
 export function BusinessCreate() {

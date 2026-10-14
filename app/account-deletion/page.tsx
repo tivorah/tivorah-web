@@ -39,7 +39,7 @@ export default function AccountDeletion() {
         <li>Under <strong>Delete account</strong>, confirm your password and select <strong>Permanently delete my account</strong>.</li>
       </ol>
       <p>
-        Deleting your account also removes your shop page. If you sell or organise events, finish
+        Deleting your account also removes your showcase page. If you sell or organise events, finish
         or cancel open orders and bookings first; records we must keep for refunds, tax and
         disputes are kept as explained below.
       </p>

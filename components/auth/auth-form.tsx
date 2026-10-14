@@ -11,6 +11,7 @@ import { PasswordInput } from "../ui/password-input";
 import { DateField } from "../ui/date-field";
 import { birthDateProps } from "./birth-date";
 import { PasswordStrength, passwordMeetsRules } from "./password-strength";
+import { passwordHint } from "../../lib/password-policy";
 import { UsernameField } from "./username-field";
 export type AuthMode =
   "signin" | "signup" | "verify" | "recover" | "two-factor";
@@ -69,6 +70,14 @@ export function AuthForm({
     const form = new FormData(event.currentTarget);
     const password = String(form.get("password") || "");
     const otp = String(form.get("otp") || "").trim();
+    // Checked here, from what's actually in the field (autofill and password managers included),
+    // with a message on the page, instead of a browser bubble that's easy to miss.
+    if ((mode === "signup" || (mode === "recover" && codeSent)) && !passwordMeetsRules(password)) {
+      setError(`Your password needs a little more: ${passwordHint(password).text.replace(/^Add /, "add ")}.`);
+      setBusy(false);
+      document.getElementById("auth-password")?.focus();
+      return;
+    }
     try {
       if (mode === "signin") {
         const identity = email.trim().toLowerCase();
@@ -304,17 +313,12 @@ export function AuthForm({
                 visible: passwordVisible,
                 onVisibleChange: setPasswordVisible,
                 "aria-describedby": "auth-password-strength",
-                onChange: (event: ChangeEvent<HTMLInputElement>) => {
-                  setNewPassword(event.target.value);
-                  event.target.setCustomValidity(passwordMeetsRules(event.target.value) ? "" : "Your password isn’t strong enough yet.");
-                },
+                onChange: (event: ChangeEvent<HTMLInputElement>) => setNewPassword(event.target.value),
               })}
             />
             {mode !== "signin" && <PasswordStrength id="auth-password-strength" password={newPassword} onSuggest={(suggested) => {
               setNewPassword(suggested);
               setPasswordVisible(true);
-              const input = document.getElementById("auth-password") as HTMLInputElement | null;
-              input?.setCustomValidity("");
             }} />}
           </div>
         ) : null}

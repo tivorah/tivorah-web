@@ -15,6 +15,7 @@ import {
   sections,
 } from "../../lib/api/discovery";
 import { ServiceBooking } from "./service-booking";
+import { ServiceGlance, ServicePolicy, ServiceRating, ServiceReviews, ServiceTestimonials } from "./service-highlights";
 import { BackLink } from "../ui/back-link";
 import { ShowcaseCard } from "../business/showcase/showcase-card";
 import { AppHandoff } from "./app-handoff";
@@ -105,6 +106,7 @@ export async function DiscoveryDetail({
             {item.category || sections[kind].label}
           </p>
           <h1>{item.title}</h1>
+          {kind === "services" ? <ServiceRating item={item} /> : null}
           {item.priceCents != null ? (
             <p className="product-detail-price">
               {item.priceType === "quote"
@@ -118,14 +120,17 @@ export async function DiscoveryDetail({
               <div><span>Condition</span><strong>{item.condition.replaceAll("_", " ")}</strong></div>
             ) : null}
             {item.sellerUsername ? (
-              <div className="product-detail-seller"><span>{kind === "items" ? "Seller" : "Provider"}</span><strong>{item.businessName || item.ownerName || `@${item.sellerUsername}`}</strong>{item.sellerShopOnline !== false ? <Link href={`/shops/${encodeURIComponent(item.sellerUsername)}`}>View shop <span aria-hidden="true">→</span></Link> : null}</div>
+              <div className="product-detail-seller"><span>{kind === "items" ? "Seller" : "Provider"}</span><strong>{item.businessName || item.ownerName || `@${item.sellerUsername}`}</strong>{item.sellerShopOnline !== false ? <Link href={`/showcase/${encodeURIComponent(item.sellerUsername)}`}>View showcase <span aria-hidden="true">→</span></Link> : null}</div>
             ) : null}
           </div>
           {item.locality && item.serviceMode !== "online" ? <section className="event-location"><h2>Area</h2><LocationMap key={item.id} destination={[item.locality, item.state].filter(Boolean).join(", ")} approximate /></section> : null}
           <section className="product-detail-about"><h2>{kind === "items" ? "About this item" : "About this service"}</h2><p className="product-detail-description">{item.description || "More details will be added soon."}</p></section>
+          {kind === "services" ? <ServiceGlance item={item} /> : null}
           {/* Booking gets the full main column so the calendar and times have room. */}
-          {kind === "services" && item.bookingEnabled ? <div id="book" className="product-detail-booking-main"><ServiceBooking id={item.id} /></div> : null}
+          {kind === "services" && item.bookingEnabled ? <div id="book" className="product-detail-booking-main"><ServiceBooking id={item.id} quote={item.priceType === "quote"} /></div> : null}
+          {/* Pinned by the provider: videos and testimonials, then verified reviews and the policy. */}
           {(kind === "items" || kind === "services") ? <PublicOfferingVideos kind={kind === "items" ? "item" : "service"} id={item.id} /> : null}
+          {kind === "services" ? <><ServiceTestimonials item={item} /><ServiceReviews item={item} /><ServicePolicy item={item} /></> : null}
           {item.guidelines?.length ? (
             <section>
               <h2>Before you join</h2>

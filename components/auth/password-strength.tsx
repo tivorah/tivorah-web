@@ -31,8 +31,11 @@ export function PasswordStrength({ password, id, onSuggest }: { password: string
 
   const hint = passwordHint(password);
   const metCount = passwordRules.filter((rule) => rule.test(password)).length;
-  // Until zxcvbn arrives, estimate from the rules so the meter still responds.
-  const score = !password ? 0 : Math.min(scorer ? scorer(password).score : metCount - 1, 3);
+  // Until zxcvbn arrives, estimate from the rules so the meter still responds. It never says
+  // Good or Strong before the requirements are met: a "Strong" passphrase the form then refuses
+  // reads as a bug.
+  const raw = !password ? 0 : Math.min(scorer ? scorer(password).score : metCount - 1, 3);
+  const score = hint.met ? raw : Math.min(raw, 1);
   const band = bands[Math.max(score, 0)];
 
   return <div id={id} className="password-strength">

@@ -9,7 +9,7 @@ import { api, ApiError } from "../../../lib/api/client";
 import { ShopData, ShopSkeleton, ShopTab, ShopView } from "../../shop/shop-view";
 import { ShowcaseAsset, ShowcaseRecord } from "./types";
 
-// Owner's preview of their shop with the saved draft, rendered by the same
+// Owner's preview of their showcase with the saved draft, rendered by the same
 // ShopView as the public page. Opened in a new tab from the editor.
 function Preview({ username }: { username: string }) {
   const params = useSearchParams();
@@ -21,7 +21,7 @@ function Preview({ username }: { username: string }) {
   useEffect(() => {
     const controller = new AbortController();
     const type = tab === "items" ? "&type=item" : tab === "services" ? "&type=service" : "";
-    api<ShopData>(`/public/shops/${encodeURIComponent(username)}?skip=${tab === "items" || tab === "services" ? skip : 0}${type}`, { signal: controller.signal })
+    api<ShopData>(`/public/showcases/${encodeURIComponent(username)}?skip=${tab === "items" || tab === "services" ? skip : 0}${type}`, { signal: controller.signal })
       .then((data) => setShop({ offerings: data.offerings, events: data.events, nextSkip: data.nextSkip, counts: data.counts }))
       .catch((error) => { if (error instanceof ApiError && error.status === 404) setShop({ offerings: [], events: [], nextSkip: null }); });
     return () => controller.abort();
@@ -29,7 +29,7 @@ function Preview({ username }: { username: string }) {
 
   if ((own.loading && !own.data) || !shop) return <ShopSkeleton />;
   const draft = own.data?.showcase?.draft;
-  if (!draft) return <div className="showcase-locked"><h2>Nothing to preview yet</h2><p>Save your shop details first, then open the preview again.</p><Link className="product-primary" href="/business/showcase">Go to the editor</Link></div>;
+  if (!draft) return <div className="showcase-locked"><h2>Nothing to preview yet</h2><p>Save your showcase details first, then open the preview again.</p><Link className="product-primary" href="/business/showcase">Go to the editor</Link></div>;
   const href = (next: ShopTab, nextSkip = 0) => {
     const search = new URLSearchParams();
     if (next !== "all") search.set("tab", next);
@@ -45,9 +45,9 @@ function Preview({ username }: { username: string }) {
     skip={skip}
     href={href}
     banner={<div className="shop-preview-bar" role="status">
-      <div><strong>Preview</strong><span>This is how customers will see your shop, including draft changes. Media in review shows here only.</span></div>
+      <div><strong>Preview</strong><span>This is how customers will see your showcase, including draft changes. Media in review shows here only.</span></div>
       <div className="shop-preview-actions">
-        {published ? <Link className="product-secondary" href={`/shops/${encodeURIComponent(own.data?.showcase?.slug ?? username)}`} target="_blank" rel="noopener">View live shop</Link> : null}
+        {published ? <Link className="product-secondary" href={`/showcase/${encodeURIComponent(own.data?.showcase?.slug ?? username)}`} target="_blank" rel="noopener">View live shop</Link> : null}
         <Link className="product-primary" href="/business/showcase">Back to editor</Link>
       </div>
     </div>}

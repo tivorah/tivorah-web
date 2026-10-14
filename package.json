@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "test": "node --import tsx --test \"lib/**/*.test.ts\" \"components/**/*.test.ts\" \"app/**/*.test.ts\""
+    "test": "node --import tsx --test $(find lib components app -name '*.test.ts' -not -path '*/node_modules/*')"
   },
   "engines": {
     "node": ">=20 <23"
