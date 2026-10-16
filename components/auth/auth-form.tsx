@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { FormEvent, useMemo, useState, useSyncExternalStore } from "react";
+import { FormEvent, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { ChangeEvent } from "react";
 import { memberAuth } from "../../lib/auth/client";
 import type { SocialProviders } from "../../lib/auth/auth-page";
@@ -12,6 +12,7 @@ import { DateField } from "../ui/date-field";
 import { birthDateProps } from "./birth-date";
 import { PasswordStrength, passwordMeetsRules } from "./password-strength";
 import { passwordHint } from "../../lib/password-policy";
+import { Turnstile } from "./turnstile";
 import { UsernameField } from "./username-field";
 export type AuthMode =
   "signin" | "signup" | "verify" | "recover" | "two-factor";
@@ -50,6 +51,11 @@ export function AuthForm({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [busy, setBusy] = useState(false);
+  // Sign-in "attack mode": the API asks devices it hasn't seen before for a Turnstile check.
+  const [captcha, setCaptcha] = useState<{ siteKey: string; token: string | null; attempt: number } | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  // The token is read on the automatic re-submit, before React re-renders, so it lives in a ref too.
+  const captchaToken = useRef<string | null>(null);
   // Sign-up gating, matching mobile: an adult date of birth and accepted terms
   // are required before Create account is enabled.
   const [newPassword, setNewPassword] = useState("");
@@ -81,13 +87,26 @@ export function AuthForm({
     try {
       if (mode === "signin") {
         const identity = email.trim().toLowerCase();
+        const sentToken = captchaToken.current;
+        captchaToken.current = null;
+        const fetchOptions = sentToken ? { headers: { "x-turnstile-token": sentToken } } : undefined;
         const result = identity.includes("@")
-          ? await memberAuth.signIn.email({ email: identity, password })
-          : await memberAuth.signIn.username({ username: identity, password });
+          ? await memberAuth.signIn.email({ email: identity, password }, fetchOptions)
+          : await memberAuth.signIn.username({ username: identity, password }, fetchOptions);
+        const failure = result.error as (typeof result.error & { code?: string; siteKey?: string }) | null;
+        if (failure?.code === "CAPTCHA_REQUIRED") {
+          // Each token works once: show a fresh check, and sign in again as soon as it passes.
+          const siteKey = failure.siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+          if (!siteKey) throw new Error("Sign-in is busy right now. Please try again in a few minutes.");
+          setCaptcha((current) => ({ siteKey, token: null, attempt: (current?.attempt ?? 0) + 1 }));
+          setNotice("Quick security check — we’ll sign you in as soon as it’s done.");
+          return;
+        }
+        if (sentToken) setCaptcha((current) => current && { ...current, token: null, attempt: current.attempt + 1 });
         if (result.error)
           throw new Error(
             result.error.status === 429
-              ? "Too many attempts. Please wait before trying again."
+              ? result.error.message || "Too many attempts. Please wait before trying again."
               : result.error.message || "Check your sign-in details.",
           );
         if (
@@ -218,7 +237,7 @@ export function AuthForm({
         </>
       )}
       {mode === "signup" && <SocialSignIn socialFirst returnTo={returnTo} disabled={busy} onBusy={setBusy} initialProviders={initialProviders} />}
-      <form onSubmit={submit} key={mode}>
+      <form onSubmit={submit} key={mode} ref={formRef}>
         {mode === "signup" ? (
           <>
             {/* Same fields as the mobile sign-up: first and last name, then a
@@ -351,7 +370,15 @@ export function AuthForm({
           </div>
         ) : null}
         {notice ? <p role="status">{notice}</p> : null}
-        <button type="submit" className="product-primary" disabled={busy || (mode === "signup" && (!termsAccepted || underage))}>
+        {mode === "signin" && captcha && !captcha.token ? (
+          <Turnstile
+            key={captcha.attempt}
+            siteKey={captcha.siteKey}
+            onToken={(token) => { captchaToken.current = token; setCaptcha((current) => current && { ...current, token }); setTimeout(() => formRef.current?.requestSubmit(), 0); }}
+            onError={() => setError("The security check couldn’t load. Check your connection and try again.")}
+          />
+        ) : null}
+        <button type="submit" className="product-primary" disabled={busy || (mode === "signup" && (!termsAccepted || underage)) || (mode === "signin" && !!captcha && !captcha.token)}>
           {busy
             ? "Please wait…"
             : mode === "signup"

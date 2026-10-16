@@ -185,7 +185,7 @@ export default async function Home() {
       <section className="waitlist" id="updates">
         <div className="page-shell waitlist-layout">
           <div>
-            <span className="eyebrow">Tivorah updates</span>
+            <span className="eyebrow light">Tivorah updates</span>
             <h2>A little news from your neighbourhood.</h2>
             <p>
               Subscribe for Tivorah news and app updates.

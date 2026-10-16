@@ -80,7 +80,8 @@ export function JourneyRail({ steps, initialIndex = 0 }: { steps: JourneyStep[];
         </div>
       </div>
 
-      <div className="journey-track" ref={trackRef}>
+      {/* Focusable so keyboard users can scroll the steps with the arrow keys (WCAG 2.1.1). */}
+      <div className="journey-track" ref={trackRef} tabIndex={0} role="region" aria-label="How Tivorah works, step by step">
         {steps.map((item, i) => (
           <article
             className={`journey-card${i === active ? " is-active" : ""}`}

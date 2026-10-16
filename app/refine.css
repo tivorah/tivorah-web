@@ -1395,3 +1395,9 @@ a.about-card:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
 }
 /* A category's own question above its options (components/business/create.tsx, e.g. food: "How do customers get their order?"). */
 .create-question { margin: 0 0 8px; font-size: 14px; font-weight: 700; color: #3a3140; }
+
+/* Links inside sentences are underlined, not just coloured (WCAG 1.4.1), e.g. Terms and Privacy at sign-up. */
+.product-checkbox a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* Turnstile security check on sign-in (only during an attack). */
+.auth-turnstile { display: flex; justify-content: center; min-height: 0; margin: 4px 0 8px; }

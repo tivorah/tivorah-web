@@ -13,7 +13,8 @@ const socketOrigin = apiOrigin.replace(/^http/, "ws");
 const posthogOrigins = ["https://us.i.posthog.com", "https://us-assets.i.posthog.com", "https://eu.i.posthog.com", "https://eu-assets.i.posthog.com"];
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${production ? "" : " 'unsafe-eval'"} ${posthogOrigins.join(" ")}`,
+  // challenges.cloudflare.com: Turnstile, shown only during a sign-in attack (components/auth/turnstile.tsx).
+  `script-src 'self' 'unsafe-inline'${production ? "" : " 'unsafe-eval'"} ${posthogOrigins.join(" ")} https://challenges.cloudflare.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
@@ -21,7 +22,7 @@ const contentSecurityPolicy = [
   // Development talks to the API on a LAN address over plain HTTP. Direct uploads PUT file
   // chunks straight to Cloudflare R2 with presigned URLs (lib/direct-upload.ts).
   `connect-src 'self' ${[apiOrigin, socketOrigin, ...posthogOrigins, "https://*.r2.cloudflarestorage.com"].filter(Boolean).join(" ")}${production ? "" : " http: ws:"}`,
-  "frame-src https://www.google.com",
+  "frame-src https://www.google.com https://challenges.cloudflare.com",
   "worker-src 'self' blob:",
   "form-action 'self' https://checkout.stripe.com",
   "base-uri 'self'",

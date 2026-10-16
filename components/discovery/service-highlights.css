@@ -63,3 +63,7 @@ a.service-rating:hover strong{text-decoration:underline}
 .service-link:hover{text-decoration:underline;text-underline-offset:3px}
 .service-note-toggle{display:block;margin:10px 0 0;padding:0}
 .product-detail-booking .service-address{margin-top:14px}
+.service-health-consent{display:grid;gap:8px;margin:16px 0 0;padding:12px 14px;border-radius:14px;background:#f6f1fb}
+.service-health-consent p{margin:0;color:#4f4558;font-size:14px;line-height:1.5}
+.service-health-consent label{display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:14px;font-weight:600;color:#241c2b;cursor:pointer}
+.service-health-consent input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:#65409f}

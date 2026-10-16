@@ -27,6 +27,8 @@ type Availability = {
   /** The category's wording (menu categories only), and the priced items customers pick from. */
   template?: ServiceTemplate | null;
   menu?: ServiceMenuItem[];
+  /** Health and care services ask the customer to agree to share health details. */
+  healthConsentRequired?: boolean;
   quote: {
     subtotalCents: number;
     buyerTotalCents: number;
@@ -135,15 +137,16 @@ function QuoteRequestForm({ id, data }: { id: number; data: Availability }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [sent, setSent] = useState(false);
+  const [healthConsent, setHealthConsent] = useState(false);
   const needsAddress = !!data.requiresAddress;
   const addressOk = needsAddress ? addressComplete(address) : addressBlank(address) || addressComplete(address);
-  const ready = message.trim().length >= 10 && addressOk;
+  const ready = message.trim().length >= 10 && addressOk && (!data.healthConsentRequired || healthConsent);
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!ready || busy) return;
     setBusy(true); setNotice("");
     try {
-      await api(`/market/products/${id}/quotes`, { method: "POST", body: JSON.stringify({ message: message.trim(), preferredTimes: preferredTimes.trim() || undefined, address: addressBlank(address) ? undefined : addressPayload(address) }) });
+      await api(`/market/products/${id}/quotes`, { method: "POST", body: JSON.stringify({ message: message.trim(), preferredTimes: preferredTimes.trim() || undefined, address: addressBlank(address) ? undefined : addressPayload(address), ...(data.healthConsentRequired ? { healthConsent } : {}) }) });
       setSent(true);
     } catch (cause) { setNotice(cause instanceof Error ? cause.message : "Could not send your request. Please try again."); }
     finally { setBusy(false); }
@@ -155,6 +158,7 @@ function QuoteRequestForm({ id, data }: { id: number; data: Availability }) {
     {message.trim().length > 0 && message.trim().length < 10 ? <p className="service-section-note">Add a little more detail (at least 10 characters).</p> : null}
     <label htmlFor="quote-times">Preferred days or times (optional)<input id="quote-times" maxLength={300} value={preferredTimes} disabled={busy} onChange={(event) => setPreferredTimes(event.target.value)} placeholder="e.g. weekday mornings, after 15 March" /></label>
     {data.requiresAddress || data.acceptsAddress ? <AddressFields idPrefix="quote-address" value={address} onChange={setAddress} required={needsAddress} disabled={busy} /> : null}
+    {data.healthConsentRequired ? <HealthConsent checked={healthConsent} onChange={setHealthConsent} disabled={busy} kind="request" /> : null}
     <button className="product-primary" disabled={!ready || busy}>{busy ? "Sending…" : "Request a quote"}</button>
     {notice ? <p className="product-error" role="alert">{notice}</p> : null}
   </form>;
@@ -171,6 +175,7 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
   const [noteOpen, setNoteOpen] = useState(false);
   const [zoneOpen, setZoneOpen] = useState(false);
   const [picks, setPicks] = useState<Record<string, number>>({});
+  const [healthConsent, setHealthConsent] = useState(false);
   const [address, setAddress] = useState(emptyAddress);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -205,7 +210,7 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!slot || !data || error || !data.paymentAvailable || !addressOk || (menu.length && !picked) || lock.current) return;
+    if (!slot || !data || error || !data.paymentAvailable || !addressOk || (menu.length && !picked) || (data.healthConsentRequired && !healthConsent) || lock.current) return;
     lock.current = true;
     setBusy(true);
     setNotice("");
@@ -244,6 +249,7 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
           // Counts only where the provider lets the customer choose; the API decides otherwise.
           ...(data.paymentRequired ? { paymentTiming } : {}),
           ...(menu.length ? { selections } : {}),
+          ...(data.healthConsentRequired ? { healthConsent } : {}),
         }),
       });
       if (result.checkoutUrl) {
@@ -333,12 +339,13 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
                 <p><strong>{paymentTiming === "after_service" ? "Total, paid after the service" : "Total"}</strong><strong>{menu.length && !picked ? "—" : money(quote.buyerTotalCents, data.currency || "AUD")}</strong></p>
               </div>
             ) : <p className="service-section-note">No payment is taken online. Settle any charges with the provider.</p>}
+            {data.healthConsentRequired ? <HealthConsent checked={healthConsent} onChange={setHealthConsent} disabled={busy} kind="booking" /> : null}
             {data.refundPolicyLabel ? <p className="service-section-note"><strong>Cancellation:</strong> {data.refundPolicyLabel}</p> : null}
             {data.paymentRequired && !data.paymentAvailable ? (
               <p role="status">The provider is finishing payment setup. You can enquire about this service while online booking is unavailable.</p>
             ) : <button
               className="product-primary"
-              disabled={!slot || busy || loading || !addressOk || (!!menu.length && !picked)}
+              disabled={!slot || busy || loading || !addressOk || (!!menu.length && !picked) || (!!data.healthConsentRequired && !healthConsent)}
             >
               {busy
                 ? "Opening your booking…"
@@ -367,6 +374,17 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
       ) : null}
     </section>
   );
+}
+
+/**
+ * Health and care services: what people share is health information (sensitive under the Privacy
+ * Act), so booking asks for express consent. The API refuses the booking without it.
+ */
+function HealthConsent({ checked, onChange, disabled, kind }: { checked: boolean; onChange: (value: boolean) => void; disabled?: boolean; kind: "booking" | "request" }) {
+  return <div className="service-health-consent">
+    <p><strong>Health details stay private.</strong> This is a health or care service. Anything you share about your health, disability or care needs goes only to this provider, to arrange and deliver this {kind}. Share only what they need to know.</p>
+    <label><input type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} /> <span>I agree to share health or care details with this provider for this {kind}.</span></label>
+  </div>;
 }
 
 export function ServiceBooking({ id, quote = false }: { id: number; quote?: boolean }) {

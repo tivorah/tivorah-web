@@ -20,6 +20,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 section[id] { scroll-margin-top: 100px; }
 .home-page h2 { font-size: clamp(36px, 3.8vw, 52px); font-weight: 600; line-height: 1.14; letter-spacing: -.035em; }
 .home-page .eyebrow { color: #6b6073; font-size: 12px; font-weight: 600; letter-spacing: .1em; }
+/* On the dark updates band the label needs the light tone to stay readable (4.5:1). */
+.home-page .eyebrow.light { color: #c9aaff; }
 .home-page :is(a, button, input):focus-visible { outline: 3px solid #7650b7; outline-offset: 4px; }
 
 .belonging-section { padding: 96px 0; background: #fbf9f5; }

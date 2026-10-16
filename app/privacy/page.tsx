@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 8 October 2026
+        <strong>Last updated:</strong> 16 October 2026
       </p>
 
       <p>
@@ -386,8 +386,7 @@ export default function Privacy() {
         <li>
           infrastructure, database, media-storage, email, push, authentication,
           payment, customer-support, security and analytics providers, including
-          Netlify (website hosting), Railway (application hosting), Aiven
-          (database), Redis Cloud and Upstash (caching, rate limiting and live
+          Contabo (website, application and database hosting), Redis Cloud and Upstash (caching, rate limiting and live
           updates), Cloudflare and Cloudflare R2 (security, delivery and media
           storage), ImageKit (during storage migration or rollback), Google
           Cloud Vision and Amazon Rekognition (automated image-safety

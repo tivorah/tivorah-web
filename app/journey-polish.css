@@ -74,3 +74,6 @@
   #features .journey-track { padding-inline: 24px; scroll-padding-inline: 24px; }
   #features .journey-card { flex-basis: calc(100vw - 48px); border-radius: 28px; }
 }
+
+/* Keyboard focus on the steps rail (it scrolls with the arrow keys). */
+#features .journey-track:focus-visible { outline: 3px solid #8050b3; outline-offset: 4px; border-radius: 16px; }
