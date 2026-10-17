@@ -13,16 +13,17 @@ export class ApiError extends Error {
     super(message);
   }
 }
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function api<T>(path: string, init: RequestInit & { timeoutMs?: number } = {}): Promise<T> {
   const base = adminApiBase();
   if (!base)
     throw new ApiError(
       "Tivorah is temporarily unavailable. Please try again later.",
       503,
     );
-  const timeout = AbortSignal.timeout(init.body instanceof FormData ? 120000 : 15000);
+  const { timeoutMs, ...requestInit } = init;
+  const timeout = AbortSignal.timeout(timeoutMs ?? (init.body instanceof FormData ? 120000 : 15000));
   const response = await fetch(`${base}/api/v1${path}`, {
-    ...init,
+    ...requestInit,
     credentials: "include",
     cache: "no-store",
     signal: init.signal

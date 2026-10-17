@@ -450,3 +450,9 @@ Ticket hold cancellation uses the buyer-authorised `POST /events/orders/:orderId
 
 
 Event, item and service detail maps reuse `components/discovery/location-map.tsx`. A decorative blurred placeholder makes no map-provider request; View map mounts the embed and Hide map removes it. Item/service maps use the public locality and are labelled as a general area. Listed location text remains visible; this is not access control for private addresses.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs locked npm installs, TypeScript and tests on Node 22.
+It also runs lint and the production web build.
+CI runs on pull requests and main/develop pushes; it never deploys or runs migrations.
