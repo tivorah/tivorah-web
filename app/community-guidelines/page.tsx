@@ -10,7 +10,7 @@ export default function Guidelines() {
       <span className="eyebrow">Safety</span>
       <h1>Community Guidelines</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 2 October 2026
+        <strong>Last updated:</strong> 20 October 2026
       </p>
 
       <p>
@@ -114,6 +114,16 @@ export default function Guidelines() {
         that violates Tivorah policy or law. Creators and moderators must apply
         rules in good faith and must not misuse member information, approvals,
         removals or moderation tools.
+      </p>
+
+      <h2>Mentions, quotes and polls</h2>
+      <p>
+        Mention people to bring them into a conversation they&apos;d want to
+        see, not to pile on, target or repeatedly ping someone. When you quote a
+        post, add your own view and don&apos;t twist what the person said. Polls
+        should ask an honest question with fair options; don&apos;t use them to
+        mock or single out a person, collect private information, or spread
+        false claims. Don&apos;t use more than one account to vote.
       </p>
 
       <h2>No spam or platform abuse</h2>

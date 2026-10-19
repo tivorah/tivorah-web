@@ -42,15 +42,15 @@ const REASONS: Record<string, string> = {
 const TARGETS: Record<string, string> = {
   user: "Account", community: "Hub", post: "Post", message: "Message", banter: "Banter post", thread: "Thread reply", event: "Event", job: "Job", product: "Listing",
 };
-const STATUS: Record<string, string> = { open: "Open", reviewing: "In review", resolved: "Resolved", dismissed: "Dismissed", appealed: "Appealed" };
+export const STATUS: Record<string, string> = { open: "Open", reviewing: "In review", resolved: "Resolved", dismissed: "Dismissed", appealed: "Appealed" };
 
-const reasonLabel = (reason: string) => REASONS[reason] ?? (reason.startsWith("hash_bank_match:") ? `Known harmful image (${reason.split(":")[1]})` : reason.replaceAll("_", " "));
-const targetLabel = (type: string) => TARGETS[type] ?? (type.startsWith("image:") ? `Image (${type.slice(6)})` : type);
-const when = (value?: string | null) => (value ? new Date(value).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" }) : "—");
-const photoUrl = (photo: unknown) => (typeof photo === "string" ? photo : photo && typeof photo === "object" && typeof (photo as { url?: unknown }).url === "string" ? (photo as { url: string }).url : null);
-const fullName = (person: ReportPerson) => [person.firstName, person.lastName].filter(Boolean).join(" ") || `@${person.username}`;
+export const reasonLabel = (reason: string) => REASONS[reason] ?? (reason.startsWith("hash_bank_match:") ? `Known harmful image (${reason.split(":")[1]})` : reason.replaceAll("_", " "));
+export const targetLabel = (type: string) => TARGETS[type] ?? (type.startsWith("image:") ? `Image (${type.slice(6)})` : type);
+export const when = (value?: string | null) => (value ? new Date(value).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" }) : "—");
+export const photoUrl = (photo: unknown) => (typeof photo === "string" ? photo : photo && typeof photo === "object" && typeof (photo as { url?: unknown }).url === "string" ? (photo as { url: string }).url : null);
+export const fullName = (person: ReportPerson) => [person.firstName, person.lastName].filter(Boolean).join(" ") || `@${person.username}`;
 
-function Person({ label, person, fallback }: { label: string; person?: ReportPerson | null; fallback: string }) {
+export function Person({ label, person, fallback }: { label: string; person?: ReportPerson | null; fallback: string }) {
   const photo = person ? photoUrl(person.photo) : null;
   return (
     <div className="report-person">
@@ -87,7 +87,7 @@ function QuotedContext({ quoted }: { quoted?: Record<string, unknown> | null }) 
 }
 
 /** The reported content as it was when reported, then every captured field so nothing is missed. */
-function Snapshot({ evidence }: { evidence: Record<string, unknown> }) {
+export function Snapshot({ evidence }: { evidence: Record<string, unknown> }) {
   const snapshot = (evidence.contentSnapshot ?? null) as Record<string, unknown> | null;
   const text = snapshot ? [snapshot.title, snapshot.message, snapshot.description].filter((value) => typeof value === "string" && value.trim()) as string[] : [];
   const images = snapshot ? ([] as unknown[]).concat(snapshot.images ?? [], snapshot.img ?? [], snapshot.files ?? []).map(photoUrl).filter(Boolean) as string[] : [];

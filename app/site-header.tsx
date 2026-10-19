@@ -65,11 +65,11 @@ export function SiteHeader() {
 
   const closeMenu = () => setMenuOpen(false);
 
-  if (path.startsWith("/auth") || path.startsWith("/admin")) return null;
+  if (path.startsWith("/auth")) return null;
 
   return (
     <header
-      className={`nav${/^\/(events|shop|shops|services|hubs|account|auth|business)(\/|$)/.test(path) ? " nav-product" : ""}${scrolled ? " nav-scrolled" : ""}`}
+      className={`nav${/^\/(events|shop|shops|services|hubs|account|auth|business|admin)(\/|$)/.test(path) ? " nav-product" : ""}${scrolled ? " nav-scrolled" : ""}`}
     >
       <div className="page-shell nav-inner">
         <Link className="brand" href="/" aria-label="Tivorah home">

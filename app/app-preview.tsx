@@ -10,7 +10,7 @@ const previews = [
     kicker: "Community that feels close",
     title: "Belong somewhere useful.",
     body: "Find a Hub around your interests, culture or city. Share advice, make plans and get to know the people in it.",
-    image: "/app-screens/2026-09-22/hubs.png",
+    image: "/app-screens/2026-10-15/hubs.jpg",
     notes: ["Discover Hubs by interest and location", "Conversations, announcements and opportunities", "Clear rules before you join"],
   },
   {
@@ -26,7 +26,7 @@ const previews = [
     kicker: "Make plans together",
     title: "Find something to do nearby.",
     body: "Browse nearby experiences, filter by mood or date and find reasons to step out with people around you.",
-    image: "/app-screens/2026-09-22/events.png",
+    image: "/app-screens/2026-10-15/events.jpg",
     notes: ["Local event discovery", "Useful date and category filters", "Tickets and secure QR entry"],
   },
   {
@@ -34,7 +34,7 @@ const previews = [
     kicker: "Local finds and skills",
     title: "Buy, sell and book nearby.",
     body: "Buy or sell new and used local items, find a service provider or offer your services. Message directly to arrange the details.",
-    image: "/app-screens/2026-09-22/shop.png",
+    image: "/app-screens/2026-10-15/shop.jpg",
     notes: ["New and used local items", "Find or offer services", "Message buyers and sellers"],
   },
   {

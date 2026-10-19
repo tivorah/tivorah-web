@@ -55,19 +55,19 @@ const featureRail: JourneyStep[] = [
     step: "",
     title: "Find something useful nearby",
     body: "Buy or sell new and used local items, find a service provider or offer your own services. Message directly to arrange the details.",
-    shot: "/app-screens/2026-09-22/shop.png",
+    shot: "/app-screens/2026-10-15/shop.jpg",
   },
   {
     step: "Start here",
     title: "Find your Hub",
     body: "A community built around your background, your interests, or the city you landed in. You see its rules before you are in.",
-    shot: "/app-screens/2026-09-22/hubs.png",
+    shot: "/app-screens/2026-10-15/hubs.jpg",
   },
   {
     step: "",
     title: "You show up in person",
     body: "Create an event and offer tickets, or discover local events and book your place. Keep your ticket close when it is time to head out.",
-    shot: "/app-screens/2026-09-22/events.png",
+    shot: "/app-screens/2026-10-15/events.jpg",
   },
   {
     step: "",
@@ -79,7 +79,7 @@ const featureRail: JourneyStep[] = [
     step: "What holds it",
     title: "Someone looks after it",
     body: "Hub creators set the rules, review private Hub requests and help keep conversations welcoming. Members can report concerns.",
-    shot: "/app-screens/2026-09-22/ballarat-hub.png",
+    shot: "/app-screens/2026-10-15/hub-detail.jpg",
   },
 ];
 
@@ -102,10 +102,10 @@ export default async function Home() {
           <div className="opening-product">
             <div className="opening-phones">
               <div className="opening-phone opening-phone-front">
-                <Image src="/app-screens/2026-09-22/ballarat-hub.png" alt="Ballarat Arts and Culture Circle in Tivorah" width={1206} height={2622} sizes="(max-width: 600px) 45vw, (max-width: 980px) 260px, 23vw" priority />
+                <Image src="/app-screens/2026-10-15/hub-detail.jpg" alt="Adelaide New to Town Hub in Tivorah" width={1206} height={2622} sizes="(max-width: 600px) 45vw, (max-width: 980px) 260px, 23vw" priority />
               </div>
               <div className="opening-phone opening-phone-back">
-                <Image src="/app-screens/2026-09-22/events.png" alt="Discover local events in Tivorah" width={1206} height={2622} sizes="(max-width: 600px) 40vw, (max-width: 980px) 230px, 21vw" priority />
+                <Image src="/app-screens/2026-10-15/events.jpg" alt="Discover local events in Tivorah" width={1206} height={2622} sizes="(max-width: 600px) 40vw, (max-width: 980px) 230px, 21vw" priority />
               </div>
             </div>
           </div>

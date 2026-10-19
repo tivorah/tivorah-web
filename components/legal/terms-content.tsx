@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 8 October 2026
+        <strong>Last updated:</strong> 20 October 2026
       </p>
 
       <div className="legal-callout">
@@ -91,6 +91,18 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         when the content is deleted from our active systems, except where copies
         reasonably remain in backups, reports, shared conversations or records
         we are required or permitted to retain.
+      </p>
+      <p>
+        <strong>Posts, mentions, quotes and polls.</strong> Banter posts and
+        thread replies can include text, photos, videos (up to three minutes
+        each) and voice notes. Documents such as PDFs and Word files can&apos;t
+        be posted in Hubs; share them in a private chat instead. You may
+        @mention other members of the same Hub and quote public posts in a
+        Hub, and other members may quote yours; a quote shows the original with
+        its author&apos;s name. Polls must ask a genuine question with honest
+        options. Each member can vote once and cannot change their vote, votes
+        are anonymous to other members, and a poll closes at the time its
+        creator chose.
       </p>
 
       <h2>Messaging and encryption</h2>
@@ -329,7 +341,11 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         </li>
         <li>
           misuse reports, moderation, invitations, payment disputes or personal
-          information; or
+          information;
+        </li>
+        <li>
+          use @mentions, quotes or polls to harass, pile on, mislead or spam
+          people, or create accounts to vote more than once; or
         </li>
         <li>
           use Tivorah in a way that infringes rights, breaches law or materially
@@ -403,6 +419,15 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         services can experience interruptions, delay, data loss or errors. Do
         not rely on Tivorah for emergency communications. In an emergency,
         contact the appropriate Australian emergency service directly.
+      </p>
+      <p>
+        To protect accounts, we may briefly pause sign-in to an account after
+        repeated wrong passwords, and may ask you to complete a quick human
+        check before signing in from a device we don&apos;t recognise. Some
+        features, including online payment for particular services, may be
+        unavailable for a time while we set them up, maintain them or keep
+        Tivorah safe; where that happens we will tell you in the app before you
+        start, and you can contact the provider to arrange things another way.
       </p>
 
       <h2>Consumer guarantees and liability</h2>

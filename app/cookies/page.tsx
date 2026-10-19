@@ -6,6 +6,7 @@ export const metadata = pageMetadata("Cookie Notice", "How Tivorah uses cookies 
 
 const storage = [
   ["Sign-in session", "Cookie (secure, HTTP-only)", "Keeps you signed in, protects your session and helps prevent fraud and abuse.", "Until you sign out or the session expires"],
+  ["Known device", "Cookie (secure, HTTP-only, signed)", "Remembers that this browser has signed in to your account before, so someone else guessing your password can't lock you out and you aren't asked for a human check.", "180 days"],
   ["Signed-in hint", "Browser storage", "A simple yes/no flag so the menu shows the right links straight away. It contains no account details.", "Until you sign out"],
   ["Checkout and booking progress", "Browser storage (this tab only)", "Remembers an in-progress ticket or appointment checkout so a refresh or retry does not charge you twice.", "Until the tab is closed or checkout ends"],
   ["Ticket access", "Browser storage (this tab only)", "Lets you view tickets you just bought without an account.", "Until the tab is closed"],
@@ -17,7 +18,7 @@ export default function Cookies() {
     <article className="content">
       <span className="eyebrow">Privacy</span>
       <h1>Cookie Notice</h1>
-      <p className="legal-meta"><strong>Last updated:</strong> 2 October 2026</p>
+      <p className="legal-meta"><strong>Last updated:</strong> 20 October 2026</p>
       <p>
         This notice explains the cookies and similar browser storage used on tivorah.com. The
         Tivorah mobile app uses device storage and secure storage instead of browser cookies;
@@ -55,9 +56,10 @@ export default function Cookies() {
         <li><strong>Google Maps</strong> — the map shown on an event page is provided by Google.</li>
         <li><strong>Stripe</strong> — when you pay, you complete checkout on Stripe&apos;s secure payment page.</li>
         <li><strong>Google and Apple sign-in</strong> — if you choose to sign in with them.</li>
+        <li><strong>Cloudflare Turnstile</strong> — a quick human check shown only when signing in during an attack on unrecognised devices.</li>
       </ul>
       <p>
-        Our hosting and security providers, such as Netlify and Cloudflare, also process
+        Our hosting and security providers, such as Contabo and Cloudflare, also process
         essential request, security and delivery information when serving a page.
       </p>
 

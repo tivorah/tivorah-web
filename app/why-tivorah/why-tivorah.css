@@ -1,0 +1,8 @@
+/* Keep the existing primary button legible inside the article link styles. */
+.content.why-tivorah-page a.button {
+  background: #65409f;
+  color: #fff;
+  text-decoration: none;
+  min-height: 44px;
+}
+.content.why-tivorah-page .about-card span { font-size: 16px; }

@@ -1,8 +1,8 @@
 "use client";
 import { NotificationsWorkspace } from "./notifications-workspace";
-import { ReportCard, type DetailedReport } from "./report-card";
-import { FormEvent, useCallback, useEffect, useState } from "react";
-import { ShowcaseMediaReview } from "./showcase-media-review";
+import { type DetailedReport } from "./report-card";
+import { Moderation, openReportCount } from "./moderation";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import PricingManager from "./pricing-manager";
 import SellerFees from "./seller-fees";
 import PaymentCountries from "./payment-countries";
@@ -27,8 +27,20 @@ type Flag = {
   version: number;
   config?: { group?: string };
 };
+/** Labels for involvement tags (API: services/userInvolvement.ts). */
+const INVOLVEMENT_LABELS: Record<string, string> = {
+  event_organizer: "Event organiser",
+  service_provider: "Service provider",
+  seller: "Seller",
+  business: "Business",
+  employer: "Employer",
+  hub_owner: "Hub owner",
+  hub_moderator: "Hub moderator",
+  customer: "Customer",
+};
 type Dashboard = {
   totals: Record<string, number>;
+  involvement?: { tag: string; label: string; users: number }[];
   health: Record<string, string>;
 };
 type Analytics = {
@@ -49,6 +61,8 @@ type User = {
   isOrganizer?: boolean;
   isServiceProvider?: boolean;
   companyName?: string | null;
+  /** What they're involved in (tivorah-api/src/services/userInvolvement.ts); several at once. */
+  tags?: string[];
   itemCount: number;
   serviceCount: number;
   createdAt: string;
@@ -96,6 +110,16 @@ type Section =
   | "moderation"
   | "escalations"
   | "notifications";
+
+type AdminResource = "dashboard" | "analytics" | "features" | "reports" | "broadcasts" | "deliveries" | "templates";
+/** What each tab shows. Tabs not listed (users, payments, escalations) load their own data. */
+const SECTION_RESOURCES: Partial<Record<Section, AdminResource[]>> = {
+  overview: ["dashboard", "reports", "deliveries"],
+  analytics: ["analytics"],
+  features: ["features"],
+  moderation: ["reports"],
+  notifications: ["broadcasts", "deliveries", "templates"],
+};
 const sections: { id: Section; label: string; description: string }[] = [
   {
     id: "overview",
@@ -138,6 +162,28 @@ const sections: { id: Section; label: string; description: string }[] = [
     label: "Notifications",
     description: "Create templates and communicate with Tivorah members.",
   },
+];
+/** The sidebar, in three groups (same pattern as the Business portal). */
+const sectionGroups: { label: string; ids: Section[] }[] = [
+  { label: "Insights", ids: ["overview", "analytics"] },
+  { label: "People & safety", ids: ["users", "moderation", "escalations"] },
+  { label: "Platform", ids: ["features", "payments", "notifications"] },
+];
+const groupOf = (id: Section) => sectionGroups.find((group) => group.ids.includes(id))?.label ?? "Admin";
+/**
+ * Staff access: one level per person, controlling what they can do in this admin portal only.
+ * (What people do in the app is shown separately as involvement tags, which can be several.)
+ */
+const STAFF_ACCESS: [string, string][] = [
+  ["user", "No staff access"],
+  ["tester", "Tester: early app features, no admin portal"],
+  ["analyst", "Analyst: view and handle reports"],
+  ["support", "Support: view and handle reports"],
+  ["moderator", "Moderator: view and handle reports"],
+  ["event_operations", "Event operations: view and handle reports"],
+  ["finance", "Finance: view and handle reports"],
+  ["admin", "Admin: full control (authenticator required)"],
+  ["owner", "Owner: full control (authenticator required)"],
 ];
 const staffRoles = new Set([
   "owner",
@@ -306,7 +352,6 @@ export default function AdminPage() {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   // Admin lists page at 10, the shared web list size.
-  const reportPages = usePagedList(reports);
   const [featureBusy, setFeatureBusy] = useState<number | null>(null);
   const [featureHistory, setFeatureHistory] = useState<Record<number, any[]>>(
     {},
@@ -321,30 +366,32 @@ export default function AdminPage() {
   const [secretCopied, setSecretCopied] = useState(false);
   const [recoveryCopied, setRecoveryCopied] = useState(false);
   const [useRecoveryCode, setUseRecoveryCode] = useState(false);
-  const load = useCallback(async () => {
+  // Each tab loads only what it shows, the first time it's opened (Refresh reloads just that tab).
+  // Opening the page used to fetch all seven at once, which could exceed a small database's
+  // connection limit and is wasted work for tabs nobody opens.
+  const loadedResources = useRef(new Set<AdminResource>());
+  const loadSection = useCallback(async (target: Section, force = false) => {
+    const needed = (SECTION_RESOURCES[target] ?? []).filter((resource) => force || !loadedResources.current.has(resource));
+    if (!needed.length) return;
+    const fetchers: Record<AdminResource, () => Promise<void>> = {
+      dashboard: () => request("/api/v1/admin/dashboard").then(setDashboard),
+      analytics: () => request("/api/v1/admin/analytics").then(data => {
+        const totals = new Map<string, number>();
+        for (const row of data.audiences ?? []) totals.set(row.label, (totals.get(row.label) ?? 0) + Number(row.value));
+        setAnalytics({ ...data, audiences: Array.from(totals, ([label, value]) => ({ label, value })) });
+      }),
+      features: () => request("/api/v1/admin/features").then(setFeatures),
+      reports: () => request("/api/v1/admin/reports?pageSize=100").then(setReports),
+      broadcasts: () => request("/api/v1/admin/broadcasts").then(setBroadcasts),
+      deliveries: () => request("/api/v1/admin/push-deliveries").then(setDeliveries),
+      templates: () => request("/api/v1/admin/notification-templates").then(setTemplates),
+    };
     try {
       setDashboardBusy(true);
       setError("");
-      const results = await Promise.allSettled([
-        request("/api/v1/admin/dashboard").then(setDashboard),
-        request("/api/v1/admin/analytics").then(data => {
-          const totals = new Map<string, number>();
-          for (const row of data.audiences ?? []) totals.set(row.label, (totals.get(row.label) ?? 0) + Number(row.value));
-          setAnalytics({ ...data, audiences: Array.from(totals, ([label, value]) => ({ label, value })) });
-        }),
-        request("/api/v1/admin/features").then(setFeatures),
-        request("/api/v1/admin/reports").then(setReports),
-        request("/api/v1/admin/broadcasts").then(setBroadcasts),
-        request("/api/v1/admin/push-deliveries").then(setDeliveries),
-        request("/api/v1/admin/notification-templates").then(setTemplates),
-      ]);
-      const resultSections: Section[] = ['overview', 'analytics', 'features', 'moderation', 'notifications', 'notifications', 'notifications'];
-      const errors: Partial<Record<Section, string>> = {};
-      results.forEach((result, index) => { if (result.status === 'rejected') {
-        const message = result.reason instanceof Error ? result.reason.message : 'This section could not load.';
-        errors[resultSections[index]] = [errors[resultSections[index]], message].filter(Boolean).join(' ');
-      } });
-      setSectionErrors(errors);
+      const results = await Promise.allSettled(needed.map((resource) => fetchers[resource]().then(() => { loadedResources.current.add(resource); })));
+      const messages = results.flatMap((result) => result.status === "rejected" ? [result.reason instanceof Error ? result.reason.message : "This section could not load."] : []);
+      setSectionErrors((current) => ({ ...current, [target]: messages.length ? [...new Set(messages)].join(" ") : undefined }));
       setLastUpdated(new Date());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to load dashboard");
@@ -352,6 +399,9 @@ export default function AdminPage() {
       setDashboardBusy(false);
     }
   }, []);
+  useEffect(() => { if (signedIn) void loadSection(section); }, [signedIn, section, loadSection]);
+  /** Reloads the open tab. */
+  const load = useCallback(() => loadSection(section, true), [section, loadSection]);
   const loadUsers = useCallback(async () => {
     try {
       setUsersBusy(true);
@@ -409,7 +459,6 @@ export default function AdminPage() {
         }
         setStaffUserId(Number(user.id));
         setSignedIn(true);
-        await load();
       } catch (e) {
         if (mounted)
           setError(
@@ -467,7 +516,6 @@ export default function AdminPage() {
       }
       setStaffUserId(Number(user.id));
       setSignedIn(true);
-      await load();
     } catch (e) {
       setSignedIn(false);
       setError(e instanceof Error ? e.message : "Sign in failed");
@@ -534,7 +582,6 @@ export default function AdminPage() {
       if (!staffRoles.has(identity?.user?.role)) throw new Error('Your authenticator code was accepted, but this account no longer has staff access. An authorised administrator needs to restore your role.');
       setStaffUserId(Number(identity.user.id));
       setSignedIn(true);
-      await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "MFA verification failed");
     } finally {
@@ -558,7 +605,6 @@ export default function AdminPage() {
       setRecoveryCodes(enrollment?.backupCodes ?? []);
       setEnrollment(null);
       setSignedIn(true);
-      await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "MFA enrollment failed");
     } finally {
@@ -631,9 +677,10 @@ export default function AdminPage() {
         body: JSON.stringify({ status, ...(resolution ? { resolution } : {}) }),
       });
       // Reload the detailed list: the update response is the bare report, without people or evidence.
-      setReports(await request("/api/v1/admin/reports"));
+      setReports(await request("/api/v1/admin/reports?pageSize=100"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Update failed");
+      throw e;
     }
   }
   // A failure belongs to the screen it happened on; switching sections starts clean.
@@ -922,53 +969,58 @@ export default function AdminPage() {
     );
   return (
     <main className="admin admin-dashboard">
-      <div className="admin-layout">
-        <aside className="admin-sidebar">
-          <div className="admin-brand">
-            <Image
-              src="/tivorah-logo.png"
-              alt="Tivorah"
-              width={708}
-              height={226}
-              priority
-            />
-            <span>Admin portal</span>
-          </div>
-          <nav className="admin-navigation" aria-label="Admin sections">
-            {sections.map((item) => (
-              <button
-                className={section === item.id ? "active" : ""}
-                key={item.id}
-                aria-current={section === item.id ? "page" : undefined}
-                onClick={() => goTo(item.id)}
-              >
-                <AdminIcon name={item.id} />
-                <span>{item.label}</span>
-                {item.id === "moderation" && reports.length > 0 ? (
-                  <b>{reports.length}</b>
-                ) : null}
-              </button>
-            ))}
-          </nav>
-          <nav className="admin-switch" aria-label="Other Tivorah workspaces">
-            <a href="/account">Your account <span aria-hidden="true">↗</span></a>
-            <a href="/business">Manage your business <span aria-hidden="true">↗</span></a>
-          </nav>
-          <div className="admin-sidebar-foot">
-            <span className="status-dot" />
-            Secure staff session
+      {/* The same frame as Your account and Business: site header, page width, sidebar card. */}
+      <div className="product-page page-shell business-shell admin-portal">
+      <div className="business-workspace">
+        <aside className="business-sidebar admin-portal-sidebar" aria-label="Admin navigation">
+          <Link className="business-sidebar-account" href="/account">← Your account</Link>
+          <div className="business-sidebar-title"><p className="product-eyebrow">TIVORAH STAFF</p><strong>Admin</strong></div>
+          {sectionGroups.map((group) => (
+            <div key={group.label} className="business-sidebar-group">
+              <p>{group.label}</p>
+              {group.ids.map((id) => {
+                const item = sections.find((entry) => entry.id === id)!;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-current={section === id ? "page" : undefined}
+                    onClick={() => goTo(id)}
+                  >
+                    <AdminIcon name={id} />
+                    <span>{item.label}</span>
+                    {id === "moderation" && openReportCount(reports) > 0 ? <b className="admin-nav-count" aria-label={`${openReportCount(reports)} reports to review`}>{openReportCount(reports)}</b> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+          <div className="admin-portal-session">
+            <span className="status-dot" aria-hidden="true" />
+            <span>Secure staff session</span>
           </div>
         </aside>
-        <section className="admin-workspace">
-          <header className="admin-topbar">
+        <div className="business-workspace-main admin-workspace">
+          {/* Phones: back link and a section picker instead of the sidebar. */}
+          <nav className="business-mobile-controls admin-mobile-controls" aria-label="Admin navigation on phones">
+            <Link className="business-mobile-account" href="/account"><span aria-hidden="true">←</span> Your account</Link>
+            <SelectField
+              label="Admin section"
+              value={section}
+              onChange={(value) => goTo(value as Section)}
+              options={sectionGroups.flatMap((group) => group.ids.map((id) => ({ value: id, label: `${group.label} · ${sections.find((entry) => entry.id === id)!.label}` })))}
+            />
+          </nav>
+          <header className="account-heading admin-heading">
             <div>
-              <span className="eyebrow">Tivorah operations</span>
+              <p className="product-eyebrow">{groupOf(section).toUpperCase()}</p>
               <h1>{sections.find((item) => item.id === section)?.label}</h1>
               <p>{sections.find((item) => item.id === section)?.description}</p>
             </div>
-            <div className="admin-topbar-actions">
+            <div className="admin-heading-actions">
               {section !== "payments" ? <button
-                className="admin-refresh"
+                type="button"
+                className="product-secondary"
                 disabled={dashboardBusy}
                 onClick={() => {
                   void load();
@@ -982,7 +1034,8 @@ export default function AdminPage() {
                 />
               </button> : null}
               <button
-                className="admin-action-button"
+                type="button"
+                className="product-secondary"
                 disabled={actionBusy === "sign-out"}
                 onClick={signOut}
               >
@@ -1046,6 +1099,25 @@ export default function AdminPage() {
                   )}
                 </section>
               )}
+              {dashboard?.involvement?.length ? (
+                <section className="involvement-summary" aria-label="People by what they do">
+                  <header>
+                    <h2>People by what they do</h2>
+                    <p>One person can be several of these, so the numbers don’t add up to the user total.</p>
+                  </header>
+                  <div className="metric-grid">
+                    {dashboard.involvement.map((row, index) => (
+                      <button key={row.tag} type="button" className="metric-card" onClick={() => { setUserSegment(row.tag); setUserPage(1); goTo("users"); }} aria-label={`${row.label}s: ${row.users}. Show them in Users`}>
+                        <div className={`metric-icon metric-icon-${index % 4}`} aria-hidden="true">{row.label.charAt(0)}</div>
+                        <div>
+                          <span>{row.label}s</span>
+                          <strong>{row.users.toLocaleString()}</strong>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
               <div className="overview-grid">
                 <section className="dashboard-panel">
                   <div className="panel-heading">
@@ -1097,7 +1169,7 @@ export default function AdminPage() {
                   <div className="attention-list">
                     <button onClick={() => goTo("moderation")}>
                       <span>
-                        <b>{reports.length}</b>
+                        <b>{openReportCount(reports)}</b>
                         <small>Open reports</small>
                       </span>
                       <em>Review</em>
@@ -1206,7 +1278,8 @@ export default function AdminPage() {
                 <div>
                   <h3>People and organisations</h3>
                   <p>
-                    Organiser and service provider labels come from accepted rules. A member can hold either, both, or neither.
+                    <strong>Involved in</strong> shows everything a person does in the app (they can have several, such as Event organiser, Service provider and Hub moderator).{" "}
+                    <strong>Staff access</strong> is separate: it only controls what someone can do in this admin portal, so each person has one level.
                   </p>
                 </div>
                 <strong>
@@ -1226,22 +1299,18 @@ export default function AdminPage() {
                   />
                 </label>
                 <label>
-                  <span>Account type</span>
+                  <span>Involved in</span>
                   <SelectField
-                    label="Account type"
+                    label="Involved in"
                     value={userSegment}
                     onChange={(value) => {
                       setUserSegment(value);
                       setUserPage(1);
                     }}
                     options={[
-                      { value: "all", label: "All account types" },
-                      { value: "member", label: "Member accounts" },
-                      { value: "participant_none", label: "Neither organiser nor provider" },
-                      { value: "service_provider", label: "Service providers" },
-                      { value: "organizer", label: "Event organisers" },
-                      { value: "business", label: "Business sellers" },
-                      { value: "company", label: "Companies" },
+                      { value: "all", label: "Everyone" },
+                      ...Object.entries(INVOLVEMENT_LABELS).map(([value, label]) => ({ value, label: `${label}s` })),
+                      { value: "none", label: "Not involved in anything yet" },
                     ]}
                   />
                 </label>
@@ -1277,10 +1346,10 @@ export default function AdminPage() {
                 >
                   <div className="user-table-head" role="row">
                     <span>Account</span>
-                    <span>Type</span>
-                    <span>Activity</span>
-                    <span>Role</span>
-                    <span>Status</span>
+                    <span>Involved in</span>
+                    <span>Listings</span>
+                    <span>Staff access</span>
+                    <span>Account status</span>
                   </div>
                   {users.map((user) => (
                     <div className="user-table-row" role="row" key={user.id}>
@@ -1295,21 +1364,24 @@ export default function AdminPage() {
                           {user.email}
                         </small>
                       </div>
-                      <span
-                        className={`account-badge account-${user.accountType}`}
-                      >
-                        {humanize(user.accountType)}{user.isOrganizer ? " · Organiser" : ""}{user.isServiceProvider ? " · Service provider" : ""}
+                      {/* Every role they've taken on (a person can be several at once). */}
+                      <span className="involvement-tags">
+                        {(user.tags?.length ? user.tags : ["member"]).map((tag) => (
+                          <span key={tag} className={`account-badge involvement-${tag}`}>
+                            {INVOLVEMENT_LABELS[tag] ?? "Member"}
+                          </span>
+                        ))}
                       </span>
                       <small>
                         {user.itemCount} items · {user.serviceCount} services
                       </small>
                       <SelectField
-                        label={`Role for ${user.username}`}
+                        label={`Staff access for ${user.username}`}
                         disabled={staffUserId === null || user.id === staffUserId}
-                        title={user.id === staffUserId ? "Another administrator must change your role" : undefined}
+                        title={user.id === staffUserId ? "Another administrator must change your staff access" : undefined}
                         value={user.role}
                         onChange={(role) => updateUser(user, { role })}
-                        options={["user", "tester", "moderator", "support", "finance", "event_operations", "analyst", "admin", "owner"].map((role) => ({ value: role, label: role }))}
+                        options={STAFF_ACCESS.map(([role, label]) => ({ value: role, label }))}
                       />
                       <button
                         disabled={staffUserId === null || user.id === staffUserId}
@@ -1348,23 +1420,14 @@ export default function AdminPage() {
             </section>
           )}
           {section === "moderation" && (
-            <><ShowcaseMediaReview request={request}/><section className="panel">
-              <h3>Moderation queue</h3>
-              {reports.length === 0 ? (
-                <p>No open reports.</p>
-              ) : (
-                <div className="report-list">{reportPages.visible.map((report) => (
-                  <ReportCard key={report.id} report={report} onUpdate={(status, resolution) => updateReport(report, status, resolution)} />
-                ))}</div>
-              )}
-              <Pagination page={reportPages.page} pageCount={reportPages.pageCount} label="Report" onChange={reportPages.setPage} />
-            </section></>
+            <Moderation reports={reports} request={request} onUpdate={updateReport} />
           )}
           {section === "escalations" && <Escalations request={request} />}
           {section === "notifications" && (
             <NotificationsWorkspace request={request} templates={templates} broadcasts={broadcasts} deliveries={deliveries} onChanged={load} />
           )}
-        </section>
+        </div>
+      </div>
       </div>
     </main>
   );

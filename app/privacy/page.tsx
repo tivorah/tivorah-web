@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 16 October 2026
+        <strong>Last updated:</strong> 20 October 2026
       </p>
 
       <p>
@@ -202,6 +202,17 @@ export default function Privacy() {
         relevant audience to see.
       </p>
       <p>
+        <strong>Mentions, quotes and polls.</strong> When someone @mentions you
+        in a Hub, your username is shown in their post and you may be notified.
+        Only active members of that Hub can be mentioned, and never across a
+        block. If another member quotes your post, the quoted text is shown with
+        your name to the audience of their post; if you delete your post, the
+        quote shows that it is no longer available. Poll votes are anonymous to
+        other members: people see only the totals, never who voted for what. We
+        store your vote with your account so it is counted once and cannot be
+        changed.
+      </p>
+      <p>
         <strong>Event organisers</strong> can see an attendee list for their own
         event. For each booking it shows the booking name, ticket type, number
         of tickets, amount paid, booking time, whether the booking was refunded
@@ -333,7 +344,11 @@ export default function Privacy() {
         features work, and event pages may show an embedded Google map that is
         provided by Google under its own privacy terms. The mobile app uses
         local and secure device storage for sessions, settings, encryption keys
-        and feature state. See our <Link href="/cookies">Cookie Notice</Link>.
+        and feature state. To open quickly and work on a weak connection, the
+        app also keeps a temporary copy of recently viewed content (such as
+        Hubs, posts and listings) on your device for up to a few days. Private
+        end-to-end encrypted chats are kept on your device only in their
+        encrypted form until opened. This copy is deleted when you sign out. See our <Link href="/cookies">Cookie Notice</Link>.
       </p>
 
       <h2>Notifications, news and marketing</h2>
@@ -460,7 +475,19 @@ export default function Privacy() {
         We use safeguards including access controls, password hashing,
         encryption in transit, restricted document access, session revocation
         and operational audit records. Eligible one-to-one private chats also
-        use the end-to-end encryption described above. No online service can
+        use the end-to-end encryption described above.
+      </p>
+      <p>
+        <strong>Protecting sign-in.</strong> To stop people guessing passwords,
+        we count failed sign-in attempts for each account (stored as a one-way
+        code of the email or username, not the address itself) and may pause
+        sign-in for that account for a short time. After you sign in
+        successfully, your phone or browser keeps a signed &ldquo;known
+        device&rdquo; marker so other people&apos;s failed attempts don&apos;t
+        lock you out. During an attack, signing in from an unrecognised device
+        may require a quick human check provided by Cloudflare Turnstile, which
+        processes technical information such as your IP address and browser or
+        device signals under Cloudflare&apos;s own privacy terms. No online service can
         guarantee absolute security, and encryption cannot protect content on a
         compromised or unlocked device. If an eligible data breach occurs, we
         will assess and respond
