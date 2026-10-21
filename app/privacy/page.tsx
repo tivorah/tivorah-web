@@ -504,6 +504,13 @@ export default function Privacy() {
         Retention periods differ by record type.
       </p>
       <p>
+        If you start signing up with an email address but don&apos;t verify it,
+        we send up to four reminders over the following week. If it&apos;s still not verified
+        7 days after you signed up, we delete the details you entered (your
+        name, email, username, date of birth and password), and you can sign up
+        again at any time.
+      </p>
+      <p>
         We keep waitlist details while you remain subscribed and for as long as
         they are needed for launch communications. If you unsubscribe, we keep
         your email address and the date you opted out so we do not email you
