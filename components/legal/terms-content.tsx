@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 20 October 2026
+        <strong>Last updated:</strong> 23 October 2026
       </p>
 
       <div className="legal-callout">
@@ -214,6 +214,30 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         announced separately.
       </p>
       <p>
+        Tivorah ticketing (free and paid tickets issued through Tivorah) is
+        likewise available only for events in countries where Tivorah supports
+        it, currently Australia. Events elsewhere can be published with a link
+        to an external ticketing page and/or by letting attendees message the
+        organiser; any sale then happens outside Tivorah, between the organiser
+        and the attendee, under the external provider&apos;s terms. Features may
+        differ between countries, and we may add, limit or remove a feature in
+        a country where needed to comply with local law or manage risk.
+      </p>
+      <p>
+        If you use Tivorah outside Australia, you are responsible for following
+        the laws that apply where you are, including laws about events,
+        employment, selling goods and services, and the content you share.
+      </p>
+      <p>
+        You can browse and join Hubs, and find events and listings, in any
+        country, wherever you live. The location on your profile must be where
+        you actually live or are based, in general terms; Hub owners and
+        moderators see it when you ask to join and while you are a member, even
+        if you found their Hub by browsing another country. Do not give a false
+        location to get into a Hub or to mislead other members. The location you
+        give a listing, event or Hub must be where it really is.
+      </p>
+      <p>
         Where Tivorah enables an in-app payment for an item, service or event,
         the seller, provider or organiser is the supplier and seller of that
         underlying offering unless the checkout expressly identifies Tivorah as
@@ -376,9 +400,30 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       </p>
       <p>
         Some decisions are assisted by automated tools, such as image-safety
-        screening and security or rate-limit checks. You can ask for a person
-        to review an automated decision that affects you by contacting{" "}
+        screening, checks on the words in posts and messages before they are
+        published, and security or rate-limit checks. The word check may ask
+        you to reconsider hurtful language, and blocks slurs, threats,
+        encouragement of self-harm, revealing where someone lives and telling
+        people to &ldquo;go back to their country&rdquo;. If you choose to post
+        after being asked to reconsider, you remain responsible for what you
+        post and it must still follow these Terms and our{" "}
+        <Link href="/community-guidelines">Community Guidelines</Link>.
+        Automated tools can make mistakes in either direction, and passing a
+        check does not mean content is allowed. You can ask for a person to
+        review an automated decision that affects you by contacting{" "}
         <a href="mailto:support@tivorah.com">support@tivorah.com</a>.
+      </p>
+
+      <h2>Automated and AI features</h2>
+      <p>
+        Some Tivorah features may use automated or artificial intelligence
+        tools, such as recommendations, search, suggested Hubs, translation and
+        safety tools. Their results may be incomplete or wrong, so check
+        anything important yourself, and do not rely on them for legal,
+        financial, medical or safety decisions. How we use information for these
+        features, including that sensitive information is never used to train
+        AI models without your express consent, is explained in our{" "}
+        <Link href="/privacy">Privacy Policy</Link>.
       </p>
 
       <h2>Copyright and trade mark complaints</h2>
@@ -451,8 +496,12 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
 
       <h2>Suspension, deletion and ending use</h2>
       <p>
-        You may stop using Tivorah and request account deletion at any time.
-        Deletion consequences are explained in our Privacy Policy and
+        You may stop using Tivorah and delete your account at any time from the
+        app or website. If you have upcoming events with bookings or upcoming
+        appointments, you must first cancel them (so the people who paid are
+        refunded under the applicable refund policy and the Australian Consumer
+        Law) or let them finish. Deletion consequences, including what is
+        removed and what is kept, are explained in our Privacy Policy and
         account-deletion page. Tivorah may suspend or end access where these
         Terms are breached, continued access creates material risk, or we are
         legally required to act. Provisions that by nature need to continue,

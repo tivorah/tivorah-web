@@ -380,3 +380,24 @@
   .mod-detail-head{padding-right:0}
   .mod-status{position:static;justify-self:start;display:inline-block;margin-top:8px}
 }
+
+/* Legal & compliance (app/admin/compliance.tsx) */
+.compliance-alert{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:0 0 20px;padding:14px 16px;border:1px solid #f0c98b;border-radius:14px;background:#fff7e8;color:#5c3a00}
+.compliance-alert span{flex:1 1 260px;color:#6b4a12}
+.compliance-alert button{min-height:44px;border:1px solid #211d23;border-radius:999px;background:#211d23;color:#fff;padding:8px 16px;font-weight:600;cursor:pointer}
+.compliance-summary{font-weight:600;color:#302536!important}
+.compliance-countries{width:100%;max-width:520px;border-collapse:collapse;margin:8px 0 24px}
+.compliance-countries th,.compliance-countries td{text-align:left;padding:10px 12px;border-bottom:1px solid #ece6f0;font-size:15px}
+.compliance-countries td:last-child,.compliance-countries th:last-child{text-align:right}
+.compliance-group{margin:18px 0}
+.compliance-group summary{cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center}
+.compliance-group summary h3{margin:0}.compliance-group summary h3 span{color:#8b8490;font-weight:500}
+.compliance-task{border:1px solid #e6dfeb;border-radius:16px;padding:16px;margin:12px 0;background:#fff;display:grid;gap:8px}
+.compliance-task.is-due{border-color:#f0c98b;background:#fffbf3}
+.compliance-task header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.compliance-scope{font-size:13px;font-weight:600;color:#563580;background:#f3edf9;border-radius:999px;padding:4px 10px}
+.compliance-progress strong{color:#211a29}
+.compliance-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.compliance-task textarea{width:100%;min-height:64px;border:1px solid #c9becf;border-radius:10px;padding:10px 12px;font:inherit}
+.compliance-done{font-size:13px!important;color:#2f7d4f!important}
+.compliance-emailed{font-size:13px!important;color:#8b8490!important}

@@ -28,6 +28,16 @@ export default function Guidelines() {
         vulnerable characteristics is not allowed. Disagreement is permitted;
         abuse is not.
       </p>
+      <p>
+        Before something is posted, Tivorah checks the words for language
+        that may be hurtful. If it finds some, we ask you to consider editing
+        it first; you can still choose to post. Slurs, threats, telling
+        someone to harm themselves, revealing where someone lives and telling
+        people to &ldquo;go back to their country&rdquo; can&apos;t be posted.
+        The check can get things wrong; tell us if it does. Content that
+        passes the check still has to follow these guidelines and can be
+        reported.
+      </p>
 
       <h2>Protect privacy and consent</h2>
       <p>

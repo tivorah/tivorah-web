@@ -8,11 +8,13 @@ export function creationPayload(
   images: string[],
   idempotencyKey: string,
   tickets?: { name: string; priceCents: number; quantity: number; maxTicketsPerBuyer: number }[],
+  /** Where Tivorah ticketing isn't available: how people get tickets instead (no Tivorah tickets). */
+  outsideTicketing?: { contact: "link" | "message" | "both" },
 ) {
   const text = (name: string) => String(form.get(name) || "").trim();
   const online = text("mode") === "online";
   if (!online && !locality)
-    throw new Error("Choose a suburb from the location results.");
+    throw new Error("Choose where it is: a suburb from the results, or your city or town.");
   const common = {
     title: text("title"),
     description: text("description"),
@@ -34,12 +36,17 @@ export function creationPayload(
       end <= start
     )
       throw new Error("Choose an end time after the event starts.");
-    if (!tickets?.length) throw new Error("Add at least one ticket package.");
+    const contact = outsideTicketing?.contact;
+    const ticketUrl = text("externalTicketUrl");
+    if (contact && contact !== "message" && !/^https:\/\/\S+\.\S+/.test(ticketUrl))
+      throw new Error("Add the link where people can get tickets (starting with https://).");
+    if (!contact && !tickets?.length) throw new Error("Add at least one ticket package.");
     // Capacity is the total of every package.
-    const quantity = tickets.reduce((sum, ticket) => sum + ticket.quantity, 0);
+    const quantity = contact ? undefined : tickets!.reduce((sum, ticket) => sum + ticket.quantity, 0);
     return {
       ...common,
-      information,
+      information: { ...information, ...(contact ? { ticketContact: contact } : {}) },
+      ...(contact && contact !== "message" ? { externalTicketUrl: ticketUrl } : {}),
       img: images[0],
       displayName: text("businessName"),
       startsAt: start.toISOString(),
@@ -49,9 +56,9 @@ export function creationPayload(
       address: text("address"),
       ...(online && text("onlineUrl") ? { onlineUrl: text("onlineUrl") } : {}),
       status: "draft",
-      capacity: quantity,
+      ...(quantity === undefined ? {} : { capacity: quantity }),
       messagePrompts: [text("prompt1"), text("prompt2"), text("prompt3")].filter(Boolean),
-      tickets,
+      tickets: contact ? [] : tickets,
       allowGroupBookings: form.get("allowGroupBookings") === "on",
       refundPolicy: text("refundPolicyPreset") || null,
     };

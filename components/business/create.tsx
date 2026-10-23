@@ -11,6 +11,7 @@ import { usePrivateResource } from "../../hooks/use-private-resource";
 import { ApiError, api } from "../../lib/api/client";
 import { creationPayload, CreationKind } from "./create-payload";
 import { Locality, LocalityField } from "./locality-field";
+import type { PlaceCountry } from "../../lib/api/places";
 import { MediaField } from "./media-field";
 import { DateField } from "../ui/date-field";
 import { SelectField } from "../ui/select-field";
@@ -25,6 +26,11 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [settings, setSettings] = useState(defaultServiceSettings);
   const [mode, setMode] = useState(kind === "event" ? "venue" : "at_provider");
   const [locality, setLocality] = useState<Locality | null>(null);
+  const [placeCountry, setPlaceCountry] = useState<PlaceCountry | null>(null);
+  // Tivorah tickets are sold only where Tivorah payments work (e.g. Australia, set by admins).
+  // Elsewhere, people get tickets from the organiser's link, by messaging them, or both.
+  const tivorahTicketing = kind !== "event" || mode === "online" || (placeCountry?.payments ?? true);
+  const [ticketContact, setTicketContact] = useState<"link" | "message" | "both">("link");
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -34,7 +40,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [error, setError] = useState("");
   const [created, setCreated] = useState(false);
   const [accepted, setAccepted] = useState(false);
-  const [draft, setDraft] = useState<DraftFields>({ title: "", description: "", category: "", price: "", onlineUrl: "", startsAt: "", endsAt: "" });
+  const [draft, setDraft] = useState<DraftFields>({ title: "", description: "", category: "", price: "", onlineUrl: "", externalTicketUrl: "", startsAt: "", endsAt: "" });
   const [prompts, setPrompts] = useState(["", "", ""]);
   const [menu, setMenu] = useState<ServiceMenuValue>([]);
   // Menu categories (food, hairstyles, packages) ask what's on the list; the rest keep one price.
@@ -96,7 +102,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
         locality,
         images,
         key.current,
-        kind === "event" ? packagesPayload(packages) : undefined,
+        kind === "event" && tivorahTicketing ? packagesPayload(packages) : undefined,
+        kind === "event" && !tivorahTicketing ? { contact: ticketContact } : undefined,
       );
       if (!agreed) {
         if (!terms)
@@ -115,7 +122,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
         body: JSON.stringify({
           ...payload,
           communityIds: hubIds,
-          ...(kind === "service" ? { ...serviceSettingsPayload(settings), availabilityTimezone: settings.availabilityTimezone || serviceTimezoneForState(locality?.state), ...menuPayload(menu, !!template) } : {}),
+          ...(kind === "service" ? { ...serviceSettingsPayload(settings), availabilityTimezone: settings.availabilityTimezone || serviceTimezoneForState(locality?.state, locality?.countryCode ?? placeCountry?.code), ...menuPayload(menu, !!template) } : {}),
         }),
       });
       setCreated(true);
@@ -148,15 +155,16 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       <div className="showcase-actions business-create-done"><span><Link className="product-primary" href="/business">Back to your business</Link></span></div>
     </div>;
   // Live summary: what's filled in so far (drives the preview card and the checklist).
-  const checklist = checklistFor(kind, { ...draft, mode, images, locality, packages, menuItems: usesMenu ? menu.filter((item) => item.name.trim() && item.price.trim()).length : null });
+  const checklist = checklistFor(kind, { ...draft, mode, images, locality, packages, ticketContact: tivorahTicketing ? null : ticketContact, menuItems: usesMenu ? menu.filter((item) => item.name.trim() && item.price.trim()).length : null });
   const doneCount = checklist.filter((item) => item.done).length;
   const allDone = doneCount === checklist.length;
   const priceLabel = kind === "event"
-    ? (() => { const prices = packages.map((item) => Number(item.price || 0)); if (!prices.length) return ""; const min = Math.min(...prices); return min ? `From $${min.toFixed(2).replace(/\.00$/, "")}` : prices.every((value) => !value) ? "Free" : "From free"; })()
+    ? !tivorahTicketing ? (ticketContact === "message" ? "Message for tickets" : "Tickets via link")
+    : (() => { const prices = packages.map((item) => Number(item.price || 0)); if (!prices.length) return ""; const min = Math.min(...prices); return min ? `From $${min.toFixed(2).replace(/\.00$/, "")}` : prices.every((value) => !value) ? "Free" : "From free"; })()
     : usesMenu ? (() => { const prices = menu.map((item) => Number(item.price)).filter((value) => Number.isFinite(value) && value > 0); return prices.length ? `From $${Math.min(...prices).toFixed(2).replace(/\.00$/, "")}` : ""; })()
     : draft.price && Number(draft.price) > 0 ? `$${Number(draft.price).toFixed(2).replace(/\.00$/, "")}` : draft.price === "0" ? "Free" : "";
   const when = draft.startsAt ? new Date(draft.startsAt).toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
-  const where = kind !== "item" && mode === "online" ? "Online" : locality ? `${locality.suburb}, ${locality.state}` : "";
+  const where = kind !== "item" && mode === "online" ? "Online" : locality ? [locality.suburb, locality.state].filter(Boolean).join(", ") : "";
   const jump = (id: string) => {
     const section = document.getElementById(id);
     section?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -184,7 +192,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       <form className="create-shell" onSubmit={submit} aria-busy={busy || uploading}
         onInput={(event) => {
           const field = event.target as HTMLInputElement;
-          if (["title", "description", "price", "onlineUrl"].includes(field.name)) setDraft((current) => ({ ...current, [field.name]: field.value }));
+          if (["title", "description", "price", "onlineUrl", "externalTicketUrl"].includes(field.name)) setDraft((current) => ({ ...current, [field.name]: field.value }));
         }}>
         <div className="create-main">
           <section id="create-basics" className="showcase-step create-section">
@@ -233,7 +241,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               ).map((option) => <button key={option.value} type="button" role="radio" aria-checked={mode === option.value} className={mode === option.value ? "is-selected" : ""} onClick={() => setMode(option.value)}>{option.label}</button>)}
               <input type="hidden" name="mode" value={mode} />
             </div> : null}
-            {kind === "item" || mode !== "online" ? <LocalityField required onChange={setLocality} /> : null}
+            {kind === "item" || mode !== "online" ? <LocalityField required onChange={setLocality} onCountryChange={setPlaceCountry} /> : null}
             {kind === "service" && (mode === "mobile" || mode === "flexible") ? <label>Travel distance (km)<input name="serviceAreaKm" type="number" min={1} max={500} required placeholder="e.g. 15" /></label> : null}
             {kind === "event" ? (mode === "venue" ? <div className="showcase-row">
               <label><span className="showcase-label">Venue name <span className="showcase-optional">Optional</span></span><input name="venueName" maxLength={160} placeholder="e.g. Adelaide Town Hall" /></label>
@@ -253,8 +261,18 @@ function CreationForm({ kind }: { kind: CreationKind }) {
             </section>
             <section id="create-tickets" className="showcase-step create-section">
               <h2><span className="create-step-no" aria-hidden="true">5</span>Tickets</h2>
-              <p className="showcase-hint">Use $0 for free tickets. Paid tickets need <Link href="/business/payouts">payout setup</Link>.</p>
-              <TicketPackageList value={packages} onChange={setPackages} />
+              {tivorahTicketing ? <>
+                <p className="showcase-hint">Use $0 for free tickets. Paid tickets need <Link href="/business/payouts">payout setup</Link>.</p>
+                <TicketPackageList value={packages} onChange={setPackages} />
+              </> : <>
+                <p className="create-ticket-region" role="note">Tivorah tickets aren’t available in your region at the moment.</p>
+                <p className="create-question">How do people get tickets?</p>
+                <div className="create-segmented" role="radiogroup" aria-label="How do people get tickets?">
+                  {([["link", "Ticket link"], ["message", "Message me"], ["both", "Both"]] as const).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={ticketContact === value} className={ticketContact === value ? "is-selected" : ""} onClick={() => setTicketContact(value)}>{label}</button>)}
+                </div>
+                {ticketContact !== "message" ? <label>Ticket link<input name="externalTicketUrl" type="url" required placeholder="https://" maxLength={2000} /></label> : null}
+                <p className="showcase-hint">{ticketContact === "link" ? "People open your ticket website from the event page." : ticketContact === "message" ? "People message you on Tivorah; enquiries arrive in your messages." : "People can open your ticket website or message you on Tivorah."}</p>
+              </>}
             </section>
           </> : <section id="create-price" className="showcase-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">4</span>{kind === "service" ? "Price & bookings" : "Price"}</h2>
@@ -268,7 +286,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
             </div>
             {kind === "service" ? <>
               <p className="showcase-hint">Customers can discuss custom quotes with you in messages.</p>
-              <div className="business-create-appointments"><ServiceSettings localityState={locality?.state} value={settings} onChange={setSettings} /></div>
+              <div className="business-create-appointments"><ServiceSettings localityState={locality?.state} localityCountry={locality?.countryCode ?? placeCountry?.code} value={settings} onChange={setSettings} /></div>
               <label><span className="showcase-label">Booking notes <span className="showcase-optional">Optional</span></span><textarea name="pickupNotes" maxLength={1000} rows={2} placeholder="Availability, notice or anything customers should know" /></label>
             </> : null}
           </section>}
@@ -371,8 +389,8 @@ function PreviewImage({ src }: { src: string }) {
   return <img src={src} alt="" />;
 }
 
-type DraftFields = { title: string; description: string; category: string; price: string; onlineUrl: string; startsAt: string; endsAt: string };
-type ChecklistInput = DraftFields & { mode: string; images: string[]; locality: Locality | null; packages: PackageDraft[]; menuItems: number | null };
+type DraftFields = { title: string; description: string; category: string; price: string; onlineUrl: string; externalTicketUrl: string; startsAt: string; endsAt: string };
+type ChecklistInput = DraftFields & { mode: string; images: string[]; locality: Locality | null; packages: PackageDraft[]; ticketContact: "link" | "message" | "both" | null; menuItems: number | null };
 // What must be done before this listing can be saved, in the order of the form.
 function checklistFor(kind: CreationKind, data: ChecklistInput) {
   const online = kind !== "item" && data.mode === "online";
@@ -385,7 +403,7 @@ function checklistFor(kind: CreationKind, data: ChecklistInput) {
   ];
   if (kind === "event") items.push(
     { id: "date", section: "create-when", label: "Date and time", done: !!data.startsAt && !!data.endsAt && new Date(data.endsAt) > new Date(data.startsAt) },
-    { id: "tickets", section: "create-tickets", label: "Tickets", done: data.packages.length > 0 },
+    { id: "tickets", section: "create-tickets", label: "Tickets", done: data.ticketContact ? data.ticketContact === "message" || /^https:\/\/\S+\.\S+/.test(data.externalTicketUrl) : data.packages.length > 0 },
   );
   else items.push(data.menuItems !== null
     ? { id: "price", section: "create-price", label: "Menu items", done: data.menuItems > 0 }

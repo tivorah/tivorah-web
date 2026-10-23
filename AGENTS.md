@@ -186,6 +186,14 @@ Stripe Connect callback pages must validate/display server-derived onboarding st
 and provide a safe recovery route. They must not decide payout eligibility from query
 parameters alone.
 
+## API requests, retries and idempotency
+
+The API contract is `../tivorah-api/docs/api-conventions.md`.
+
+- `lib/api/client.ts` (`api()`) and `app/events/api.ts` (`eventApi()`) go through `fetchWithRetry` in `lib/api/retry-policy.ts`. Every change gets an `Idempotency-Key`, reused on retry; only temporary failures are retried; uploads never retry.
+- Keep `lib/api/retry-policy.ts` identical to mobile's `api/retryPolicy.ts`.
+- A 2xx with `status: false` is treated as an error. Branch on `ApiError.code` (the API's `errorCode`), not on message text.
+
 ## Hosting and legacy Netlify configuration
 
 Railway is the current host. Verify its build/start settings before diagnosing

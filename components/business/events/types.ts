@@ -36,6 +36,8 @@ export type ManagedEvent = { refundPolicy?: string | null; setupIssues?: import(
   suburb: string | null;
   state: string | null;
   postcode: string | null;
+  /** ISO country code (Australia when not set). */
+  countryCode?: string | null;
   status: string;
   images: string[];
   img: string | null;

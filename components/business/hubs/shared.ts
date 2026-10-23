@@ -97,7 +97,9 @@ export type NewHub = {
   /** Optional preset keys. Base rules apply to every Hub, so they are never sent. Custom rules go as text. */
   ruleKeys: string[];
   customRule: string;
-  locality: { suburb: string; state: string; postcode: string } | null;
+  locality: { suburb: string; state: string; postcode: string; countryCode?: string } | null;
+  /** The Hub's country, also for a country-wide Hub with no town (defaults to Australia). */
+  countryCode?: string;
   avatar: Blob | null;
   banner: Blob | null;
 };
@@ -125,10 +127,12 @@ export function newHubFormData(hub: NewHub): FormData {
   const rules: HubRule[] = hub.ruleKeys.map((key) => ({ key, text: "" }));
   if (hub.customRule.trim()) rules.push({ key: "custom", text: hub.customRule.trim() });
   form.set("guidelines", JSON.stringify(rules));
+  const country = hub.locality?.countryCode || hub.countryCode;
+  if (country) form.set("countryCode", country);
   if (hub.locality) {
     form.set("suburb", hub.locality.suburb);
-    form.set("state", hub.locality.state);
-    form.set("postcode", hub.locality.postcode);
+    if (hub.locality.state) form.set("state", hub.locality.state);
+    if (hub.locality.postcode) form.set("postcode", hub.locality.postcode);
   }
   if (hub.avatar) form.set("avatar", hub.avatar);
   if (hub.banner) form.append("banner", hub.banner);

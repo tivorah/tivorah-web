@@ -47,3 +47,11 @@ test('reads media stored as a string or an object', () => {
   assert.equal(mediaUrl({ url: 'https://x.test/b.png' }), 'https://x.test/b.png');
   assert.equal(mediaUrl(null), null);
 });
+
+test('a Hub outside Australia sends its country, without an empty postcode', () => {
+  const form = newHubFormData(hub({ locality: { suburb: 'Ikeja', state: 'Lagos', postcode: '', countryCode: 'NG' } }));
+  assert.equal(form.get('countryCode'), 'NG');
+  assert.equal(form.get('suburb'), 'Ikeja');
+  assert.equal(form.get('postcode'), null);
+  assert.equal(newHubFormData(hub({ locality: null, countryCode: 'KE' })).get('countryCode'), 'KE');
+});

@@ -4,6 +4,8 @@ import Image from "next/image";
 import { FormEvent, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { ChangeEvent } from "react";
 import { memberAuth } from "../../lib/auth/client";
+import { adminApiBase } from "../../app/admin/api-base";
+import { maskEmail } from "../../lib/mask-email";
 import type { SocialProviders } from "../../lib/auth/auth-page";
 import { safeReturnPath } from "../../lib/auth/return-path";
 import { SocialSignIn } from "./social-signin";
@@ -103,6 +105,26 @@ export function AuthForm({
           return;
         }
         if (sentToken) setCaptcha((current) => current && { ...current, token: null, attempt: current.attempt + 1 });
+        // Signed up but never verified (the password was right): send a fresh code and verify here.
+        if (failure?.code === "EMAIL_NOT_VERIFIED") {
+          let verifyEmail = identity;
+          if (!identity.includes("@")) {
+            const response = await fetch(`${adminApiBase() || ""}/api/v1/public/auth/unverified-sign-in`, {
+              method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username: identity, password }),
+            });
+            const body = await response.json().catch(() => null) as { data?: { email?: string }; message?: string } | null;
+            if (!response.ok || !body?.data?.email) throw new Error(body?.message || "Your email isn’t verified yet. Sign in with your email address and we’ll send you a new code.");
+            verifyEmail = body.data.email;
+          } else {
+            await memberAuth.emailOtp.sendVerificationOtp({ email: identity, type: "email-verification" });
+          }
+          setEmail(verifyEmail);
+          setMode("verify");
+          // Typed email: shown in full. Looked up from a username: masked.
+          setNotice(`You haven’t verified your email yet. We’ve sent a new code to ${identity.includes("@") ? verifyEmail : maskEmail(verifyEmail)}.`);
+          return;
+        }
         if (result.error)
           throw new Error(
             result.error.status === 429
@@ -134,12 +156,32 @@ export function AuthForm({
           termAndCondition: form.get("terms") === "on",
           privacyTerm: form.get("terms") === "on",
         } as Parameters<typeof memberAuth.signUp.email>[0]);
-        if (result.error)
+        if (result.error) {
+          // Already used: an unfinished sign-up gets a fresh code; a full account is pointed to sign in.
+          const exists = String((result.error as { code?: string }).code ?? "").includes("ALREADY_EXISTS") || /already exists/i.test(result.error.message ?? "");
+          if (exists) {
+            const status = await fetch(`${adminApiBase() || ""}/api/v1/public/auth/email-status`, {
+              method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: email.trim().toLowerCase() }),
+            }).then((response) => response.json()).then((body) => body?.data?.status as string | undefined).catch(() => undefined);
+            if (status === "unverified") {
+              await memberAuth.emailOtp.sendVerificationOtp({ email: email.trim().toLowerCase(), type: "email-verification" });
+              setMode("verify");
+              setNotice(`You’ve already started signing up with this email. We’ve sent a new code to ${email.trim().toLowerCase()}.`);
+              return;
+            }
+            if (status === "registered") {
+              setMode("signin");
+              setNotice("This email already has a Tivorah account. Sign in instead.");
+              return;
+            }
+          }
           throw new Error(
             result.error.message || "Could not create your account.",
           );
+        }
         setMode("verify");
-        setNotice("Enter the verification code sent to your email.");
+        setNotice(`Enter the verification code sent to ${email.trim().toLowerCase()}.`);
       } else if (mode === "verify") {
         const result = await memberAuth.emailOtp.verifyEmail({
           email: email.trim().toLowerCase(),

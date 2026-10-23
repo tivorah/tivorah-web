@@ -41,6 +41,8 @@ type Listing = ServiceSettingsValue & {
   suburb: string | null;
   state: string | null;
   postcode: string | null;
+  /** ISO country code (Australia when not set). */
+  countryCode?: string | null;
   pickupNotes: string | null;
 };
 type ListingStats = { enquiries: number; messages: number; upcomingAppointments?: number; appointments?: number; latestEnquiryId?: number | null };
@@ -56,7 +58,7 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
   const [tab, setTab] = useState("Details");
   const [menuOpen, setMenuOpen] = useState(false);
   const [settings, setSettings] = useState<ServiceSettingsValue>({
-    availabilityTimezone: item.availabilityTimezone || serviceTimezoneForState(item.state),
+    availabilityTimezone: item.availabilityTimezone || serviceTimezoneForState(item.state, item.countryCode),
     bookingEnabled: item.bookingEnabled,
     paymentRequired: item.paymentRequired,
     paymentTiming: item.paymentTiming ?? "upfront",
@@ -182,8 +184,8 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
                   <h2>{service ? "Where you work" : "Condition & pickup"}</h2>
                   {service ? <label>{template?.modeQuestion ?? "Service location"}<SelectField key={template ? category : "default"} name="serviceMode" label={template?.modeQuestion ?? "Service location"} defaultValue={template && !(String(item.serviceMode) in template.modeLabels) ? Object.keys(template.modeLabels)[0] : item.serviceMode || "at_provider"} options={template ? (Object.entries(template.modeLabels) as [string, string][]).map(([value, label]) => ({ value, label })) : [{ value: "at_provider", label: "At my location" }, { value: "mobile", label: "I travel to customers" }, { value: "online", label: "Online" }, { value: "flexible", label: "In person or online" }]} /></label>
                     : <label>Condition<SelectField name="condition" label="Condition" defaultValue={item.condition || "new"} options={conditionOptions} /></label>}
-                  <p className="event-current-locality"><span>Suburb</span><strong>{[item.suburb, item.state, item.postcode].filter(Boolean).join(", ") || "Online"}</strong></p>
-                  <details className="showcase-more event-change-locality"><summary>Change suburb</summary><LocalityField required={false} onChange={setLocality} /></details>
+                  <p className="event-current-locality"><span>Location</span><strong>{[item.suburb, item.state, item.postcode].filter(Boolean).join(", ") || "Online"}</strong></p>
+                  <details className="showcase-more event-change-locality"><summary>Change location</summary><LocalityField required={false} defaultCountry={item.countryCode || "AU"} onChange={setLocality} /></details>
                   {!service ? <label><span className="showcase-label">Pickup details <span className="showcase-optional">Optional</span></span><textarea name="pickupNotes" maxLength={1000} rows={3} defaultValue={item.pickupNotes || ""} placeholder="When and where buyers can collect it" /></label> : null}
                 </section>
               </div>
@@ -198,7 +200,7 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
               {service ? <div hidden={tab !== "Availability"} className="listing-tab">
                 <section className="showcase-step business-create-appointments">
                   <h2>Bookings &amp; availability</h2>
-                  <ServiceSettings localityState={locality?.state ?? item.state} value={settings} onChange={setSettings} />
+                  <ServiceSettings localityState={locality?.state ?? item.state} localityCountry={locality?.countryCode ?? item.countryCode} value={settings} onChange={setSettings} />
                 </section>
               </div> : null}
               <div hidden={tab !== "Sharing"} className="listing-tab">

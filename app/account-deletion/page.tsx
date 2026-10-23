@@ -9,7 +9,7 @@ export default function AccountDeletion() {
       <span className="eyebrow">Account controls</span>
       <h1>Delete your Tivorah account</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 2 October 2026
+        <strong>Last updated:</strong> 23 October 2026
       </p>
 
       <h2>Delete in the mobile app</h2>
@@ -19,11 +19,11 @@ export default function AccountDeletion() {
           Open <strong>Profile</strong>, then <strong>Settings &amp; privacy</strong>.
         </li>
         <li>
-          Select <strong>Delete my account</strong>.
+          Select <strong>Delete account</strong>.
         </li>
         <li>
           For a password account, enter your password. For an Apple account,
-          sign in with Apple again if prompted. Confirm <strong>Permanently delete</strong>.
+          sign in with Apple again if prompted. Confirm <strong>Permanently delete account</strong>.
         </li>
       </ol>
       <p>
@@ -39,9 +39,11 @@ export default function AccountDeletion() {
         <li>Under <strong>Delete account</strong>, confirm your password and select <strong>Permanently delete my account</strong>.</li>
       </ol>
       <p>
-        Deleting your account also removes your showcase page. If you sell or organise events, finish
-        or cancel open orders and bookings first; records we must keep for refunds, tax and
-        disputes are kept as explained below.
+        Deleting your account also removes your showcase page. If you have upcoming events with
+        bookings, or upcoming appointments (as a provider or a customer), cancel them or let them
+        finish first, so anyone who paid is refunded under the refund policy and the Australian
+        Consumer Law. You&apos;ll be reminded if you try to delete before then. Records we must keep
+        for refunds, tax and disputes are kept as explained below.
       </p>
 
       <h2>If you cannot access the app or website</h2>
@@ -65,8 +67,21 @@ export default function AccountDeletion() {
         we need more information or cannot delete a particular record.
       </p>
 
+      <h2>What is removed</h2>
+      <p>
+        Deleting your account signs you out everywhere and removes or
+        de-identifies your email, username, phone, name, bio, photo (including
+        the stored file), address, date of birth, gender, country, home
+        location and interests; your devices and notification settings; your
+        connections and friend requests; your Hub memberships and join
+        requests; and your showcase and employer profile. Your active listings
+        and upcoming events without bookings are taken down, and your open jobs
+        are closed. A Hub you created stays for its members.
+      </p>
+
       <h2>What may be retained</h2>
       <p>
+        Your posts and messages may remain, shown as &ldquo;Deleted User&rdquo;.
         Some contributions or limited records may remain in anonymised or
         restricted form where reasonably needed to preserve conversations and
         transaction integrity, comply with legal or tax obligations, process

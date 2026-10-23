@@ -48,13 +48,14 @@ function CreateHubForm() {
   const [ruleKeys, setRuleKeys] = useState<string[]>([]);
   const [customRule, setCustomRule] = useState("");
   const [locality, setLocality] = useState<Locality | null>(null);
+  const [country, setCountry] = useState<{ code: string; name: string }>({ code: "AU", name: "Australia" });
   const [avatar, setAvatar] = useState<File | null>(null);
   const [banner, setBanner] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
 
-  const draft = { name, username, slogan, bio, isPrivate, interestIds, ruleKeys, customRule, locality, avatar, banner };
+  const draft = { name, username, slogan, bio, isPrivate, interestIds, ruleKeys, customRule, locality, countryCode: country.code, avatar, banner };
   const errors = submitted ? newHubErrors(draft) : {};
 
   const toggle = (list: number[] | string[], value: number | string) =>
@@ -144,8 +145,8 @@ function CreateHubForm() {
 
         <div className="hub-field">
           <p className="hub-field-label">Location <span className="hub-optional">(optional)</span></p>
-          <p className="hub-field-hint">Choose a suburb for a local Hub, or leave it empty for an Australia-wide Hub.</p>
-          <LocalityField required={false} onChange={setLocality} />
+          <p className="hub-field-hint">Choose a place for a local Hub, or leave it empty for a Hub across {country.name}.</p>
+          <LocalityField required={false} onChange={setLocality} onCountryChange={setCountry} />
         </div>
 
         <fieldset className="hub-field">

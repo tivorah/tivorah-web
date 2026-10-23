@@ -9,6 +9,10 @@ import categories from "../../lib/discovery-categories.json";
 import type { DiscoveryKind } from "../../lib/api/discovery";
 import { api } from "../../lib/api/client";
 import { parseMoneyToCents } from "../../lib/money";
+import { countryFlag, isAbroad, usePlaceCountries } from "../../lib/api/places";
+
+/** Clearing these drops the Australian suburb, distance and postcode filters. */
+const AUSTRALIAN_AREA = { locality: "", state: "", latitude: "", longitude: "", radiusKm: "", postcode: "" };
 
 export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
   const params = useSearchParams();
@@ -24,6 +28,16 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [loading, setLoading] = useState(kind === "hubs");
+  const { countries } = usePlaceCountries();
+  const country = (params.get("country") || "").toUpperCase();
+  const abroad = isAbroad(country);
+  // Hubs can be browsed across every country; events, items and services stay in one country
+  // (Australia unless another is chosen), the same as the app.
+  const countryOptions = [
+    { value: "", label: kind === "hubs" ? "Any country" : "Australia" },
+    ...(countries ?? []).filter((item) => kind === "hubs" || item.code !== "AU").map((item) => ({ value: item.code, label: `${countryFlag(item.code)} ${item.name}` })),
+  ];
+  const countryName = countries?.find((item) => item.code === country)?.name ?? country;
   useEffect(() => {
     if (kind !== "hubs") return;
     const controller = new AbortController();
@@ -63,7 +77,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
   }
   function apply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (locationEdited && locationText.trim() && !draftLocation) {
+    if (!abroad && locationEdited && locationText.trim() && !draftLocation) {
       setFormError(
         "Choose a suburb from the suggestions, or clear the location to search everywhere.",
       );
@@ -71,7 +85,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
     }
     const data = new FormData(event.currentTarget);
     const postcode = String(data.get("postcode") || "").trim();
-    if (postcode && !/^\d{4}$/.test(postcode)) {
+    if (!abroad && postcode && !/^\d{4}$/.test(postcode)) {
       setFormError("Enter a four-digit Australian postcode.");
       return;
     }
@@ -87,12 +101,12 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
       minPrice: min ? String(parseMoneyToCents(min) ?? "") : "",
       maxPrice: max ? String(parseMoneyToCents(max) ?? "") : "",
       currency: String(data.get("currency") || "AUD"),
-      postcode,
-      radiusKm:
+      postcode: abroad ? "" : postcode,
+      radiusKm: abroad ? "" :
         draftLocation?.latitude != null && draftLocation.longitude != null
           ? radius
           : "",
-      ...(locationEdited
+      ...(locationEdited && !abroad
         ? {
             locality: draftLocation?.suburb || "",
             state: draftLocation?.state || "",
@@ -142,6 +156,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
   ];
   const chosenCategories = selectedCategories(params.get("category"));
   const active = [
+    country ? { label: countryName, clear: { country: "" } } : null,
     ...chosenCategories.map((category) => ({ label: category, clear: { category: toggleCategory(params.get("category"), category) } })),
     params.get("when")
       ? {
@@ -218,6 +233,13 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
           onChange={(value) => update({ category: value })}
           searchable
           multiple
+        />
+        <FilterSelect
+          label="Country"
+          options={countryOptions}
+          value={kind !== "hubs" && country === "AU" ? "" : country}
+          onChange={(value) => update({ country: value, ...(isAbroad(value) ? AUSTRALIAN_AREA : {}) })}
+          searchable
         />
         {kind === "events" && (
           <FilterSelect
@@ -302,7 +324,11 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
       <FilterDialog open={open} onClose={() => setOpen(false)}>
         <form onSubmit={apply} className="filter-dialog-form">
           <div className="filter-dialog-body">
-            <fieldset>
+            {abroad ? <fieldset>
+              <legend>Location</legend>
+              <p>Showing {kind === "hubs" ? "Hubs" : kind === "events" ? "events" : kind === "services" ? "services" : "items"} across {countryName}. Suburb, distance and postcode filters are for Australia.</p>
+              {kind === "services" && <small>Online services are also included.</small>}
+            </fieldset> : <fieldset>
               <legend>Location & distance</legend>
               <LocationSearch
                 inline
@@ -366,7 +392,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
               {kind === "services" && (
                 <small>Online services are also included.</small>
               )}
-            </fieldset>
+            </fieldset>}
             {kind === "items" && (
               <fieldset>
                 <legend>Item condition</legend>

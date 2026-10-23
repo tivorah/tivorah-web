@@ -29,6 +29,7 @@ import { Suspense } from "react";
 import { NavigationTracker } from "../components/ui/navigation-tracker";
 import { PressEffect } from "../components/ui/press-effect";
 import { NavProgress } from "../components/ui/nav-progress";
+import { ContentReviewDialog } from "../components/ui/content-review-dialog";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
@@ -81,6 +82,7 @@ export default async function RootLayout({
             {children}
           </main>
           <SiteFooter />
+          <ContentReviewDialog />
         </DiscoveryFeatures></AccountProvider>
       </body>
     </html>

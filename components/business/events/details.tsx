@@ -84,10 +84,10 @@ export function EventDetails({
           {event.locationType === "online" ? (
             <label>Joining link<input type="url" name="onlineUrl" defaultValue={event.onlineUrl || ""} required placeholder="https://" /></label>
           ) : <>
-            <p className="event-current-locality"><span>Suburb</span><strong>{[event.suburb, event.state, event.postcode].filter(Boolean).join(", ") || "Not set"}</strong></p>
+            <p className="event-current-locality"><span>Location</span><strong>{[event.suburb, event.state, event.postcode].filter(Boolean).join(", ") || "Not set"}</strong></p>
             <details className="showcase-more event-change-locality">
-              <summary>Change suburb</summary>
-              <LocalityField required={false} onChange={setLocality} />
+              <summary>Change location</summary>
+              <LocalityField required={false} defaultCountry={event.countryCode || "AU"} onChange={setLocality} />
             </details>
             <div className="showcase-row">
               <label>Venue name<input name="venueName" defaultValue={event.venueName || ""} maxLength={160} /></label>

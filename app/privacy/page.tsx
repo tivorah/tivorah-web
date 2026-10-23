@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 20 October 2026
+        <strong>Last updated:</strong> 23 October 2026
       </p>
 
       <p>
@@ -21,11 +21,18 @@ export default function Privacy() {
         newsletter and related support and community services. It also explains
         the choices available to you.
       </p>
+      <p>
+        Tivorah is operated from Australia and can be used around the world.
+        Some features, such as Tivorah ticketing and online payments, are only
+        available in certain countries; everything else, including Hubs,
+        Banter, messages, events, listings and jobs, works wherever you are.
+      </p>
 
       <div className="legal-callout">
         <strong>Privacy at a glance</strong>
         <p>
-          We do not sell personal information. Public and Hub activity is not
+          We do not sell personal information, and we do not let other
+          companies train their AI models on it. Public and Hub activity is not
           the same as a private message. Optional product analytics can be
           disabled in the mobile app. You can request access, correction or
           deletion by contacting <a href="mailto:privacy@tivorah.com">privacy@tivorah.com</a>.
@@ -112,16 +119,22 @@ export default function Privacy() {
         </li>
         <li>
           <strong>Jobs and opportunities:</strong> job and employer profiles,
-          Australian locality information, saved jobs, application status,
+          locality information (any country), saved jobs, application status,
           cover letters, CVs or other documents where native applications are
           enabled, external application links, contextual direct-message
           activity and access records for protected application documents.
         </li>
         <li>
-          <strong>Location:</strong> a location you enter, a profile locality,
-          or approximate or precise device location when you grant permission
+          <strong>Location:</strong> a location you enter (your country and,
+          where you choose, a state or region and a suburb, city, town or local
+          government area), a profile locality, your device&apos;s region
+          setting to suggest a default country, or approximate or precise
+          device location when you grant permission
           for nearby discovery. We do not need continuous background location
-          access to provide ordinary nearby searches.
+          access to provide ordinary nearby searches. The country or area you
+          choose in search filters (for example, browsing Hubs, events or
+          listings in another country) is used only to show those results and
+          does not change where your profile says you live.
         </li>
         <li>
           <strong>Device and technical information:</strong> IP address, device
@@ -185,10 +198,28 @@ export default function Privacy() {
         </li>
         <li>
           measure reliability and product journeys, troubleshoot failures and
-          improve Tivorah; and
+          improve Tivorah;
+        </li>
+        <li>
+          create aggregated or de-identified information, and research, develop,
+          train, test and improve Tivorah&apos;s features and safety systems,
+          including recommendation, search, moderation and other machine-learning
+          or artificial intelligence (AI) features, as described in
+          &quot;Aggregated data, research and AI&quot; below; and
         </li>
         <li>meet legal, regulatory, tax and dispute-resolution obligations.</li>
       </ul>
+      <p>
+        <strong>Checking posts before they go live.</strong> When you post or
+        send something people can read (for example Banter, replies, listings,
+        events, Hub details, enquiries, group messages or your bio), Tivorah
+        checks the words automatically, on our own servers, for slurs, threats
+        and hurtful language, and may ask you to reconsider or stop it being
+        posted. This check doesn&apos;t send your words to another company,
+        and we keep only a count of what was flagged, not the words. Private
+        one-to-one messages are end-to-end encrypted, so they are never
+        checked.
+      </p>
 
       <h2>What other people can see</h2>
       <p>
@@ -211,6 +242,16 @@ export default function Privacy() {
         other members: people see only the totals, never who voted for what. We
         store your vote with your account so it is counted once and cannot be
         changed.
+      </p>
+      <p>
+        <strong>Hub owners and moderators</strong> can see the general location
+        on your profile (your suburb, city or town, region and country) when you
+        ask to join their Hub and while you are a member, so they can understand
+        who is joining their community. This is where you said you live, not
+        the country or area you browse in search filters, so it stays the same
+        if you look for Hubs elsewhere (for example, Hubs in Australia while you
+        live in Nigeria). We never show them your precise device location. You
+        can change your location in your profile at any time.
       </p>
       <p>
         <strong>Event organisers</strong> can see an attendee list for their own
@@ -448,7 +489,13 @@ export default function Privacy() {
         Tivorah uses computer programs to help make some decisions that can
         affect you. Images you upload are screened automatically for nudity,
         violence and other unsafe content, and an image that fails screening
-        may be blocked from public display. Automated
+        may be blocked from public display. Before something you write is
+        posted (for example Banter, replies, listings, events, Hub details,
+        enquiries, group messages or your bio), its words are checked
+        automatically: hurtful language prompts you to reconsider, and slurs,
+        threats, encouragement of self-harm, revealing where someone lives and
+        telling people to &ldquo;go back to their country&rdquo; are blocked.
+        End-to-end encrypted private messages are never checked. Automated
         security and rate-limit checks may temporarily block sign-in attempts,
         sign-ups, messages or checkout requests that look abusive or
         fraudulent. Age and eligibility checks use the date of birth and
@@ -459,6 +506,69 @@ export default function Privacy() {
         <a href="mailto:support@tivorah.com">support@tivorah.com</a>.
       </p>
 
+      <h2>Aggregated data, research and AI</h2>
+      <p>
+        As Tivorah grows, we may use information to understand how the service
+        is used and to build better and safer features. We do this within these
+        limits:
+      </p>
+      <ul>
+        <li>
+          <strong>Aggregated and de-identified information.</strong> We may
+          combine or de-identify information so that it no longer identifies
+          you or any other person (for example, the number of Hubs in a city or
+          popular event categories). We may use and share aggregated or
+          de-identified information for any lawful purpose, including research,
+          reporting, product development and partnerships. We take reasonable
+          steps not to re-identify it and require recipients not to try.
+        </li>
+        <li>
+          <strong>Tivorah&apos;s own features.</strong> We may use personal
+          information to develop, train, test and improve features that serve
+          Tivorah members, such as recommendations, search, translation,
+          spam and fraud detection, content moderation and safety tools,
+          relying on our legitimate interests or your consent where the law
+          requires it. We prefer de-identified information for this wherever it
+          does the job.
+        </li>
+        <li>
+          <strong>Sensitive information needs your consent.</strong> Some
+          interests and Hubs can reveal sensitive information, such as your
+          religious beliefs, sexual orientation, or health or disability (for
+          example, faith, LGBTQIA+ or disability Hubs and interests). We use
+          this only to provide the parts of Tivorah you choose, such as showing
+          you those Hubs. We will never use sensitive information to train AI
+          models without your express consent.
+        </li>
+        <li>
+          <strong>Notice and a choice before AI training.</strong> Tivorah does
+          not currently train AI models on members&apos; personal information.
+          Before we start, we will tell members in advance and give you a
+          simple way to opt out in your settings, as well as updating this
+          policy. Opting out will not affect your use of Tivorah.
+        </li>
+        <li>
+          <strong>Private messages stay private.</strong> End-to-end encrypted
+          messages cannot be read by Tivorah and are never used for research,
+          training or AI. We do not use the content of other private messages
+          to train AI models.
+        </li>
+        <li>
+          <strong>Providers don&apos;t train on your information.</strong> If we
+          use an outside AI or analytics provider, they may process information
+          only to provide that service to Tivorah, under a contract that
+          prohibits them from using it to train their own models or for their
+          own purposes.
+        </li>
+        <li>
+          <strong>No selling, and no surprises.</strong> We do not sell personal
+          information or license it to others for their own AI training. Before
+          using identifiable personal information for a materially different
+          purpose than this policy describes, we will tell you and ask for your
+          consent where the law requires it.
+        </li>
+      </ul>
+
       <h2>Overseas processing</h2>
       <p>
         Some providers may store, access or process information outside
@@ -468,6 +578,14 @@ export default function Privacy() {
         and locations can change. We assess providers and take reasonable steps
         appropriate to the information and service before an overseas
         disclosure. Contact us for the current provider and location register.
+      </p>
+      <p>
+        If you use Tivorah from outside Australia, your information is
+        transferred to and processed in Australia and in the countries where
+        our providers operate. Where the law of your country requires it, we
+        use appropriate safeguards for these transfers, such as contractual
+        protections (including standard contractual clauses) with our
+        providers.
       </p>
 
       <h2>Storage, security and data breaches</h2>
@@ -532,11 +650,18 @@ export default function Privacy() {
       </p>
       <p>
         You can delete your account in the mobile app under
-        <strong> Profile → Settings → Delete account</strong>, or on the
+        <strong> Profile → Settings &amp; privacy → Delete account</strong>, or on the
         website under <strong>Your account → Settings → Delete account</strong>.
-        Deletion revokes
-        active sessions and removes or anonymises core account and profile
-        identifiers. Some contributions or limited records may remain in
+        Deletion signs you out everywhere and removes or de-identifies your
+        personal information: your email, username, phone, name, bio, photo
+        (including the stored file), address, date of birth, gender, country,
+        home location and interests, your devices and notification settings,
+        connections and friend requests, Hub memberships and join requests,
+        your business showcase and employer profile. Your active listings and
+        upcoming events without bookings are taken down, and open jobs are
+        closed. If you still have upcoming events with bookings or upcoming
+        appointments, you&apos;ll be asked to cancel or finish them first so
+        nobody who paid is left without a refund. Some contributions or limited records may remain in
         anonymised or restricted form where needed to preserve conversations or
         transaction integrity, comply with law, process refunds, prevent fraud,
         enforce safety decisions or resolve disputes. Details and an alternative
@@ -561,12 +686,17 @@ export default function Privacy() {
         .
       </p>
 
-      <h2>If you are outside Australia</h2>
+      <h2>Using Tivorah outside Australia</h2>
       <p>
-        Tivorah is designed for people in Australia and is operated from
-        Australia. If you use Tivorah from another country, the privacy laws of
-        that country may also apply. If the European Union or United Kingdom
-        General Data Protection Regulation applies to you, we rely on these
+        Tivorah is operated from Australia and handles personal information in
+        line with the Australian Privacy Principles. When you use Tivorah from
+        another country, the privacy laws of that country may also apply, such
+        as the EU and UK General Data Protection Regulation, Nigeria&apos;s Data
+        Protection Act 2023, Kenya&apos;s Data Protection Act 2019, Ghana&apos;s
+        Data Protection Act 2012, South Africa&apos;s Protection of Personal
+        Information Act, Canada&apos;s privacy laws and US state privacy laws. We
+        aim to meet the requirements that apply to you. If the European Union or
+        United Kingdom General Data Protection Regulation applies to you, we rely on these
         legal bases: performing our contract with you (to provide your account
         and the features you use), our legitimate interests (to keep Tivorah
         safe, prevent fraud and improve the service, balanced against your
@@ -575,11 +705,25 @@ export default function Privacy() {
         permissions, which you can withdraw at any time).
       </p>
       <p>
+        <strong>Features by country.</strong> You can use Tivorah from any
+        country and browse Hubs, events and listings in any country. Some
+        features, such as Tivorah ticketing and payments, are only available in
+        certain countries (currently Australia) while we prepare them
+        elsewhere. Where they are not available, organisers and sellers may give
+        you their own ticket link or ask you to message them. If you follow a
+        link to another website or pay someone outside Tivorah, that website or
+        person handles your information and payment under their own terms and
+        privacy practices, not this policy.
+      </p>
+      <p>
         Depending on the law that applies, you may have rights to access,
         correct, delete, restrict or object to the use of your information, to
         receive a copy in a portable format, and to complain to your local data
-        protection authority. We do not sell personal information or share it
-        for cross-context behavioural advertising. To use these rights, email{" "}
+        protection authority. If you live in a US state with a consumer privacy
+        law, you may also have the right to know what we collect and to opt out
+        of the sale or sharing of personal information; we do not sell personal
+        information or share it for cross-context behavioural advertising, so
+        there is nothing to opt out of. To use these rights, email{" "}
         <a href="mailto:privacy@tivorah.com">privacy@tivorah.com</a>. We will
         respond within the time the applicable law requires.
       </p>
@@ -599,8 +743,10 @@ export default function Privacy() {
       <h2>Changes and contact</h2>
       <p>
         We may update this policy to reflect product, provider or legal changes.
-        We will publish the revised date and provide additional notice where a
-        change materially affects how information is handled.
+        We will publish the revised date and provide additional notice, by
+        email, in the app or both, where a change materially affects how
+        information is handled. Where the law requires your consent for a new
+        use of your information, we will ask for it before that use begins.
       </p>
       <p>
         For privacy requests or complaints, contact{" "}

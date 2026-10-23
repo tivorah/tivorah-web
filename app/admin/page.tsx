@@ -6,6 +6,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import PricingManager from "./pricing-manager";
 import SellerFees from "./seller-fees";
 import PaymentCountries from "./payment-countries";
+import Compliance from "./compliance";
 import FeatureManager from "./feature-manager";
 import { Escalations } from "./escalations";
 import Image from "next/image";
@@ -40,6 +41,8 @@ const INVOLVEMENT_LABELS: Record<string, string> = {
 };
 type Dashboard = {
   totals: Record<string, number>;
+  /** Legal checklist items needing action (admin → Legal & compliance). */
+  compliance?: { actionNeeded: number } | null;
   involvement?: { tag: string; label: string; users: number }[];
   health: Record<string, string>;
 };
@@ -109,7 +112,8 @@ type Section =
   | "users"
   | "moderation"
   | "escalations"
-  | "notifications";
+  | "notifications"
+  | "compliance";
 
 type AdminResource = "dashboard" | "analytics" | "features" | "reports" | "broadcasts" | "deliveries" | "templates";
 /** What each tab shows. Tabs not listed (users, payments, escalations) load their own data. */
@@ -162,12 +166,17 @@ const sections: { id: Section; label: string; description: string }[] = [
     label: "Notifications",
     description: "Create templates and communicate with Tivorah members.",
   },
+  {
+    id: "compliance",
+    label: "Legal & compliance",
+    description: "Members by country and the legal tasks Tivorah must do.",
+  },
 ];
 /** The sidebar, in three groups (same pattern as the Business portal). */
 const sectionGroups: { label: string; ids: Section[] }[] = [
   { label: "Insights", ids: ["overview", "analytics"] },
   { label: "People & safety", ids: ["users", "moderation", "escalations"] },
-  { label: "Platform", ids: ["features", "payments", "notifications"] },
+  { label: "Platform", ids: ["features", "payments", "notifications", "compliance"] },
 ];
 const groupOf = (id: Section) => sectionGroups.find((group) => group.ids.includes(id))?.label ?? "Admin";
 /**
@@ -197,6 +206,12 @@ const staffRoles = new Set([
 const adminSessionExpiredEvent = "tivorah:admin-session-expired";
 function AdminIcon({ name }: { name: Section }) {
   const paths: Record<Section, React.ReactNode> = {
+    compliance: (
+      <>
+        <path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" />
+        <path d="m8.5 12 2.5 2.5 4.5-5" />
+      </>
+    ),
     overview: (
       <>
         <rect x="3" y="3" width="7" height="7" rx="2" />
@@ -1067,6 +1082,13 @@ export default function AdminPage() {
           )}
           {section === "overview" && (
             <div className="admin-overview">
+              {dashboard?.compliance?.actionNeeded ? (
+                <div className="compliance-alert" role="status">
+                  <strong>{dashboard.compliance.actionNeeded} legal {dashboard.compliance.actionNeeded === 1 ? "task needs" : "tasks need"} action</strong>
+                  <span>Registrations, representatives and launch checks Tivorah must complete.</span>
+                  <button type="button" onClick={() => goTo("compliance")}>Open Legal &amp; compliance</button>
+                </div>
+              ) : null}
               {!dashboard && dashboardBusy ? (
                 <section
                   className="metric-grid"
@@ -1272,6 +1294,7 @@ export default function AdminPage() {
           )}
           {section === "features" && <FeatureManager flags={features} loading={dashboardBusy} busy={featureBusy} update={updateFlag} history={featureHistory} toggleHistory={toggleHistory} />}
           {section === "payments" && <><PaymentCountries request={request} /><PricingManager request={request} /><SellerFees request={request} /></>}
+          {section === "compliance" && <Compliance request={request} />}
           {section === "users" && (
             <section className="panel user-directory" aria-busy={usersBusy}>
               <div className="directory-heading">

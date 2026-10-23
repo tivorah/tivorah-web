@@ -44,7 +44,11 @@ export const defaultServiceSettings: ServiceSettingsValue = {
   testimonials: [],
 };
 const serviceTimezones = ["Australia/Sydney", "Australia/Melbourne", "Australia/Brisbane", "Australia/Adelaide", "Australia/Perth", "Australia/Darwin", "Australia/Hobart", "Australia/Broken_Hill", "Australia/Lord_Howe", "Australia/Eucla"];
-export function serviceTimezoneForState(state?: string | null) {
+export function serviceTimezoneForState(state?: string | null, country?: string | null) {
+  // Outside Australia: the provider's own time zone, from their browser.
+  if (country && country.toUpperCase() !== "AU") {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; }
+  }
   return ({ ACT: "Australia/Sydney", NSW: "Australia/Sydney", VIC: "Australia/Melbourne", QLD: "Australia/Brisbane", SA: "Australia/Adelaide", WA: "Australia/Perth", NT: "Australia/Darwin", TAS: "Australia/Hobart" } as Record<string, string>)[state ?? ""] ?? "Australia/Sydney";
 }
 // Quarter-hour choices for opening hours, plus any existing value off that grid.
@@ -71,12 +75,14 @@ export function ServiceSettings({
   value,
   onChange,
   localityState,
+  localityCountry,
 }: {
   localityState?: string | null;
+  localityCountry?: string | null;
   value: ServiceSettingsValue;
   onChange: (v: ServiceSettingsValue) => void;
 }) {
-  const timezone = value.availabilityTimezone || serviceTimezoneForState(localityState);
+  const timezone = value.availabilityTimezone || serviceTimezoneForState(localityState, localityCountry);
   const zones = serviceTimezones.includes(timezone) ? serviceTimezones : [...serviceTimezones, timezone];
   const update = (patch: Partial<ServiceSettingsValue>) =>
     onChange({ ...value, ...patch });

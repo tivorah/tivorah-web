@@ -214,10 +214,19 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
       setBusy(false);
     }
   }
+  // Where Tivorah ticketing isn't available yet: the organiser's link, a message, or both.
+  const ticketContact = event.information?.ticketContact;
+  if (ticketContact === "message" || (ticketContact === "both" && !event.externalTicketUrl))
+    return (
+      <>
+        <p role="note">Tivorah tickets aren’t available in this region at the moment. Message the organiser to get tickets.</p>
+        <a className="event-primary" href="#enquiry">Message for tickets</a>
+      </>
+    );
   if (event.externalTicketUrl)
     return (
       <>
-        <p>The organiser sells tickets through another website.</p>
+        <p>{ticketContact ? "Tivorah tickets aren’t available in this region at the moment. The organiser sells tickets through their own website." : "The organiser sells tickets through another website."}</p>
         <a
           className="event-primary"
           href={event.externalTicketUrl}
@@ -225,6 +234,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
         >
           Continue to ticket website
         </a>
+        {ticketContact === "both" ? <a className="event-secondary" href="#enquiry">Or message the organiser</a> : null}
       </>
     );
   if (!packages.some((item) => item.available) && !groupAllowed && !event.hasAccessCodePackages)

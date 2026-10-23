@@ -13,6 +13,7 @@ import { useDiscovery } from "../../hooks/use-discovery";
 import { DiscoveryKind, sections } from "../../lib/api/discovery";
 import { DiscoveryCard } from "./card";
 import { useDiscoveryFeatures } from "./features";
+import { isAbroad } from "../../lib/api/places";
 export function DiscoveryBrowser({ kind }: { kind: DiscoveryKind }) {
   const { enabled, loading, error, retry } = useDiscoveryFeatures();
   if (loading)
@@ -75,7 +76,9 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
     return () => window.clearTimeout(timer);
   }, [filters.query, filters.locality, query, locality, pathname, composing]);
   const pending = filters.query.trim() !== query || filters.locality.trim() !== locality;
-  const hasSearch = Boolean(query || locality || params.get('state') || params.get('latitude') || params.get('category') || params.get('radiusKm'));
+  // Suburb search is Australian; another country shows that whole country (chosen in the filters).
+  const abroad = isAbroad(params.get("country"));
+  const hasSearch = Boolean(query || locality || params.get('country') || params.get('state') || params.get('latitude') || params.get('category') || params.get('radiusKm'));
   const create = { events: { label: 'Create an event', href: '/business/create?type=event' }, items: { label: 'Sell an item', href: '/business/create?type=item' }, services: { label: 'Offer a service', href: '/business/create?type=service' } } as const;
   return (
     <>
@@ -91,7 +94,7 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
             placeholder={`Search ${sections[kind].label.toLowerCase()}`}
           />
         </label>
-        <LocationSearch value={locationInput} onChange={value => {
+        {abroad ? null : <LocationSearch value={locationInput} onChange={value => {
           setLocationInput(value);
           if (value.trim()) return;
           store.setState({ locality: "" });
@@ -107,7 +110,7 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
             next.set("latitude", String(place.latitude)); next.set("longitude", String(place.longitude)); next.set("radiusKm", "10");
           } else ["latitude", "longitude", "radiusKm"].forEach(key => next.delete(key));
           window.history.replaceState(null, "", `${pathname}?${next}`);
-        }} />
+        }} />}
       </form>
       <DiscoveryFilters kind={kind} />
       <div className="discover-results-heading">
