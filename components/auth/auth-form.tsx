@@ -12,6 +12,8 @@ import { SocialSignIn } from "./social-signin";
 import { PasswordInput } from "../ui/password-input";
 import { DateField } from "../ui/date-field";
 import { birthDateProps } from "./birth-date";
+import { AgeRestricted } from "./age-restricted";
+import { activeAgeBlock, blockUnderage, isUnderage } from "../../lib/age-gate";
 import { PasswordStrength, passwordMeetsRules } from "./password-strength";
 import { passwordHint } from "../../lib/password-policy";
 import { Turnstile } from "./turnstile";
@@ -77,6 +79,8 @@ export function AuthForm({
   const [birthDate, setBirthDate] = useState("");
   const birthRules = useMemo(() => birthDateProps(), []);
   const underage = !!birthDate && birthRules.validate(birthDate) !== "";
+  const [ageBlocked, setAgeBlocked] = useState(false);
+  useEffect(() => { if (mode === "signup" && activeAgeBlock()) setAgeBlocked(true); }, [mode]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   // An account that still needs verifying: ask before sending a code (same as the app's sheet).
@@ -302,6 +306,15 @@ export function AuthForm({
     mode === "verify" ||
     mode === "two-factor" ||
     (mode === "recover" && codeSent);
+  // 18+ only: once an under-18 birth date is entered, sign-up stays closed in this browser (and for
+  // that email) until they turn 18.
+  if (mode === "signup" && ageBlocked)
+    return (
+      <div className="auth-layout auth-layout-signup">
+        <div className="auth-brand"><BrandLogo priority /></div>
+        <section className="product-form auth-form"><AgeRestricted /></section>
+      </div>
+    );
   return (
     <div className={`auth-layout${mode === "signup" ? " auth-layout-signup" : ""}`}>
     <div className="auth-brand"><BrandLogo priority /></div>
@@ -442,7 +455,11 @@ export function AuthForm({
           <>
             <label>
               Date of birth
-              <DateField name="birthDate" required {...birthRules} onChange={(value) => { setBirthDate(value); if (value && birthRules.validate(value)) setTermsAccepted(false); }} />
+              <DateField name="birthDate" required {...birthRules} onChange={(value) => {
+                setBirthDate(value);
+                if (value && birthRules.validate(value)) setTermsAccepted(false);
+                if (isUnderage(value)) { setAgeBlocked(true); void blockUnderage(value, email); }
+              }} />
             </label>
             <label className={`product-checkbox${underage ? " is-disabled" : ""}`}>
               <input name="terms" type="checkbox" required checked={termsAccepted && !underage} disabled={underage || busy} onChange={(event) => setTermsAccepted(event.target.checked)} />

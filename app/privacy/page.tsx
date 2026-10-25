@@ -792,7 +792,20 @@ export default function Privacy() {
         permit children to create or keep accounts. We may ask for an age
         declaration and use proportionate age-assurance or anti-circumvention
         signals where required. We do not use age-assurance information for
-        advertising. Contact us if you believe a child has an account so we can
+        advertising. If someone gives a date of birth under 18 when signing
+        up, we stop the sign-up and, so they cannot simply try again with an
+        older year, we keep a one-way code made from their email address (not
+        the address itself) and the date they turn 18; their phone or browser
+        also remembers that date. We do not keep the date of birth they
+        entered, we use this only to stop under-18 sign-ups, and we delete it
+        once they turn 18. On supported phones, the app may also ask Apple or
+        Google whether the device belongs to someone under 18 (for example
+        where a parent has set this up); the answer stays on the phone, and if
+        it says under 18, sign-up is closed on that phone. Members can report an
+        account they believe belongs to someone under 18; we may pause it until
+        the person shows they are 18 or over. If you entered the wrong date of
+        birth by mistake, contact{" "}
+        <a href="mailto:support@tivorah.com">support@tivorah.com</a>. Contact us if you believe a child has an account so we can
         investigate, protect any necessary evidence and remove or restrict the
         account as appropriate. Our <Link href="/child-safety">Child Safety
         Standards</Link> explain how to report exploitation or abuse concerns.

@@ -37,7 +37,8 @@ export type DetailedReport = {
 
 const REASONS: Record<string, string> = {
   harassment: "Harassment or bullying", hate: "Hate speech", threat: "Threat or violence", scam: "Scam or fraud",
-  impersonation: "Impersonation", illegal: "Illegal activity", sexual: "Sexual content", spam: "Spam", other: "Something else",
+  impersonation: "Impersonation", illegal: "Illegal activity", sexual: "Sexual content", spam: "Spam",
+  underage: "May be under 18 (pause the account until they prove they are 18+)", other: "Something else",
 };
 const TARGETS: Record<string, string> = {
   user: "Account", community: "Hub", post: "Post", message: "Message", banter: "Banter post", thread: "Thread reply", event: "Event", job: "Job", product: "Listing",

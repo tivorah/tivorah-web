@@ -8,6 +8,8 @@ import { api } from "../../lib/api/client";
 import { LoadingState } from "../ui/loading-state";
 import { DateField } from "../ui/date-field";
 import { birthDateProps } from "./birth-date";
+import { AgeRestricted } from "./age-restricted";
+import { blockUnderage, isUnderage } from "../../lib/age-gate";
 export function CompleteSignIn() {
   const params = useSearchParams();
   const returnTo = safeReturnPath(params.get("returnTo"));
@@ -19,6 +21,7 @@ export function CompleteSignIn() {
   } = memberAuth.useSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [ageBlocked, setAgeBlocked] = useState(false);
   useEffect(() => {
     if (!isPending && !sessionError && data?.user.adultConfirmed && data.user.dateOfBirth && data.user.termAndCondition && data.user.privacyTerm)
       window.location.replace(returnTo);
@@ -50,6 +53,14 @@ export function CompleteSignIn() {
       setBusy(false);
     }
   }
+  // 18+ only: an under-18 birth date ends this sign-up (this browser and this email are refused
+  // until they turn 18) and signs the unfinished account out.
+  async function refuseUnderage(birthDate: string) {
+    setAgeBlocked(true);
+    await blockUnderage(birthDate, data?.user.email);
+    await memberAuth.signOut().catch(() => undefined);
+  }
+  if (ageBlocked) return <section className="product-form auth-form"><AgeRestricted /></section>;
   if (isPending || (data?.user.adultConfirmed && data.user.dateOfBirth && data.user.termAndCondition && data.user.privacyTerm && !sessionError))
     return <LoadingState label="Completing sign-in…" variant="form" />;
   if (sessionError)
@@ -87,7 +98,7 @@ export function CompleteSignIn() {
         </label>
         <label>
           Date of birth
-          <DateField name="dateOfBirth" required disabled={busy} {...birthDateProps()} />
+          <DateField name="dateOfBirth" required disabled={busy} {...birthDateProps()} onChange={(value) => { if (isUnderage(value)) void refuseUnderage(value); }} />
         </label>
         <label className="product-checkbox">
           <input type="checkbox" required disabled={busy} />
