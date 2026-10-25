@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 23 October 2026
+        <strong>Last updated:</strong> 26 October 2026
       </p>
 
       <p>
@@ -134,7 +134,13 @@ export default function Privacy() {
           access to provide ordinary nearby searches. The country or area you
           choose in search filters (for example, browsing Hubs, events or
           listings in another country) is used only to show those results and
-          does not change where your profile says you live.
+          does not change where your profile says you live. In Discover (Friends
+          &amp; people) we suggest people near you first, using the area saved on
+          your profile and, only if you have already allowed location access,
+          your device&apos;s approximate position rounded to about 1 km. We use that
+          position to order the suggestions and do not store it. Other members
+          see only the city or town and country on your profile, never your
+          distance from them, your postcode or your exact location.
         </li>
         <li>
           <strong>Device and technical information:</strong> IP address, device
@@ -183,6 +189,11 @@ export default function Privacy() {
         <li>
           personalise results and show relevant nearby content when location is
           enabled;
+        </li>
+        <li>
+          suggest people you may want to connect with in Discover, nearest
+          first, based on the area on your profile (and your approximate device
+          position when you have allowed location);
         </li>
         <li>
           issue free tickets, support event attendance and check-in, and manage
