@@ -35,7 +35,7 @@ export default function AccountDeletion() {
       <h2>Delete on the website</h2>
       <ol>
         <li>Sign in at tivorah.com.</li>
-        <li>Open <strong>Your account</strong>, then <strong>Settings</strong>.</li>
+        <li>Open <strong>Your account</strong>, then <strong>Profile &amp; security</strong>.</li>
         <li>Under <strong>Delete account</strong>, confirm your password and select <strong>Permanently delete my account</strong>.</li>
       </ol>
       <p>

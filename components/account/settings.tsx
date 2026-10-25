@@ -170,7 +170,7 @@ function Settings() {
         <h2>Privacy</h2>
         <AnalyticsPreference />
         <p className="hub-field-hint">
-          Read receipts and whether you appear in Discover are in the app under Settings → Privacy. See our <Link href="/privacy">Privacy Policy</Link> and <Link href="/cookies">Cookie Notice</Link>.
+          Read receipts and whether you appear in Discover are in the app under Profile → Settings &amp; privacy. See our <Link href="/privacy">Privacy Policy</Link> and <Link href="/cookies">Cookie Notice</Link>.
         </p>
       </section>
       <section className="product-form business-create">

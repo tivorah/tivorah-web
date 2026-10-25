@@ -87,9 +87,10 @@ export default function Privacy() {
           service areas, enquiries, offers, order records, seller information
           and information needed to arrange pickup, delivery or a service. If
           you share a listing to a Hub, members of that Hub can see it. If you
-          review a service you booked, your rating, review, first name and
-          profile photo are shown to signed-in members on that service, and the
-          provider can see your name and reply.
+          review a service you booked, your rating, review and first name are
+          shown publicly on that service&apos;s page (including to people who
+          are not signed in); in the app, signed-in members also see your
+          profile photo. The provider can see your name and reply.
         </li>
         <li>
           <strong>Shops and shop media:</strong> your shop name, web
@@ -147,8 +148,8 @@ export default function Privacy() {
           position to order the suggestions and do not store it. Other members
           see only the city or town and country on your profile, never your
           distance from them, your postcode or your exact location. You can stop
-          being suggested to others under <strong>Settings → Privacy → Show me in
-          Discover</strong>.
+          being suggested to others under <strong>Profile → Settings &amp; privacy →
+          Show me in Discover</strong>.
         </li>
         <li>
           <strong>Device and technical information:</strong> IP address, device
@@ -253,7 +254,7 @@ export default function Privacy() {
       </p>
       <p>
         <strong>Discover (Friends &amp; people).</strong> Unless you turn off{" "}
-        <strong>Show me in Discover</strong> in Settings → Privacy, signed-in
+        <strong>Show me in Discover</strong> (Profile → Settings &amp; privacy), signed-in
         members may see you suggested as someone to connect with, showing your
         name, username, profile photo, biography, the city or town and country
         on your profile, and up to three of your interests. Discover never shows
@@ -400,7 +401,7 @@ export default function Privacy() {
       </p>
       <p>
         You can stop or resume optional mobile product analytics under
-        <strong> Settings → Privacy → Usage analytics</strong>. This does not
+        <strong> Profile → Settings &amp; privacy → Usage analytics</strong>. This does not
         disable essential operational, fraud-prevention, security or transaction
         records.
       </p>
@@ -412,7 +413,7 @@ export default function Privacy() {
         never runs when your browser sends a Global Privacy Control or Do Not
         Track signal, and can be turned off in our{" "}
         <Link href="/cookies">Cookie Notice</Link> or under{" "}
-        <strong>Your account → Settings → Privacy</strong>.
+        <strong>Your account → Profile &amp; security → Privacy</strong>.
       </p>
       <p>
         <strong>Error monitoring.</strong> When something fails in the app, on
@@ -709,7 +710,7 @@ export default function Privacy() {
       <p>
         You can delete your account in the mobile app under
         <strong> Profile → Settings &amp; privacy → Delete account</strong>, or on the
-        website under <strong>Your account → Settings → Delete account</strong>.
+        website under <strong>Your account → Profile &amp; security → Delete account</strong>.
         Deletion signs you out everywhere and removes or de-identifies your
         personal information: your email, username, phone, name, bio, photo
         (including the stored file), address, date of birth, gender, country,
