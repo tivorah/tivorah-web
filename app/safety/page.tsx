@@ -9,7 +9,7 @@ export default function SafetyCentre() {
     <article className="content">
       <span className="eyebrow">Safety centre</span>
       <h1>Help when something goes wrong.</h1>
-      <p className="legal-meta"><strong>Last updated:</strong> 2 October 2026</p>
+      <p className="legal-meta"><strong>Last updated:</strong> 26 October 2026</p>
 
       <div className="legal-alert">
         <strong>Immediate danger</strong>
@@ -39,6 +39,7 @@ export default function SafetyCentre() {
       <ul>
         <li>credible threats, stalking, harassment, hate or targeted abuse;</li>
         <li>child sexual exploitation, grooming or any sexual content involving a person under 18;</li>
+        <li>an account that seems to belong to someone under 18 (choose <strong>May be under 18</strong> on a profile or <strong>Poster may be under 18</strong> on a post; Tivorah is for adults only);</li>
         <li>non-consensual intimate images, sexual extortion or image-based abuse;</li>
         <li>terrorism, extreme violence, trafficking, exploitation or encouragement of self-harm;</li>
         <li>scams, impersonation, fraudulent jobs, migration scams or unsafe transactions; and</li>

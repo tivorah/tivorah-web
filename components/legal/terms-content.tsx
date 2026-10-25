@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 23 October 2026
+        <strong>Last updated:</strong> 26 October 2026
       </p>
 
       <div className="legal-callout">
@@ -43,6 +43,20 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         restriction may be appealed through our support channel.
       </p>
       <p>
+        <strong>How we check age.</strong> When you sign up, you give your date
+        of birth and confirm you are 18 or older. If the date of birth is under
+        18, sign-up stops, and that email address and that phone or browser
+        cannot sign up again until the person turns 18. On supported phones,
+        the app may also ask Apple or Google whether the device belongs to
+        someone under 18, and sign-up is closed if it does. Members can report
+        an account they believe belongs to someone under 18. We may pause that
+        account until its owner shows they are 18 or over, and we will always
+        offer more than one way to do this; government ID will never be the
+        only option. If you entered the wrong date of birth by mistake, contact{" "}
+        <a href="mailto:support@tivorah.com">support@tivorah.com</a>. Our{" "}
+        <Link href="/privacy">Privacy Policy</Link> explains what these checks keep.
+      </p>
+      <p>
         You may not impersonate another person, create an account for someone
         without authority, evade a suspension, sell or transfer your account, or
         use automated account creation. One person should use one genuine member
@@ -67,6 +81,20 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         Terms but cannot authorise unlawful conduct or override Tivorah policy.
         Private or approval-based membership limits access; it does not
         guarantee confidentiality, suitability or safety.
+      </p>
+      <p>
+        <strong>Hubs run by Tivorah.</strong> Some Hubs are created and run by
+        the Tivorah team so new members have somewhere to start. They are
+        created by the <strong>@tivorah</strong> account and show the verified
+        badge. A verified badge on any Hub means it is run by Tivorah staff; it
+        is not an endorsement of a member&apos;s Hub, event or listing.
+      </p>
+      <p>
+        <strong>Welcome posts.</strong> When you create a Hub, it can open with
+        a welcome post from you. We suggest the words, based on your Hub&apos;s
+        name and interests; you can edit them or turn the post off before you
+        create the Hub. The post is published under your name and is your
+        content: you can edit or delete it later like any of your posts.
       </p>
       <p>
         Hub creators and moderators must apply rules responsibly, avoid

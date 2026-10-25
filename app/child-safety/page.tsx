@@ -10,7 +10,7 @@ export default function ChildSafetyStandards() {
       <span className="eyebrow">Safety</span>
       <h1>Child Safety Standards</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 16 September 2026
+        <strong>Last updated:</strong> 26 October 2026
       </p>
 
       <div className="legal-alert">
@@ -75,6 +75,26 @@ export default function ChildSafetyStandards() {
         under 18, we may restrict or remove it and take other protective action.
         Contact us if you believe a child has created an account.
       </p>
+      <p>
+        These steps work together to keep under-18s out:
+      </p>
+      <ul>
+        <li>
+          a date of birth under 18 stops sign-up, and that email address and
+          that phone or browser cannot try again until the person turns 18;
+        </li>
+        <li>
+          on supported phones, the app asks Apple or Google whether the device
+          belongs to someone under 18 (for example where a parent has set this
+          up) and closes sign-up if it does; and
+        </li>
+        <li>
+          members can report a profile (&ldquo;May be under 18&rdquo;) or a post
+          (&ldquo;Poster may be under 18&rdquo;); our team reviews these reports
+          and can pause the account until its owner shows they are 18 or over,
+          always with more than one way to do so.
+        </li>
+      </ul>
 
       <h2>Safety measures in the app</h2>
       <p>
