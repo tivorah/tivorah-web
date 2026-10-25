@@ -20,6 +20,16 @@ test('builds the same multipart fields the mobile app sends', () => {
   assert.equal(form.get('banner'), null);
 });
 
+test('sends the welcome post choice like the app', () => {
+  assert.equal(newHubFormData(hub()).get('postWelcome'), null);
+  const edited = newHubFormData(hub({ welcome: { enabled: true, message: '  Hi all!  ' } }));
+  assert.equal(edited.get('postWelcome'), 'true');
+  assert.equal(edited.get('welcomeMessage'), 'Hi all!');
+  const off = newHubFormData(hub({ welcome: { enabled: false, message: 'Hi all!' } }));
+  assert.equal(off.get('postWelcome'), 'false');
+  assert.equal(off.get('welcomeMessage'), null);
+});
+
 test('leaves an Australia-wide Hub without location fields', () => {
   const form = newHubFormData(hub({ locality: null }));
   assert.equal(form.get('suburb'), null);

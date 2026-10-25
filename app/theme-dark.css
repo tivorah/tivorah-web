@@ -5169,6 +5169,9 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
 :root[data-theme="dark"] .hub-interest-option.is-on span {
   color: #ffffff;
 }
+:root[data-theme="dark"] .create-hub .hub-welcome-toggle {
+  color: #c8bfcb;
+}
 
 /* app/admin/admin.css */
 :root[data-theme="dark"] .admin-dashboard {

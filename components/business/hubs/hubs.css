@@ -152,3 +152,7 @@
 .create-hub .hub-choice-cards > label > span { flex: 1; min-width: 0; }
 /* "Slogan (optional)": keep the note on the same line as the label. */
 .create-hub .hub-field > label, .create-hub .hub-custom-rule { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+/* Welcome post: the toggle row, then the message with "Use the suggestion" and the count. */
+.create-hub .hub-welcome-toggle { margin-bottom: 12px; color: #62546b; font-size: 14px; line-height: 1.5; }
+.create-hub .hub-welcome-hint { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 6px; font-size: 13px; }
+.create-hub .hub-welcome-reset { min-height: 44px; padding: 0; border: 0; background: none; color: #7446d8; font: inherit; font-weight: 700; cursor: pointer; }

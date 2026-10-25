@@ -6,7 +6,7 @@ import { AccountGate } from "../../account/gate";
 import { usePrivateResource } from "../../../hooks/use-private-resource";
 import { api, ApiError } from "../../../lib/api/client";
 import { LocalityField, type Locality } from "../locality-field";
-import { HUB_USERNAME_PATTERN, newHubErrors, newHubFormData, suggestHubUsername, type HubRule } from "./shared";
+import { HUB_USERNAME_PATTERN, HUB_WELCOME_MAX, newHubErrors, newHubFormData, suggestHubUsername, type HubRule } from "./shared";
 import { Sheet } from "../../ui/sheet";
 import "./hubs.css";
 
@@ -56,7 +56,25 @@ function CreateHubForm() {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
 
-  const draft = { name, username, slogan, bio, isPrivate, interestIds, ruleKeys, customRule, locality, countryCode: country.code, avatar, banner };
+  // The welcome post: suggested from the name and interests until the creator writes their own.
+  const [welcomeEnabled, setWelcomeEnabled] = useState(true);
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [welcomeEdited, setWelcomeEdited] = useState(false);
+  const [suggestedWelcome, setSuggestedWelcome] = useState("");
+  const interestKey = interestIds.join(",");
+  useEffect(() => {
+    if (!welcomeEnabled || welcomeEdited) return;
+    let live = true;
+    const timer = window.setTimeout(() => {
+      const query = new URLSearchParams({ name: name.trim(), interestIds: interestKey });
+      api<{ message: string }>(`/community/welcome-suggestion?${query}`)
+        .then((data) => { if (live && data?.message) { setSuggestedWelcome(data.message); setWelcomeMessage(data.message); } })
+        .catch(() => undefined);
+    }, 400);
+    return () => { live = false; window.clearTimeout(timer); };
+  }, [name, interestKey, welcomeEnabled, welcomeEdited]);
+
+  const draft = { name, username, slogan, bio, isPrivate, interestIds, ruleKeys, customRule, locality, countryCode: country.code, avatar, banner, welcome: { enabled: welcomeEnabled, message: welcomeMessage } };
   const errors = submitted ? newHubErrors(draft) : {};
 
   const toggle = (list: number[] | string[], value: number | string) =>
@@ -90,7 +108,7 @@ function CreateHubForm() {
     { id: "interests", label: "1 to 6 interests", section: "hub-step-interests", done: interestIds.length >= 1 && interestIds.length <= 6 },
   ];
   const doneCount = checklist.filter((item) => item.done).length;
-  const stages = [["hub-step-look", "Photos"], ["hub-step-basics", "Basics"], ["hub-step-access", "Who can join"], ["hub-step-interests", "Interests"], ["hub-step-place", "Location"], ["hub-step-rules", "Rules"]] as const;
+  const stages = [["hub-step-look", "Photos"], ["hub-step-basics", "Basics"], ["hub-step-access", "Who can join"], ["hub-step-interests", "Interests"], ["hub-step-place", "Location"], ["hub-step-rules", "Rules"], ["hub-step-welcome", "Welcome"]] as const;
   const jump = (id: string) => {
     const section = document.getElementById(id);
     section?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -185,6 +203,26 @@ function CreateHubForm() {
             ))}</div>
             <label className="hub-custom-rule" htmlFor="hub-custom-rule">Your own rule <span className="hub-optional">(optional)</span></label>
             <input id="hub-custom-rule" value={customRule} maxLength={200} onChange={(event) => setCustomRule(event.currentTarget.value)} />
+          </section>
+
+          <section id="hub-step-welcome" className="shop-step create-section">
+            <h2>{step(7)}Welcome post</h2>
+            <label className="product-checkbox hub-welcome-toggle">
+              <input type="checkbox" checked={welcomeEnabled} onChange={(event) => setWelcomeEnabled(event.currentTarget.checked)} />
+              <span>Your Hub opens with this post from you, so the first people to join have something to reply to.</span>
+            </label>
+            {welcomeEnabled ? <div className="hub-field">
+              <label htmlFor="hub-welcome">Welcome message</label>
+              <textarea id="hub-welcome" value={welcomeMessage} maxLength={HUB_WELCOME_MAX} rows={5} aria-describedby="hub-welcome-hint"
+                placeholder="Say hello and ask people to introduce themselves"
+                onChange={(event) => { setWelcomeMessage(event.currentTarget.value); setWelcomeEdited(true); }} />
+              <p className="hub-field-hint hub-welcome-hint" id="hub-welcome-hint">
+                {welcomeEdited && suggestedWelcome
+                  ? <button type="button" className="hub-welcome-reset" onClick={() => { setWelcomeMessage(suggestedWelcome); setWelcomeEdited(false); }}>Use the suggestion</button>
+                  : <span>Edit it however you like.</span>}
+                <span>{welcomeMessage.length}/{HUB_WELCOME_MAX}</span>
+              </p>
+            </div> : <p className="hub-field-hint">No welcome post. You can post one in Banter any time.</p>}
           </section>
           {failure ? <p className="hub-admin-error-text create-error-mobile" role="alert">{failure}</p> : null}
         </div>

@@ -102,7 +102,11 @@ export type NewHub = {
   countryCode?: string;
   avatar: Blob | null;
   banner: Blob | null;
+  /** The opening welcome post. Left out, the API posts its suggested welcome (like older apps). */
+  welcome?: { enabled: boolean; message: string };
 };
+
+export const HUB_WELCOME_MAX = 500;
 
 /** Problems that stop a Hub being created, keyed by field, in the order the form shows them. */
 export function newHubErrors(hub: NewHub): Partial<Record<"avatar" | "name" | "username" | "interests", string>> {
@@ -136,5 +140,10 @@ export function newHubFormData(hub: NewHub): FormData {
   }
   if (hub.avatar) form.set("avatar", hub.avatar);
   if (hub.banner) form.append("banner", hub.banner);
+  // Same fields as the app: off, or the creator's text (empty sends the API's suggestion).
+  if (hub.welcome) {
+    form.set("postWelcome", hub.welcome.enabled ? "true" : "false");
+    if (hub.welcome.enabled && hub.welcome.message.trim()) form.set("welcomeMessage", hub.welcome.message.trim());
+  }
   return form;
 }
