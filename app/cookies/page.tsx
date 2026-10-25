@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { pageMetadata } from "../../lib/site";
 import { LegalNavigation } from "../legal-navigation";
+import { AnalyticsPreference } from "../../components/analytics/analytics-preference";
 
 export const metadata = pageMetadata("Cookie Notice", "How Tivorah uses cookies and similar browser storage.", "/cookies");
 
@@ -11,6 +12,7 @@ const storage = [
   ["Checkout and booking progress", "Browser storage (this tab only)", "Remembers an in-progress ticket or appointment checkout so a refresh or retry does not charge you twice.", "Until the tab is closed or checkout ends"],
   ["Ticket access", "Browser storage (this tab only)", "Lets you view tickets you just bought without an account.", "Until the tab is closed"],
   ["Dismissed messages", "Browser storage (this tab only)", "Stops the same tip appearing again after you close it.", "Until the tab is closed"],
+  ["Usage analytics choice", "Browser storage", "Remembers that you turned usage analytics off, so it stays off. It contains no account details.", "Until you turn analytics back on or clear your browser storage"],
 ] as const;
 
 export default function Cookies() {
@@ -18,7 +20,7 @@ export default function Cookies() {
     <article className="content">
       <span className="eyebrow">Privacy</span>
       <h1>Cookie Notice</h1>
-      <p className="legal-meta"><strong>Last updated:</strong> 20 October 2026</p>
+      <p className="legal-meta"><strong>Last updated:</strong> 26 October 2026</p>
       <p>
         This notice explains the cookies and similar browser storage used on tivorah.com. The
         Tivorah mobile app uses device storage and secure storage instead of browser cookies;
@@ -28,9 +30,9 @@ export default function Cookies() {
       <div className="legal-callout">
         <strong>The short version</strong>
         <p>
-          We only use what is needed to make the website work and keep your account safe. We do
-          not use advertising cookies, cross-site tracking or behavioural analytics on the
-          website.
+          We only use cookies and browser storage that are needed to make the website work and
+          keep your account safe. We do not use advertising cookies or cross-site tracking. Our
+          optional usage analytics uses no cookies at all, and you can turn it off below.
         </p>
       </div>
 
@@ -46,6 +48,22 @@ export default function Cookies() {
         on/off setting. You can block or clear them in your browser, but you may be signed out or
         a checkout may not work.
       </p>
+
+      <h2>Usage analytics (optional)</h2>
+      <p>
+        To see whether pages load and work properly, the website can send PostHog (our analytics
+        provider, which may process information in the United States) the pages you view, how long
+        you stay, errors that happen, basic browser and device details and your IP address. When
+        you are signed in, this is linked to an internal Tivorah account number, never your name,
+        email or username. It never includes what you type, your messages, your payments or the
+        private codes in ticket, refund or transfer links, and we do not record your screen.
+      </p>
+      <p>
+        It uses no cookies and stores nothing on your device: it lasts only while the page is
+        open. It never runs if your browser sends a Global Privacy Control or Do Not Track signal.
+        You can turn it off or on here at any time:
+      </p>
+      <AnalyticsPreference />
 
       <h2>Other services on our pages</h2>
       <p>
@@ -65,9 +83,9 @@ export default function Cookies() {
 
       <h2>If our use changes</h2>
       <p>
-        We will update this notice before adding advertising, cross-site tracking or optional
-        website analytics. Where consent is required, those technologies will stay off until you
-        make a choice, and we will never describe optional tracking as “necessary”.
+        We will update this notice before adding advertising, cross-site tracking or any other
+        optional technology. Where consent is required, it will stay off until you make a choice,
+        and we will never describe optional tracking as “necessary”.
       </p>
 
       <h2>Contact</h2>

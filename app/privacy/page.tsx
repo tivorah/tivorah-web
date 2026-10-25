@@ -76,14 +76,20 @@ export default function Privacy() {
           conversation is not end-to-end encrypted; encrypted message
           envelopes and attachments for eligible one-to-one private chats;
           reports that a participant chooses to submit; and delivery, device,
-          key-management and technical call or signalling records. Camera and
-          microphone access occurs only with device permission.
+          key-management and technical call or signalling records. To connect a
+          voice or video call, your device and the other person&apos;s exchange
+          network addresses (IP addresses) through a connection service, which
+          may be provided by Google or relay the call through our own server.
+          Camera and microphone access occurs only with device permission.
         </li>
         <li>
           <strong>Marketplace and services:</strong> listings, images, prices,
           service areas, enquiries, offers, order records, seller information
           and information needed to arrange pickup, delivery or a service. If
-          you share a listing to a Hub, members of that Hub can see it.
+          you share a listing to a Hub, members of that Hub can see it. If you
+          review a service you booked, your rating, review, first name and
+          profile photo are shown to signed-in members on that service, and the
+          provider can see your name and reply.
         </li>
         <li>
           <strong>Shops and shop media:</strong> your shop name, web
@@ -140,7 +146,9 @@ export default function Privacy() {
           your device&apos;s approximate position rounded to about 1 km. We use that
           position to order the suggestions and do not store it. Other members
           see only the city or town and country on your profile, never your
-          distance from them, your postcode or your exact location.
+          distance from them, your postcode or your exact location. You can stop
+          being suggested to others under <strong>Settings → Privacy → Show me in
+          Discover</strong>.
         </li>
         <li>
           <strong>Device and technical information:</strong> IP address, device
@@ -242,6 +250,17 @@ export default function Privacy() {
         guaranteed to keep content confidential. Do not publish precise home
         addresses, financial information or anything you do not want the
         relevant audience to see.
+      </p>
+      <p>
+        <strong>Discover (Friends &amp; people).</strong> Unless you turn off{" "}
+        <strong>Show me in Discover</strong> in Settings → Privacy, signed-in
+        members may see you suggested as someone to connect with, showing your
+        name, username, profile photo, biography, the city or town and country
+        on your profile, and up to three of your interests. Discover never shows
+        interests that could reveal your religion, sexual orientation, health,
+        disability or political views, and never shows your distance, postcode
+        or exact location. People you have blocked, or who have blocked you, are
+        never suggested.
       </p>
       <p>
         <strong>Mentions, quotes and polls.</strong> When someone @mentions you
@@ -385,11 +404,31 @@ export default function Privacy() {
         disable essential operational, fraud-prevention, security or transaction
         records.
       </p>
+      <p>
+        <strong>On the website</strong>, optional PostHog usage analytics
+        records the pages you view, how long you stay, errors, basic browser
+        and device details and your IP address, linked to an internal account
+        number when you are signed in. It uses no cookies or browser storage,
+        never runs when your browser sends a Global Privacy Control or Do Not
+        Track signal, and can be turned off in our{" "}
+        <Link href="/cookies">Cookie Notice</Link> or under{" "}
+        <strong>Your account → Settings → Privacy</strong>.
+      </p>
+      <p>
+        <strong>Error monitoring.</strong> When something fails in the app, on
+        the website or on our servers, we send an error report to PostHog so we
+        can fix it. A report contains technical details of the error (such as
+        the screen or route, the type of request and the error message), your
+        app or browser version and, if you are signed in, an internal account
+        number. It is not designed to include your messages, posts, passwords or
+        payment details.
+      </p>
 
       <h2>Website cookies and mobile storage</h2>
       <p>
-        The website does not use advertising cookies, cross-site tracking or
-        behavioural analytics. When you sign in on the website, we use strictly
+        The website does not use advertising cookies or cross-site tracking,
+        and its optional usage analytics (described above) uses no cookies.
+        When you sign in on the website, we use strictly
         necessary, secure, HTTP-only cookies to keep you signed in and protect
         your session. The website also keeps a few small items in your browser
         (such as an in-progress checkout or a dismissed message) to make
@@ -457,10 +496,12 @@ export default function Privacy() {
           updates), Cloudflare and Cloudflare R2 (security, delivery and media
           storage), ImageKit (during storage migration or rollback), Google
           Cloud Vision and Amazon Rekognition (automated image-safety
-          screening), Google (sign-in and embedded maps), Apple (sign-in), Resend
+          screening), Google (sign-in, embedded maps and the connection service
+          that helps voice and video calls connect), Apple (sign-in), Resend
           (email), Stripe (payments and payouts), Expo (push notifications),
-          PostHog (mobile product analytics) and Grafana (operational logs), when
-          the relevant service is configured;
+          PostHog (app and website usage analytics and error monitoring),
+          Geoapify (address suggestions when you type an event venue) and
+          Grafana (operational logs), when the relevant service is configured;
         </li>
         <li>
           professional advisers, insurers, auditors or a successor involved in
@@ -509,7 +550,12 @@ export default function Privacy() {
         End-to-end encrypted private messages are never checked. Automated
         security and rate-limit checks may temporarily block sign-in attempts,
         sign-ups, messages or checkout requests that look abusive or
-        fraudulent. Age and eligibility checks use the date of birth and
+        fraudulent. When an image is published we keep a one-way fingerprint
+        of it (not the image itself) with the account that posted it, so we can
+        re-check published images when new known harmful material, such as
+        child sexual abuse material, is identified; these fingerprints are kept
+        for that safety purpose even after the image is removed. Age and
+        eligibility checks use the date of birth and
         confirmation you provide. Payment providers such as Stripe also run
         their own automated fraud and verification checks. You can ask for a
         person at Tivorah to review an automated decision that affects you by
@@ -548,7 +594,8 @@ export default function Privacy() {
           religious beliefs, sexual orientation, or health or disability (for
           example, faith, LGBTQIA+ or disability Hubs and interests). We use
           this only to provide the parts of Tivorah you choose, such as showing
-          you those Hubs. We will never use sensitive information to train AI
+          you those Hubs, and we never show these interests to other members in
+          Discover. We will never use sensitive information to train AI
           models without your express consent.
         </li>
         <li>

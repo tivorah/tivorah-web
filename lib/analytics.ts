@@ -1,4 +1,5 @@
 import posthog, { type CaptureResult } from "posthog-js";
+import { analyticsAllowed, rememberAnalyticsChoice } from "./analytics-choice";
 
 // PostHog analytics and error monitoring for the website. Same rules as the mobile app
 // (TIVORAH_ANALYTICS_PLAN.md): no autocapture of what people type or click, no session replay,
@@ -34,11 +35,14 @@ function scrub(event: CaptureResult | null): CaptureResult | null {
 }
 
 let started = false;
+/** Starts optional analytics, only when the visitor hasn't turned it off and their browser doesn't ask not to be tracked. */
 export function startAnalytics() {
-  if (!analyticsConfigured || started || typeof window === "undefined") return;
+  if (started || typeof window === "undefined" || !analyticsAllowed(analyticsConfigured)) return;
   started = true;
   posthog.init(key, {
     api_host: host,
+    // No cookies or browser storage: nothing is kept on the visitor's device between visits.
+    persistence: "memory",
     capture_pageview: "history_change",
     capture_pageleave: true,
     autocapture: false,
@@ -50,6 +54,18 @@ export function startAnalytics() {
     capture_exceptions: { capture_unhandled_errors: true, capture_unhandled_rejections: true, capture_console_errors: false },
     before_send: scrub,
   });
+}
+
+/** The visitor's "Usage analytics" switch: off stops and clears this page's analytics straight away. */
+export function setWebAnalyticsEnabled(enabled: boolean) {
+  rememberAnalyticsChoice(enabled);
+  if (!enabled && started) {
+    posthog.opt_out_capturing();
+    posthog.reset();
+  } else if (enabled) {
+    if (started) posthog.opt_in_capturing();
+    else startAnalytics();
+  }
 }
 
 export function identifyAccount(id: number) {

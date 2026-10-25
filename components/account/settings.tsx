@@ -9,6 +9,7 @@ import { usePrivateResource } from "../../hooks/use-private-resource";
 import { useMutation } from "../../hooks/use-mutation";
 import { memberAuth } from "../../lib/auth/client";
 import { api } from "../../lib/api/client";
+import { AnalyticsPreference } from "../analytics/analytics-preference";
 function Settings() {
   const { data, loading, error, retry } = usePrivateResource<{
     firstName: string;
@@ -163,6 +164,13 @@ function Settings() {
         </form>
         <p>
           <Link href="/auth/recover">Forgot your password?</Link>
+        </p>
+      </section>
+      <section className="product-form business-create">
+        <h2>Privacy</h2>
+        <AnalyticsPreference />
+        <p className="hub-field-hint">
+          Read receipts and whether you appear in Discover are in the app under Settings → Privacy. See our <Link href="/privacy">Privacy Policy</Link> and <Link href="/cookies">Cookie Notice</Link>.
         </p>
       </section>
       <section className="product-form business-create">
