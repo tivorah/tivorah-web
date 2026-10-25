@@ -1,4 +1,5 @@
 "use client";
+import { randomId } from "../../lib/random-id";
 /* Signed, private chat photo URLs must load directly; Next image optimization cannot cache them. */
 /* eslint-disable @next/next/no-img-element */
 
@@ -87,7 +88,7 @@ function Thread({ id, accountId }: { id: number; accountId: number }) {
   const [olderSkip, setOlderSkip] = useState(50);
   const [olderMore, setOlderMore] = useState<boolean | null>(null);
   const [olderBusy, setOlderBusy] = useState(false);
-  const messageId = useRef(crypto.randomUUID());
+  const messageId = useRef(randomId());
   const bottom = useRef<HTMLDivElement>(null);
   const current = conversation.data?.conversation;
   const latestMessages = messages.data;
@@ -100,7 +101,7 @@ function Thread({ id, accountId }: { id: number; accountId: number }) {
     const photo = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif", "image/heic", "image/heif"].includes(file.type);
     if (!photo) { setNotice("Choose a photo."); return; }
     if (file.size > 20 * 1024 * 1024) { setNotice("Photos must be 20 MB or smaller."); return; }
-    setPendingFile(file); setNotice(""); messageId.current = crypto.randomUUID();
+    setPendingFile(file); setNotice(""); messageId.current = randomId();
   }
   useEffect(() => {
     if (current?.category !== "enquiry" || !latestMessages) return;
@@ -127,7 +128,7 @@ function Thread({ id, accountId }: { id: number; accountId: number }) {
         const body = new FormData(); body.append("files", pendingFile); body.append("content", draft.trim()); body.append("clientMessageId", messageId.current);
         await api(`/chat/conversations/${id}/messages/media`, { method: "POST", body });
       } else await api(`/chat/conversations/${id}/messages`, { method: "POST", body: JSON.stringify({ content: draft.trim(), clientMessageId: messageId.current }) });
-      setDraft(""); setPendingFile(null); messageId.current = crypto.randomUUID(); messages.retry();
+      setDraft(""); setPendingFile(null); messageId.current = randomId(); messages.retry();
     } catch (cause) { setNotice(cause instanceof Error ? cause.message : "Could not send your message. Try again."); }
     finally { setBusy(false); }
   }
@@ -153,7 +154,7 @@ function Thread({ id, accountId }: { id: number; accountId: number }) {
     {messages.error ? <div role="alert" className="product-notice"><p>{messages.error}</p><button className="product-secondary" onClick={messages.retry}>Try again</button></div> : null}
     {(olderMore ?? messages.data?.pagination.isMoreData) ? <button className="product-secondary message-older" disabled={olderBusy} onClick={loadOlder}>{olderBusy ? "Loading…" : "Earlier messages"}</button> : null}
     <div className="message-thread" aria-label="Conversation messages" role="log" aria-live="polite" aria-relevant="additions text">{shown.map((item) => <article className={`message-bubble ${item.senderId === accountId ? "mine" : ""}`} key={item.id}>{item.content ? <p>{item.content}</p> : null}{item.attachments?.map((attachment, index) => { const url = attachment.url?.startsWith("https://") ? attachment.url : null; if (!url) return null; const photo = attachment.mimeType?.startsWith("image/") || attachment.type === "image"; const audio = attachment.mimeType?.startsWith("audio/") || attachment.type === "audio"; return photo ? <a key={index} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${attachment.originalName || "photo"}`}><img className="message-attachment-photo" src={url} alt={attachment.originalName || "Shared photo"} /></a> : audio ? <audio key={index} controls preload="none" src={url} aria-label={attachment.originalName || "Audio message"} /> : null; })}{!item.content && !item.attachments?.length ? <p>Attachment</p> : null}<time>{formatTime(item.createdAt)}</time></article>)}<div ref={bottom} /></div>
-    <form className="message-compose" onSubmit={send}><label htmlFor="reply-message">Reply to {name}</label>{pendingFile ? <div className="message-attachment-draft"><span>Photo: {pendingFile.name}</span><button type="button" onClick={() => setPendingFile(null)} disabled={busy} aria-label="Remove attachment">Remove</button></div> : null}<div className="message-compose-row"><input ref={photoInput} className="message-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/heif" onChange={chooseAttachment} aria-label="Choose a photo" /><button type="button" className="message-attach-button" onClick={() => photoInput.current?.click()} disabled={busy || !!messages.error || !messages.data} aria-label="Attach photo" title="Photo">＋</button><textarea id="reply-message" rows={2} maxLength={10000} value={draft} onChange={(event) => { setDraft(event.target.value); messageId.current = crypto.randomUUID(); }} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder="Write a message" /><button className="product-primary" disabled={(!draft.trim() && !pendingFile) || busy || !!messages.error || !messages.data}>{busy ? "Sending…" : "Send"}</button></div><span className="message-compose-hint">Add a photo · Enter to send</span></form>{notice ? <p className="product-error" role="alert">{notice}</p> : null}
+    <form className="message-compose" onSubmit={send}><label htmlFor="reply-message">Reply to {name}</label>{pendingFile ? <div className="message-attachment-draft"><span>Photo: {pendingFile.name}</span><button type="button" onClick={() => setPendingFile(null)} disabled={busy} aria-label="Remove attachment">Remove</button></div> : null}<div className="message-compose-row"><input ref={photoInput} className="message-file-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/heif" onChange={chooseAttachment} aria-label="Choose a photo" /><button type="button" className="message-attach-button" onClick={() => photoInput.current?.click()} disabled={busy || !!messages.error || !messages.data} aria-label="Attach photo" title="Photo">＋</button><textarea id="reply-message" rows={2} maxLength={10000} value={draft} onChange={(event) => { setDraft(event.target.value); messageId.current = randomId(); }} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder="Write a message" /><button className="product-primary" disabled={(!draft.trim() && !pendingFile) || busy || !!messages.error || !messages.data}>{busy ? "Sending…" : "Send"}</button></div><span className="message-compose-hint">Add a photo · Enter to send</span></form>{notice ? <p className="product-error" role="alert">{notice}</p> : null}
   </section>;
 }
 

@@ -172,14 +172,14 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         form part of these Terms and apply to each listing and enquiry.
       </p>
 
-      <h2>Shops and showcase media</h2>
+      <h2>Shops and shop media</h2>
       <p>
-        Members with at least one listing can publish a showcase page with a name,
+        Members with at least one listing can publish a shop page with a name,
         web address, introduction, photos, short videos and optional business
         details. A published shop is public, including to people who are not
-        signed in, and a showcase card may appear on your item, service and event
+        signed in, and a shop card may appear on your item, service and event
         pages if you allow it. You can take your shop offline at any time,
-        which hides the showcase page, showcase cards and showcase links until you publish
+        which hides the shop page, shop cards and shop links until you publish
         again.
       </p>
       <p>

@@ -17,13 +17,16 @@ import {
 import { ServiceBooking } from "./service-booking";
 import { ServiceGlance, ServicePolicy, ServiceRating, ServiceReviews, ServiceTestimonials } from "./service-highlights";
 import { BackLink } from "../ui/back-link";
-import { ShowcaseCard } from "../business/showcase/showcase-card";
+import { ShopCard } from "../business/shop/shop-card";
 import { AppHandoff } from "./app-handoff";
 import { Enquiry } from "./enquiry";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { pageMetadata } from "../../lib/site";
 import { JsonLd, absoluteUrl, summary } from "../../lib/seo";
+import { ItemGlance, ItemOrderRequest } from "./item-highlights";
+import { conditionLabel } from "../../lib/condition-label";
+import { asksCondition } from "../business/listing-kinds";
 
 type DetailKind = Exclude<DiscoveryKind, "events">;
 // Shared by generateMetadata and the page so the item is fetched once per request.
@@ -91,8 +94,11 @@ export async function DiscoveryDetail({
   return (
     <div className="product-page page-shell">
       {structured}
-      <BackLink className="product-secondary" fallback={sections[kind].path} />
-      <OwnerManage ownerUsername={item.sellerUsername} href={`/business/listings/${item.id}`} label={kind === "items" ? "Manage item" : "Manage service"} />
+      {/* Back on the left, Manage (for the seller) on the right: one row, like an app's top bar. */}
+      <div className="detail-topbar">
+        <BackLink className="product-secondary" fallback={sections[kind].path} />
+        <OwnerManage ownerUsername={item.sellerUsername} href={`/business/listings/${item.id}`} label={kind === "items" ? "Manage item" : "Manage service"} />
+      </div>
       <article className={`product-detail product-detail-${kind}`}>
         {/* Same photo header as event pages (components/discovery/media-gallery.tsx). */}
         {photos.length ? <MediaGallery photos={photos} title={item.title} /> : (
@@ -106,7 +112,7 @@ export async function DiscoveryDetail({
             {item.category || sections[kind].label}
           </p>
           <h1>{item.title}</h1>
-          {kind === "services" ? <ServiceRating item={item} /> : null}
+          {kind === "services" || kind === "items" ? <ServiceRating item={item} /> : null}
           {item.priceCents != null ? (
             <p className="product-detail-price">
               {item.priceType === "quote"
@@ -116,21 +122,24 @@ export async function DiscoveryDetail({
           ) : null}
           <div className="product-detail-facts">
             <div><span>Location</span><strong>{[item.locality, item.state].filter(Boolean).join(", ") || "Australia"}</strong></div>
-            {item.condition && kind === "items" ? (
-              <div><span>Condition</span><strong>{item.condition.replaceAll("_", " ")}</strong></div>
+            {/* Food is sold new: no condition row (listing-kinds.ts). */}
+            {item.condition && kind === "items" && asksCondition(item.category ?? "") ? (
+              <div><span>Condition</span><strong>{conditionLabel(item.condition)}</strong></div>
             ) : null}
             {item.sellerUsername ? (
-              <div className="product-detail-seller"><span>{kind === "items" ? "Seller" : "Provider"}</span><strong>{item.businessName || item.ownerName || `@${item.sellerUsername}`}</strong>{item.sellerShopOnline !== false ? <Link href={`/showcase/${encodeURIComponent(item.sellerUsername)}`}>View showcase <span aria-hidden="true">→</span></Link> : null}</div>
+              <div className="product-detail-seller"><span>{kind === "items" ? "Seller" : "Provider"}</span><strong>{item.businessName || item.ownerName || `@${item.sellerUsername}`}</strong>{item.sellerShopOnline !== false ? <Link href={`/shops/${encodeURIComponent(item.sellerUsername)}`}>View shop <span aria-hidden="true">→</span></Link> : null}</div>
             ) : null}
           </div>
           {item.locality && item.serviceMode !== "online" ? <section className="event-location"><h2>Area</h2><LocationMap key={item.id} destination={[item.locality, item.state].filter(Boolean).join(", ")} approximate /></section> : null}
           <section className="product-detail-about"><h2>{kind === "items" ? "About this item" : "About this service"}</h2><p className="product-detail-description">{item.description || "More details will be added soon."}</p></section>
           {kind === "services" ? <ServiceGlance item={item} /> : null}
+          {kind === "items" ? <ItemGlance item={item} /> : null}
           {/* Booking gets the full main column so the calendar and times have room. */}
           {kind === "services" && item.bookingEnabled ? <div id="book" className="product-detail-booking-main"><ServiceBooking id={item.id} quote={item.priceType === "quote"} /></div> : null}
           {/* Pinned by the provider: videos and testimonials, then verified reviews and the policy. */}
           {(kind === "items" || kind === "services") ? <PublicOfferingVideos kind={kind === "items" ? "item" : "service"} id={item.id} /> : null}
           {kind === "services" ? <><ServiceTestimonials item={item} /><ServiceReviews item={item} /><ServicePolicy item={item} /></> : null}
+          {kind === "items" ? <ServiceReviews item={item} kind="items" /> : null}
           {item.guidelines?.length ? (
             <section>
               <h2>Before you join</h2>
@@ -143,8 +152,9 @@ export async function DiscoveryDetail({
           ) : null}
           </div>
           <aside className="product-detail-side" aria-label={kind === "items" ? "Contact seller" : "Book or enquire"}>
-          <Enquiry id={item.id} kind={kind} primary={kind === "items" || !item.bookingEnabled} />
-          {item.sellerUsername && item.sellerShopOnline !== false && (kind === "items" || kind === "services") ? <ShowcaseCard username={item.sellerUsername} surface={kind} /> : null}
+          {kind === "items" ? <ItemOrderRequest item={item} /> : null}
+          <Enquiry id={item.id} kind={kind} primary={(kind === "items" && item.orderMode !== "request") || (kind !== "items" && !item.bookingEnabled)} />
+          {item.sellerUsername && item.sellerShopOnline !== false && (kind === "items" || kind === "services") ? <ShopCard username={item.sellerUsername} surface={kind} /> : null}
           <p className="product-detail-report">
             <Link
               href={`/contact?${new URLSearchParams({ subject: `Report ${kind} ${id}` })}`}

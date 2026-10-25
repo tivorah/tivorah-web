@@ -1,4 +1,5 @@
 "use client";
+import { randomId } from "../../lib/random-id";
 import { FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { useAccount } from "../../hooks/use-account";
@@ -17,7 +18,7 @@ export function Enquiry({ id, kind, primary = kind === "items" }: { id: number; 
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
-  const messageId = useRef(crypto.randomUUID());
+  const messageId = useRef(randomId());
   const text = copy[kind];
   const path = text.path(id);
   if (loading) return <LoadingState label="Checking your account…" variant="compact" />;
@@ -36,5 +37,5 @@ export function Enquiry({ id, kind, primary = kind === "items" }: { id: number; 
       setBusy(false);
     }
   }
-  return <section id="enquiry" className="product-form product-detail-enquiry"><h2>{text.title}</h2><p>Your enquiry starts a conversation in your Tivorah account.</p><form onSubmit={send}><label htmlFor={`enquiry-${id}`}>Message</label><textarea id={`enquiry-${id}`} value={message} onChange={(event) => { setMessage(event.target.value); messageId.current = crypto.randomUUID(); }} maxLength={500} rows={3} placeholder="Write your question" required /><button className={primary ? "product-primary" : "product-secondary"} disabled={busy || !message.trim()}>{busy ? "Sending…" : "Send enquiry"}</button></form>{notice ? <p className="product-error" role="alert">{notice}</p> : null}</section>;
+  return <section id="enquiry" className="product-form product-detail-enquiry"><h2>{text.title}</h2><p>Your enquiry starts a conversation in your Tivorah account.</p><form onSubmit={send}><label htmlFor={`enquiry-${id}`}>Message</label><textarea id={`enquiry-${id}`} value={message} onChange={(event) => { setMessage(event.target.value); messageId.current = randomId(); }} maxLength={500} rows={3} placeholder="Write your question" required /><button className={primary ? "product-primary" : "product-secondary"} disabled={busy || !message.trim()}>{busy ? "Sending…" : "Send enquiry"}</button></form>{notice ? <p className="product-error" role="alert">{notice}</p> : null}</section>;
 }

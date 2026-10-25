@@ -15,6 +15,8 @@ test('map loads only after reveal and can be hidden again', async ({ page }) => 
   let mapRequests = 0;
   await page.route('https://www.google.com/maps**', route => { mapRequests++; return route.fulfill({ contentType: 'text/html', body: '<p>Map test response</p>' }); });
   await page.setViewportSize({ width: 390, height: 844 });
+  // The preview route is written while the dev server runs: wait until it serves it, not a 404.
+  await expect.poll(async () => (await page.request.get(`/${fixtureRoute}`)).status(), { timeout: 40000, intervals: [500, 1000, 2000] }).toBe(200);
   await page.goto(`/${fixtureRoute}`);
   const reveal = page.getByRole('button', { name: 'View map', exact: true });
   await expect(reveal).toBeVisible();

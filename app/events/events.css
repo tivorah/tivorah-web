@@ -62,13 +62,13 @@
 .event-detail-loading .event-loading-line { width: 90%; height: 17px; margin-bottom: 10px; }
 .event-detail-loading .event-loading-line.short { width: 55%; }
 .event-detail-loading .event-loading-map { width: 100%; height: 270px; margin-top: 18px; border-radius: 16px !important; }
-.event-detail-loading .event-loading-showcase { overflow: hidden; margin-top: 28px; border: 1px solid var(--line); border-radius: 24px; background: #fff; }
-.event-detail-loading .event-loading-showcase-cover { height: 72px; }
-.event-detail-loading .event-loading-showcase-body { display: grid; gap: 14px; padding: 0 20px 20px; }
-.event-detail-loading .event-loading-showcase-body > span { display: block; border-radius: 8px; }
-.event-detail-loading .event-loading-showcase-logo { width: 52px; height: 52px; margin-top: -22px; border: 3px solid #fff; border-radius: 14px !important; }
-.event-detail-loading .event-loading-showcase-gallery { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
-.event-detail-loading .event-loading-showcase-gallery span { aspect-ratio: 4 / 3; border-radius: 10px; }
+.event-detail-loading .event-loading-shop { overflow: hidden; margin-top: 28px; border: 1px solid var(--line); border-radius: 24px; background: #fff; }
+.event-detail-loading .event-loading-shop-cover { height: 72px; }
+.event-detail-loading .event-loading-shop-body { display: grid; gap: 14px; padding: 0 20px 20px; }
+.event-detail-loading .event-loading-shop-body > span { display: block; border-radius: 8px; }
+.event-detail-loading .event-loading-shop-logo { width: 52px; height: 52px; margin-top: -22px; border: 3px solid #fff; border-radius: 14px !important; }
+.event-detail-loading .event-loading-shop-gallery { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.event-detail-loading .event-loading-shop-gallery span { aspect-ratio: 4 / 3; border-radius: 10px; }
 .event-detail-loading .event-loading-booking { display: grid; align-content: start; gap: 14px; }
 .event-detail-loading .event-loading-booking .event-loading-section-title { margin-bottom: 10px; }
 .event-detail-loading .event-loading-booking .event-loading-label { margin-top: 8px; margin-bottom: 0; }

@@ -1,7 +1,7 @@
 "use client";
 
+import { BrandLogo } from "../components/brand-logo";
 import { useEffect, useId, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DiscoveryLinks } from "../components/discovery/features";
@@ -15,7 +15,7 @@ export function SiteHeader() {
   const accountLink = !!session;
   const active = path.startsWith("/events")
     ? "events"
-    : /^\/(shops?|showcase)(\/|$)/.test(path)
+    : /^\/(shops?|shop)(\/|$)/.test(path)
       ? "items"
       : path.startsWith("/services")
         ? "services"
@@ -73,14 +73,7 @@ export function SiteHeader() {
     >
       <div className="page-shell nav-inner">
         <Link className="brand" href="/" aria-label="Tivorah home">
-          <Image
-            src="/tivorah-logo.png"
-            alt="Tivorah"
-            width={708}
-            height={226}
-            sizes="(max-width: 600px) 116px, (max-width: 850px) 146px, 154px"
-            priority
-          />
+          <BrandLogo sizes="(max-width: 600px) 116px, (max-width: 850px) 146px, 154px" priority />
         </Link>
         <button
           ref={menuButton}

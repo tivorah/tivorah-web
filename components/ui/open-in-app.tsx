@@ -77,14 +77,14 @@ export function OpenInApp({ appPath, className, children = "Open in Tivorah" }: 
       <span>Get the app, then come back to this page and tap Open in Tivorah again.</span>
       <span className="open-in-app-actions">
         {store ? <a className="product-primary" href={store}>Get Tivorah</a> : <Link className="product-primary" href="/#updates">Get notified when the app launches</Link>}
-        <button type="button" className="showcase-link" onClick={() => setState("idle")}>Not now</button>
+        <button type="button" className="shop-link" onClick={() => setState("idle")}>Not now</button>
       </span>
     </span> : null}
     {state === "qr" ? <span id={panel} className="open-in-app-panel is-qr" role="dialog" aria-label="Open this page on your phone">
       <strong>Open this on your phone</strong>
       <span>Scan with your phone’s camera, then tap Open in Tivorah.</span>
       <BrandedQrCode value={typeof window !== "undefined" ? window.location.href.split("#")[0] : ""} size={168} ariaLabel="Scan to open this page on your phone" />
-      <button type="button" className="showcase-link open-in-app-close" onClick={() => setState("idle")}>Close</button>
+      <button type="button" className="shop-link open-in-app-close" onClick={() => setState("idle")}>Close</button>
     </span> : null}
   </span>;
 }

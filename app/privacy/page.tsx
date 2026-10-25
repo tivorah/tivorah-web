@@ -86,12 +86,12 @@ export default function Privacy() {
           you share a listing to a Hub, members of that Hub can see it.
         </li>
         <li>
-          <strong>Shops and showcase media:</strong> your showcase name, web
+          <strong>Shops and shop media:</strong> your shop name, web
           address, introduction, story, logo, cover image, photos, short videos,
           an optional introduction video with its captions and transcript, and
           optional details such as area, opening hours, service area, delivery
           and booking policies. A published shop is public and can be viewed by
-          people who are not signed in, and a showcase card can appear on your item,
+          people who are not signed in, and a shop card can appear on your item,
           service and event pages. Images are screened automatically and videos
           are reviewed by Tivorah before they appear publicly.
         </li>
@@ -657,7 +657,7 @@ export default function Privacy() {
         (including the stored file), address, date of birth, gender, country,
         home location and interests, your devices and notification settings,
         connections and friend requests, Hub memberships and join requests,
-        your business showcase and employer profile. Your active listings and
+        your business shop and employer profile. Your active listings and
         upcoming events without bookings are taken down, and open jobs are
         closed. If you still have upcoming events with bookings or upcoming
         appointments, you&apos;ll be asked to cancel or finish them first so

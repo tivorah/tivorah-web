@@ -1,0 +1,44 @@
+/*
+ * Controls that look the same everywhere on Tivorah, on web and in the app. Loaded last.
+ *
+ * Every on/off choice is a toggle (like the app and the shop screen's .shop-switch), never a bare
+ * checkbox. Drawn with backgrounds only (no pseudo-elements), so it works in every browser; the
+ * label around it stays the 44px tap target. .shop-switch keeps its own hidden input and track.
+ */
+input[type="checkbox"]:not(.shop-switch input) {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 46px !important;
+  min-width: 46px;
+  height: 28px !important;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle at center, #fff 0 10.5px, rgba(33, 29, 35, .16) 11px, transparent 12px) 0 0 / 28px 28px no-repeat, var(--toggle-off, #d9d0e1);
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background-position .16s ease, background-color .16s ease;
+}
+input[type="checkbox"]:not(.shop-switch input):checked { background-position: 18px 0; background-color: var(--toggle-on, #7446d8); }
+input[type="checkbox"]:not(.shop-switch input):disabled { opacity: .5; cursor: not-allowed; }
+input[type="checkbox"]:not(.shop-switch input):focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { input[type="checkbox"] { transition: none; } }
+
+/* A toggle row reads like the app: the label on the left, the toggle on the right. */
+label.product-checkbox { display: flex !important; flex-direction: row-reverse; align-items: center; justify-content: space-between; gap: 14px; min-height: 44px; }
+label.product-checkbox > :not(input) { flex: 1; min-width: 0; }
+
+/* The logo (components/brand-logo.tsx): artwork in light, mark + light wordmark in dark. */
+.brand-logo-dark { display: none; align-items: center; gap: 6px; }
+.brand-logo-dark img { width: auto; height: 1.9em; }
+.brand-logo-dark span { color: #f4f0f5; font-size: 1.45em; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+html[data-theme="dark"] .brand-logo-light { display: none !important; }
+html[data-theme="dark"] .brand-logo-dark { display: inline-flex; }
+.brand .brand-logo-dark { font-size: 16px; }
+.brand .brand-logo-dark img, .footer-logo.brand-logo-dark img { width: auto !important; max-width: none; height: 30px; }
+/* Groups of toggles (e.g. "How buyers get it") sit close together, one row each. */
+fieldset:has(> label.product-checkbox) { display: grid; gap: 2px; }

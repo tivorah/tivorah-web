@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-export function ShowcaseVideo({ src, title, captions, poster }: { src: string; title: string; captions?: string; poster?: string }) {
+export function ShopVideo({ src, title, captions, poster }: { src: string; title: string; captions?: string; poster?: string }) {
   const [trackUrl, setTrackUrl] = useState<string>();
   useEffect(() => {
     if (!captions) { setTrackUrl(undefined); return; }

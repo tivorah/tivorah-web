@@ -11,22 +11,22 @@ for (const width of [390, 768, 1440]) {
     await page.route("**/api/v1/web/account/bookings/23/payment", r => r.fulfill({ status: 503, json: { message: "Try again" } }));
     await page.goto("/account/bookings");
     await page.getByRole("button", { name: /Personal training session/ }).first().click();
-    await expect(page.getByRole("button", { name: "Continue payment" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Pay / })).toBeVisible();
     await expect(page.getByText("Times shown in Australia/Adelaide")).toBeVisible();
-    await expect(page.getByText(/65.00/)).toBeVisible();
+    await expect(page.getByText(/65.00/).first()).toBeVisible();
     await expect(page.getByText(/First session/)).toBeVisible();
     await page.locator(".detail-sheet[open]").evaluateAll(elements => Promise.all(elements.flatMap(element => element.getAnimations().map(animation => animation.finished))));
     await page.screenshot({ path: `/tmp/tivorah-service-customer-${width}.png`, fullPage: true });
-    await page.getByRole("button", { name: "Continue payment" }).click();
-    await expect(page.getByRole("status").filter({ hasText: "Please try again" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Continue payment" })).toBeEnabled();
+    await page.getByRole("button", { name: /^Pay / }).click();
+    await expect(page.getByRole("alert").filter({ hasText: /try again/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Pay / })).toBeEnabled();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     if (width <= 900) await page.getByRole("button", { name: "Close details" }).click();
     await page.goto("/account/bookings?role=provider");
     await expect(page.getByRole("button", { name: /Customer bookings/ })).toHaveAttribute("aria-pressed", "true");
     await page.getByRole("button", { name: /Personal training session/ }).first().click();
     await expect(page.getByText("Jamie Customer", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Continue payment" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Pay / })).toHaveCount(0);
     await page.locator(".detail-sheet[open]").evaluateAll(elements => Promise.all(elements.flatMap(element => element.getAnimations().map(animation => animation.finished))));
     await page.screenshot({ path: `/tmp/tivorah-service-provider-${width}.png`, fullPage: true });
     if (width === 1440) {

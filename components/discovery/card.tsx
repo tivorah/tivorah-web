@@ -12,9 +12,12 @@ import { discoveryByline } from "../../lib/byline";
 export function DiscoveryCard({
   item,
   kind,
+  priority = false,
 }: {
   item: DiscoveryItem;
   kind: DiscoveryKind;
+  /** The first row's photos load first, so the page shows sooner. */
+  priority?: boolean;
 }) {
   return (
     <Link className={`discover-card${kind === "hubs" ? " discover-card-hub" : ""}`} href={itemPath(kind, item.id)}>
@@ -24,7 +27,8 @@ export function DiscoveryCard({
             src={item.image}
             alt=""
             fill
-            sizes="(max-width: 600px) 100vw, (max-width: 950px) 50vw, 33vw"
+            sizes="(max-width: 950px) 50vw, 33vw"
+            priority={priority}
           />
         ) : (
           <span className="discover-image-fallback" aria-hidden="true">

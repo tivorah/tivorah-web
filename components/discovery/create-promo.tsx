@@ -8,6 +8,9 @@ import { useDiscoveryFeatures } from "./features";
 
 const storageKey = "tivorah-create-invitation-seen-v2";
 let seenWithoutStorage = false;
+// Set once someone taps, types, scrolls or focuses a field: the invitation must never interrupt them.
+let interacted = false;
+const busyTyping = () => !!document.activeElement?.matches("input, textarea, select, [contenteditable]");
 const options = [
   { kind: "items", label: "Sell an item", href: "/business/create?type=item" },
   { kind: "services", label: "Offer a service", href: "/business/create?type=service" },
@@ -20,14 +23,16 @@ export function CreatePromo({ kind }: { kind: Exclude<DiscoveryKind, "hubs"> }) 
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const restoreFocus = useRef<HTMLElement | null>(null);
+  // True when someone tapped "Create on Tivorah" themselves: that always opens it.
+  const opening = useRef(false);
 
   useEffect(() => {
     if (!available || seenWithoutStorage) return;
     try { if (sessionStorage.getItem(storageKey)) return; } catch { /* Still show once when storage is unavailable. */ }
-    let interacted = false;
+    interacted = false;
     const cancel = () => { interacted = true; window.clearTimeout(timer); };
     const timer = window.setTimeout(() => {
-      if (interacted || document.querySelector("dialog[open]") || document.activeElement?.matches("input, textarea, select")) return;
+      if (interacted || document.querySelector("dialog[open]") || busyTyping()) return;
       seenWithoutStorage = true;
       try { sessionStorage.setItem(storageKey, "1"); } catch { /* Storage can be disabled. */ }
       setOpen(true);
@@ -35,13 +40,18 @@ export function CreatePromo({ kind }: { kind: Exclude<DiscoveryKind, "hubs"> }) 
     window.addEventListener("pointerdown", cancel, { once: true });
     window.addEventListener("keydown", cancel, { once: true });
     window.addEventListener("wheel", cancel, { once: true, passive: true });
-    return () => { window.clearTimeout(timer); window.removeEventListener("pointerdown", cancel); window.removeEventListener("keydown", cancel); window.removeEventListener("wheel", cancel); };
+    window.addEventListener("focusin", cancel, { once: true });
+    return () => { window.clearTimeout(timer); window.removeEventListener("pointerdown", cancel); window.removeEventListener("keydown", cancel); window.removeEventListener("wheel", cancel); window.removeEventListener("focusin", cancel); };
   }, [available]);
 
   useEffect(() => {
     if (!open) return;
     const element = dialog.current;
     if (!element) return;
+    // The timer opened it, but the page may have been touched since (the dialog opens a render
+    // later): never take focus from someone typing (it swallowed search keystrokes).
+    if (!opening.current && (interacted || busyTyping())) { setOpen(false); return; }
+    opening.current = false;
     restoreFocus.current = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     element.showModal();
@@ -55,6 +65,7 @@ export function CreatePromo({ kind }: { kind: Exclude<DiscoveryKind, "hubs"> }) 
 
   const close = () => setOpen(false);
   const show = () => {
+    opening.current = true;
     seenWithoutStorage = true;
     try { sessionStorage.setItem(storageKey, "1"); } catch { /* Storage can be disabled. */ }
     setOpen(true);

@@ -39,7 +39,7 @@ export default function AccountDeletion() {
         <li>Under <strong>Delete account</strong>, confirm your password and select <strong>Permanently delete my account</strong>.</li>
       </ol>
       <p>
-        Deleting your account also removes your showcase page. If you have upcoming events with
+        Deleting your account also removes your shop page. If you have upcoming events with
         bookings, or upcoming appointments (as a provider or a customer), cancel them or let them
         finish first, so anyone who paid is refunded under the refund policy and the Australian
         Consumer Law. You&apos;ll be reminded if you try to delete before then. Records we must keep
@@ -74,7 +74,7 @@ export default function AccountDeletion() {
         the stored file), address, date of birth, gender, country, home
         location and interests; your devices and notification settings; your
         connections and friend requests; your Hub memberships and join
-        requests; and your showcase and employer profile. Your active listings
+        requests; and your shop and employer profile. Your active listings
         and upcoming events without bookings are taken down, and your open jobs
         are closed. A Hub you created stays for its members.
       </p>

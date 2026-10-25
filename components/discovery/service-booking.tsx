@@ -1,4 +1,5 @@
 "use client";
+import { randomId } from "../../lib/random-id";
 import { LoadingState } from "../ui/loading-state";
 
 import Link from "next/link";
@@ -228,7 +229,7 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
         request.current =
           saved?.fingerprint === fingerprint
             ? saved
-            : { fingerprint, key: crypto.randomUUID() };
+            : { fingerprint, key: randomId() };
         try {
           sessionStorage.setItem(storageKey, JSON.stringify(request.current));
         } catch {

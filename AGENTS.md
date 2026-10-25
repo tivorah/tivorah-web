@@ -24,7 +24,8 @@ surfaces, authentication, or shared styling changes.
 
 `tivorah-web` is Tivorah's public marketing, trust, legal, waitlist/contact, Stripe
 Connect return, and staff administration application. It is a Next.js App Router
-project currently served on Railway. The public product domain is `https://tivorah.com`.
+project served by Coolify on our Contabo server(s) (committed `Dockerfile`, port 7456; Coolify's
+proxy provides HTTPS). The public product domain is `https://tivorah.com`.
 The repository retains its previous Netlify configuration; do not assume it controls
 the active deployment.
 
@@ -121,6 +122,22 @@ source documents.
 - Web interactive targets should normally be at least 40 by 40 CSS pixels and must
   satisfy WCAG 2.2 target-size requirements.
 
+## Phone feel, controls and dark theme
+
+- On phones the web must feel like the app (`app/mobile-app.css`, loaded after page styles):
+  compact 56px header, two-column discovery grid, 44px targets, no sideways scroll.
+- Every on/off choice is a toggle, never a bare checkbox: `app/controls.css` draws every
+  `input[type="checkbox"]` as the app's toggle (label left, toggle right). `.shop-switch` keeps its
+  own track. Don't style checkboxes elsewhere.
+- Dark theme: `<html data-theme="dark">`, set before paint by `lib/theme.ts` from `?theme=` (the app
+  passes its own theme when it opens a page) or the phone's setting. `app/theme-dark.css` is
+  GENERATED from every stylesheet by `scripts/build-dark-theme.mjs`: after changing any CSS run
+  `npm run theme:dark` (a unit test fails if it's stale). Don't edit it by hand; adjust the mapping
+  in the script. `app/controls.css` themes itself with CSS variables and isn't converted.
+- The logo is `components/brand-logo.tsx` (artwork in light, mark + light wordmark in dark).
+- `crypto.randomUUID` is missing on plain-http pages (the LAN dev site on a phone): use
+  `randomId()` from `lib/random-id.ts`.
+
 ## Legal and safety content
 
 Legal pages protect users and Tivorah, but they are not a substitute for product
@@ -196,8 +213,10 @@ The API contract is `../tivorah-api/docs/api-conventions.md`.
 
 ## Hosting and legacy Netlify configuration
 
-Railway is the current host. Verify its build/start settings before diagnosing
-hosting issues; do not change Railway settings without authorisation.
+Coolify on our Contabo server(s) is the host: it builds the committed `Dockerfile` (Node 22,
+`next start` on port 7456) behind its HTTPS proxy. `NEXT_PUBLIC_*` values are baked into the
+build, so set them as Coolify "Build Variables". Verify the Coolify build/start settings before
+diagnosing hosting issues; do not change them without authorisation.
 
 For the previous Netlify deployment, `netlify.toml` uses the Netlify
 Next.js plugin. Do not add a generic single-page-app redirect to `index.html`; Next.js
@@ -291,7 +310,7 @@ For a normal web change:
 
 - `lib/site.ts` centralizes public metadata, canonical origin and social preview defaults.
   Use `pageMetadata` for public pages. Private account/transaction routes stay noindex.
-- Set server-only `SITE_NOINDEX=true` in Railway preview/staging environments.
+- Set server-only `SITE_NOINDEX=true` in preview/staging deployments (Coolify preview domains on `sslip.io` are treated as previews too).
 - Root not-found, error, global-error and loading boundaries reuse the public shell.
 - Contact, waitlist and unsubscribe use the Tivorah API, not legacy Netlify Forms.
   Contact delivery uses the API's existing configured email sender; failed delivery must
@@ -344,7 +363,11 @@ For a normal web change:
   during refreshes; reduced-motion users receive static placeholders.
 - Account tickets reuse the event-pass CSS and ticket image exporter. Ticket
   mutations require server-confirmed management permission and recoverable forms.
-- Showcase video uses private review, a transcript and timed WebVTT captions.
+- **Create layout:** Sell an item, Offer a service, Create an event, Create a Hub and Your shop share one layout (`create-shell`: numbered steps, sections, a live summary with checklist; phones get the `create-mobile-bar`, while the shop editor keeps its own sticky save bar). Your shop sits in the Create group of the business sidebar.
+- **Item or service (agreed product rule):** an item is something people BUY, including food and ready-made dishes (ready or delivered in a set time); no Condition question for `Food & groceries`. A service is something you DO or that's BOOKED FOR LATER (appointments, lessons, catering or a private chef for a date). A food shop's Menu is its Items section. Wording per shop type lives in `components/business/listing-kinds.ts` (mobile: `utils/listingKinds.ts`).
+- `components/ui/sheet.tsx` renders nothing on the server and the first browser render (`useSyncExternalStore`), so sheets never cause hydration mismatches.
+- Shop video uses private review. The editor no longer asks for a transcript or WebVTT captions; ones already saved are kept and still shown with the video.
+- Business pages are **shops**: editor `/business/shop`, public page `/shops/<name>` (`/shop` is the marketplace). `/showcase/*` and `/business/showcase*` redirect (next.config.mjs). The editor's "Your business" step applies a template from `components/business/shop/templates.ts` (section order, hidden sections, section names, prompts) and an accent colour; the public page uses `sectionTitles` and `--shop-accent`.
   Public asset responses must never contain moderation notes or private paths.
 - `npm run test:e2e` runs Playwright against an already-running localhost:7456 web
   server. It does not start servers. API responses are mocked; passing tests do

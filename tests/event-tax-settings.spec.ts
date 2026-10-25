@@ -8,7 +8,8 @@ test('organiser tax settings preserve input after failure, save a declaration, a
   let failed = false;
   await page.route('**/api/v1/payments/event-tax-profile', route => {
     if (route.request().method() === 'GET') return route.fulfill({ json: { data: { profile, suggestedLegalName: profile ? null : 'Stripe Legal Seller' } } });
-    if (!failed) { failed = true; return route.fulfill({ status: 503, json: { status: false, message: 'Could not save. Try again.' } }); }
+    // 500, not 503: the web client retries temporary errors (408/429/502/503/504) by itself.
+    if (!failed) { failed = true; return route.fulfill({ status: 500, json: { status: false, message: 'Could not save. Try again.' } }); }
     const input = route.request().postDataJSON();
     expect(input).toEqual({ legalName: 'Example Seller', abn: '51 824 753 556', gstRegistered: true, declarationAccepted: true, declarationVersion: '1.1' });
     profile = { ...input, declaredAt: '2026-10-06T00:00:00Z' };
@@ -31,7 +32,7 @@ test('organiser tax settings preserve input after failure, save a declaration, a
   await expect(settings.getByLabel('Seller’s legal name')).toHaveValue('Example Seller');
   await expect(settings.getByRole('checkbox')).toBeChecked();
   await settings.getByRole('button', { name: 'Save tax details' }).click();
-  await expect(settings.getByRole('alert')).toContainText('Please try again');
+  await expect(settings.getByRole('alert')).toContainText(/try again/i);
   await expect(settings.getByLabel('Seller’s legal name')).toHaveValue('Example Seller');
   await settings.getByRole('button', { name: 'Save tax details' }).click();
   await expect(settings.getByRole('status')).toContainText('Tax details saved');

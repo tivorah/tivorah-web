@@ -57,8 +57,8 @@ function EnabledBrowser({ kind }: { kind: DiscoveryKind }) {
   useEffect(() => { if (!loading) setLoadingMore(false); }, [loading]);
   const cards = useMemo(
     () =>
-      data?.items.map((item) => (
-        <DiscoveryCard key={item.id} item={item} kind={kind} />
+      data?.items.map((item, index) => (
+        <DiscoveryCard key={item.id} item={item} kind={kind} priority={index < 2} />
       )),
     [data?.items, kind],
   );

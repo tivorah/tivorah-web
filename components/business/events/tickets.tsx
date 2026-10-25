@@ -80,7 +80,7 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
     {mutation.error || formError ? <p className="product-error" role="alert">{formError || mutation.error}</p> : null}
     {mutation.notice ? <p className="product-notice" role="status">{mutation.notice}</p> : null}
 
-    {adding ? <div className="showcase-step event-package-editor">
+    {adding ? <div className="shop-step event-package-editor">
       <h3>New package</h3>
       <label className="event-package-preset">Start with a ticket type
         <SelectField label="Start with a ticket type" value={PACKAGE_PRESETS.some((preset) => preset.name === adding.name) ? adding.name : ""} onChange={(name) => {
@@ -90,7 +90,7 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
       </label>
       <PackageFields draft={adding} index={event.ticketTypes.length} onChange={setAdding} releaseOptions={releaseOptions()} />
       <div className="event-group-form-actions">
-        <button type="button" className="showcase-link" onClick={() => { setAdding(null); setFormError(""); }}>Cancel</button>
+        <button type="button" className="shop-link" onClick={() => { setAdding(null); setFormError(""); }}>Cancel</button>
         <button type="button" className="product-primary press-fx" disabled={mutation.busy} onClick={() => void saveNew()}>{mutation.busy ? "Adding…" : "Add package"}</button>
       </div>
     </div> : null}
@@ -102,7 +102,7 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
         if (editing?.id === ticket.id) return <li key={ticket.id} className="is-editing">
           <PackageFields draft={editing.draft} index={0} onChange={(draft) => setEditing({ id: ticket.id, draft })} lockPrice={ticket.sold > 0} releaseOptions={releaseOptions(ticket.id)} codeSaved={!!ticket.hasAccessCode} />
           <div className="event-group-form-actions">
-            <button type="button" className="showcase-link" onClick={() => { setEditing(null); setFormError(""); }}>Cancel</button>
+            <button type="button" className="shop-link" onClick={() => { setEditing(null); setFormError(""); }}>Cancel</button>
             <button type="button" className="product-primary press-fx" disabled={mutation.busy} onClick={() => void saveEdit(ticket)}>{mutation.busy ? "Saving…" : "Save package"}</button>
           </div>
         </li>;
@@ -119,12 +119,12 @@ export function EventTicketTypes({ event, refresh }: { event: ManagedEvent; refr
           </div>
           <strong className="event-package-price">{ticket.priceCents ? money(ticket.priceCents, ticket.currency) : "Free"}{ticket.kind === "group" && ticket.priceCents ? <small>{money(Math.round(ticket.priceCents / Math.max(1, ticket.groupSize ?? 1)), ticket.currency)} each</small> : null}</strong>
           <div className="event-package-actions">
-            <button type="button" className="showcase-link" onClick={() => { setEditing({ id: ticket.id, draft: toDraft(ticket) }); setAdding(null); setFormError(""); }}>Edit</button>
-            <button type="button" className="showcase-link" disabled={mutation.busy} onClick={() => void mutation.run(`/events/${event.id}/ticket-types/${ticket.id}`, "PATCH", { active: ticket.active === false }, ticket.active === false ? `${ticket.name} is on sale again.` : `${ticket.name} is paused. Nobody can buy it until you resume.`)}>{ticket.active === false ? "Resume sales" : "Pause sales"}</button>
+            <button type="button" className="shop-link" onClick={() => { setEditing({ id: ticket.id, draft: toDraft(ticket) }); setAdding(null); setFormError(""); }}>Edit</button>
+            <button type="button" className="shop-link" disabled={mutation.busy} onClick={() => void mutation.run(`/events/${event.id}/ticket-types/${ticket.id}`, "PATCH", { active: ticket.active === false }, ticket.active === false ? `${ticket.name} is on sale again.` : `${ticket.name} is paused. Nobody can buy it until you resume.`)}>{ticket.active === false ? "Resume sales" : "Pause sales"}</button>
           </div>
         </li>;
       })}
     </ul> : <div className="event-empty"><strong>No ticket packages yet</strong><p>Add a package so people can book this event.</p></div>}
-    <p className="showcase-hint">Paid packages need <Link href="/business/payouts">payout setup</Link>.</p>
+    <p className="shop-hint">Paid packages need <Link href="/business/payouts">payout setup</Link>.</p>
   </section>;
 }

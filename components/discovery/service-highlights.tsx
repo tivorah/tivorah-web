@@ -27,15 +27,18 @@ export function ServiceTestimonials({ item }: { item: DiscoveryItem }) {
   return <section className="service-testimonials"><h2>What clients say</h2><p className="service-section-note">Shared by the provider.</p><div>{item.testimonials.map((testimonial, index) => <figure key={index}><blockquote>“{testimonial.quote}”</blockquote><figcaption>— {testimonial.author}{testimonial.context ? `, ${testimonial.context}` : ""}</figcaption></figure>)}</div></section>;
 }
 
-export function ServiceReviews({ item }: { item: DiscoveryItem }) {
+export function ServiceReviews({ item, kind = "services" }: { item: DiscoveryItem; kind?: "services" | "items" }) {
   const reviews = item.reviews ?? [];
+  const words = kind === "items" ? { verified: "Verified order", reply: "Seller reply", none: "Only people who completed an order can leave a review." } : { verified: "Verified booking", reply: "Provider reply", none: "Only people who completed a booking can leave a review." };
+  // Nothing to show until someone reviews it (the rating line already says "no reviews yet").
+  if (!reviews.length) return null;
   return <section className="service-reviews" id="reviews"><h2>Reviews{item.rating?.count ? ` (${item.rating.count})` : ""}</h2>
     {reviews.length ? <ul>{reviews.map((review) => <li key={review.id}>
       <div className="service-review-head"><strong>{review.author.firstName}</strong><span aria-label={`${review.rating} out of 5 stars`}>{stars(review.rating)}</span></div>
-      <p className="service-review-date">Verified booking · {new Intl.DateTimeFormat("en-AU", { month: "long", year: "numeric" }).format(new Date(review.createdAt))}</p>
+      <p className="service-review-date">{words.verified} · {new Intl.DateTimeFormat("en-AU", { month: "long", year: "numeric" }).format(new Date(review.createdAt))}</p>
       {review.comment ? <p>{review.comment}</p> : null}
-      {review.providerReply ? <div className="service-review-reply"><span>Provider reply</span><p>{review.providerReply}</p></div> : null}
-    </li>)}</ul> : <p className="service-section-note">Only people who completed a booking can leave a review.</p>}
+      {review.providerReply ? <div className="service-review-reply"><span>{words.reply}</span><p>{review.providerReply}</p></div> : null}
+    </li>)}</ul> : <p className="service-section-note">{words.none}</p>}
   </section>;
 }
 

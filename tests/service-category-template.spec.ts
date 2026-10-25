@@ -43,7 +43,7 @@ test("the service category picker covers trades, care, tech and food, with searc
   await page.route("**/api/v1/market/service-templates", (r) => r.fulfill({ json: { data: { templates } } }));
   await page.goto("/business/create?type=service");
   await page.getByRole("combobox", { name: /Category/ }).first().click();
-  for (const name of ["Plumbing", "Carpentry", "Support workers", "Web development", "IT support & networking", "Restaurants & takeaway"]) {
+  for (const name of ["Plumbing", "Carpentry", "Support workers", "Web development", "IT support & networking", "Catering & baking"]) {
     await expect(page.getByRole("option", { name, exact: true })).toHaveCount(1);
   }
   await page.keyboard.type("plumb");

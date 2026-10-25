@@ -12,3 +12,5 @@
 .loading { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: #554a5e; }
 .note { font-size: 14px; line-height: 1.5; color: #665d6c; margin: 8px 0 0; }
 @media (min-width: 760px) { .map { height: 280px; } }
+/* Phones: a shorter preview until someone opens the map (then it grows to a usable size). */
+@media (max-width: 600px) { .map { height: 140px; } .map:has(iframe) { height: 240px; } }

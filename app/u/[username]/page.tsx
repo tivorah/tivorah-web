@@ -16,8 +16,8 @@ type PublicProfile = {
   country?: string | null;
   photo?: { url?: string } | null;
   memberSince?: string | null;
-  /** True when they have a showcase worth visiting (items, services or events). */
-  showcaseAvailable?: boolean;
+  /** True when they have a shop worth visiting (items, services or events). */
+  shopAvailable?: boolean;
 };
 
 type ProfileResult = { profile: PublicProfile | null; unavailable: boolean };
@@ -90,10 +90,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         {location ? <p className="profile-location"><span aria-hidden="true">⌖</span>{location}</p> : null}
         <p className="profile-bio">{profile.bio || "Connect through Tivorah and find the communities you share."}</p>
         {profile.memberSince ? <p className="profile-since">Member since {new Date(profile.memberSince).toLocaleDateString("en-AU", { month: "long", year: "numeric" })}</p> : null}
-        {/* The profile is about the person; what they sell, offer and host lives on their showcase. */}
-        {profile.showcaseAvailable ? <a className="profile-showcase" href={`/showcase/${encodeURIComponent(profile.username)}`}>
-          <span className="profile-showcase-icon" aria-hidden="true">▤</span>
-          <span><strong>{profile.firstName || `@${profile.username}`}’s showcase</strong><small>Items, services and events they offer</small></span>
+        {/* The profile is about the person; what they sell, offer and host lives on their shop. */}
+        {profile.shopAvailable ? <a className="profile-shop" href={`/shops/${encodeURIComponent(profile.username)}`}>
+          <span className="profile-shop-icon" aria-hidden="true">▤</span>
+          <span><strong>{profile.firstName || `@${profile.username}`}’s shop</strong><small>Items, services and events they offer</small></span>
           <span aria-hidden="true">›</span>
         </a> : null}
         <OpenAppButton username={profile.username} downloadUrl={downloadUrl} iosUrl={process.env.NEXT_PUBLIC_IOS_APP_URL} androidUrl={process.env.NEXT_PUBLIC_ANDROID_APP_URL} />

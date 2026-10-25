@@ -74,6 +74,15 @@ export function AccountDashboard() {
               </Link>
             </section>
             <section className="account-panel">
+              <h2>Item orders</h2>
+              <p>
+                Follow order requests you’ve sent to sellers, and review them once they’re completed.
+              </p>
+              <Link className="product-secondary" href="/account/item-orders">
+                View item orders
+              </Link>
+            </section>
+            <section className="account-panel">
               <h2>Messages</h2>
               <p>Continue conversations with sellers, providers and event organisers.</p>
               <Link className="product-secondary" href="/account/messages">View messages</Link>

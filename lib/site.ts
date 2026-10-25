@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 // Preview deployments must retain the public identity and stay out of search.
 const configuredUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://tivorah.com");
-export const siteOrigin = /\.(vercel\.app|netlify\.app|up\.railway\.app)$/.test(configuredUrl.hostname)
+export const siteOrigin = /\.(vercel\.app|netlify\.app|sslip\.io)$/.test(configuredUrl.hostname)
   ? "https://tivorah.com" : configuredUrl.origin;
 export const indexingDisabled = process.env.SITE_NOINDEX === "true"
   || process.env.VERCEL_ENV === "preview"

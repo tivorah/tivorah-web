@@ -106,3 +106,49 @@
   .hub-submit { width: 100%; }
   .hub-person-actions { width: 100%; }
 }
+
+/* Create a Hub: same layout as Sell an item / Create an event (create-shell + summary). */
+.create-hub .hub-form { max-width: none; }
+.create-hub .create-section { display: grid; gap: 14px; }
+.create-hub .create-section > h2 { display: flex; align-items: center; gap: 10px; margin: 0; }
+.hub-photo-row { display: grid; gap: 16px; }
+@media (min-width: 720px) { .hub-photo-row { grid-template-columns: 1fr 1fr; } }
+.hub-choice-cards { display: grid; gap: 10px; margin: 0; padding: 0; border: 0; }
+@media (min-width: 720px) { .hub-choice-cards { grid-template-columns: 1fr 1fr; } }
+.hub-choice-cards > label { display: flex; min-height: 64px; align-items: flex-start; gap: 10px; padding: 14px; border: 1px solid #ded6e5; border-radius: 14px; background: #fff; cursor: pointer; }
+.hub-choice-cards > label.is-selected { border-color: #6840ad; box-shadow: 0 0 0 2px #6840ad33; }
+.hub-choice-cards > label span { display: grid; gap: 2px; color: #62546b; font-size: 14px; }
+.hub-choice-cards > label strong { color: #241d29; font-size: 15px; }
+/* Interests: your picks, search and a short list. */
+.hub-interests-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.hub-interests-count { padding: 4px 10px; border-radius: 999px; background: #f1ebf8; color: #5d329d; font-size: 13px; font-weight: 700; }
+.hub-interests-count.is-full { background: #e8f6ee; color: #14734b; }
+.hub-interest-picked { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.hub-interest-picked button { display: inline-flex; min-height: 40px; align-items: center; gap: 8px; padding: 0 12px 0 14px; border: 0; border-radius: 999px; background: #211d23; color: #fff; font-size: 14px; font-weight: 650; cursor: pointer; }
+.hub-interest-picked button span { font-size: 12px; opacity: .8; }
+.hub-interest-search { width: 100%; min-height: 46px; padding: 0 14px; border: 1px solid #ded6e5; border-radius: 999px; font-size: 15px; }
+.hub-interest-search:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 1px; border-color: #7650b7; }
+.hub-interest-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.hub-interest-option { display: inline-flex; min-height: 40px; align-items: center; gap: 6px; padding: 0 14px; border: 1px solid #ded6e5; border-radius: 999px; background: #fff; color: #332a3b; font-size: 14px; font-weight: 600; cursor: pointer; }
+.hub-interest-option span { color: #6840ad; font-weight: 800; }
+.hub-interest-option:hover:not(:disabled):not(.is-on) { border-color: #b9a6cf; background: #faf8fc; }
+.hub-interest-option.is-on:hover { background: #3a3340; }
+.hub-interest-option:disabled { opacity: .45; cursor: not-allowed; }
+.hub-interest-option:focus-visible, .hub-interest-picked button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+/* Summary card. */
+.hub-summary-preview .create-preview-media img { width: 100%; height: 100%; object-fit: cover; }
+.hub-summary-identity { display: flex; align-items: center; gap: 10px; }
+.hub-summary-identity small { display: block; color: #62546b; font-size: 13px; }
+.hub-summary-avatar { display: grid; width: 40px; height: 40px; flex: 0 0 40px; place-items: center; overflow: hidden; border-radius: 12px; background: #f1ebf8; color: #6840ad; font-weight: 800; }
+.hub-summary-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hub-summary-interests { color: #5d329d !important; font-size: 13px; font-weight: 700; }
+.hub-interest-open { justify-self: start; }
+.hub-interest-sheet { display: grid; gap: 12px; }
+.hub-interest-option.is-on { border-color: #211d23; background: #211d23; color: #fff; }
+.hub-interest-option.is-on span { color: #fff; }
+/* Inside create sections, inputs are full-width boxes; keep radios and checkboxes their own size. */
+.create-hub .hub-choice-cards input[type="radio"],
+.create-hub .hub-rule-options input[type="checkbox"] { width: 20px; height: 20px; min-width: 20px; min-height: 0; flex: none; margin: 2px 0 0; padding: 0; border: 0; box-shadow: none; }
+.create-hub .hub-choice-cards > label > span { flex: 1; min-width: 0; }
+/* "Slogan (optional)": keep the note on the same line as the label. */
+.create-hub .hub-field > label, .create-hub .hub-custom-rule { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }

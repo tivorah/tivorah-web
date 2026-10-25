@@ -1,7 +1,7 @@
 "use client";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 type Asset = { id: number; url: string; mimeType: string };
-export function ShowcaseMediaReview({
+export function ShopMediaReview({
   request,
 }: {
   request: (path: string, init?: RequestInit) => Promise<{ assets?: Asset[] }>;
@@ -14,7 +14,7 @@ export function ShowcaseMediaReview({
     setLoading(true);
     setError("");
     try {
-      const result = await request("/api/v1/admin/showcase-media");
+      const result = await request("/api/v1/admin/shop-media");
       setAssets(result.assets || []);
     } catch (cause) {
       setError(
@@ -34,7 +34,7 @@ export function ShowcaseMediaReview({
     setBusy(id);
     setError("");
     try {
-      await request(`/api/v1/admin/showcase-media/${id}`, {
+      await request(`/api/v1/admin/shop-media/${id}`, {
         method: "PATCH",
         body: JSON.stringify({
           status: (e.nativeEvent as SubmitEvent).submitter?.getAttribute(

@@ -1,4 +1,5 @@
 "use client";
+import { randomId } from "../../lib/random-id";
 import { LoadingState } from "../ui/loading-state";
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -149,7 +150,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
         requestKey.current =
           saved?.fingerprint === fingerprint
             ? saved
-            : { fingerprint, value: crypto.randomUUID() };
+            : { fingerprint, value: randomId() };
         if (!guest) try {
           sessionStorage.setItem(
             storageKey,
@@ -332,7 +333,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
                 </strong>
               </div>
               <p className="event-help">Includes all mandatory booking fees.</p>
-              <details className="showcase-more">
+              <details className="shop-more">
                 <summary>Order summary</summary>
               {selected.map(line => <div key={line.ticketTypeId}><span>{line.quantity} × {line.ticket?.name ?? 'Ticket'}</span><span>{ticketMoney((line.ticket?.priceCents ?? 0) * line.quantity, ticket?.currency)}</span></div>)}
               {currentQuote.chargedTo === "buyer" &&

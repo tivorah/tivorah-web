@@ -1,4 +1,4 @@
-/* Provider menu editor (service-menu-editor.tsx). Rows reuse the drag-to-reorder styles in app/showcase-editor.css. */
+/* Provider menu editor (service-menu-editor.tsx). Rows reuse the drag-to-reorder styles in app/shop-editor.css. */
 .menu-editor { display: grid; gap: 12px; }
 .menu-editor-question { margin: 0 0 2px; font-size: 15px; font-weight: 750; }
 .menu-editor-list { gap: 6px; }

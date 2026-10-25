@@ -44,6 +44,8 @@ test("social callback requires server-confirmed age eligibility", async ({ page 
     return route.fulfill({ status: 400, json: { message: "You must be at least 18 years old to use Tivorah" } });
   });
   await page.goto("/auth/complete?returnTo=/account");
+  // A username is required now too ("Choose how people find you").
+  await page.getByLabel("Username").fill("member_test");
   // The calendar only offers adult dates, so pick one; the server still has the final say and
   // its refusal (mocked above) must be shown.
   await page.getByRole("button", { name: /^Date of birth/ }).click();

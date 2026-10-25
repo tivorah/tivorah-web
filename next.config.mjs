@@ -49,10 +49,14 @@ const nextConfig = {
       { protocol: "https", hostname: "randomuser.me" },
     ],
   },
-  // Showcases moved from /shops/<name> to /showcase/<name>; old links, QR codes and search results
-  // keep working.
+  // Shops live at /shops/<name> (the /shop tab is the marketplace). Links from when shops were
+  // called showcases (old links, QR codes, search results) keep working.
   async redirects() {
-    return [{ source: "/shops/:slug", destination: "/showcase/:slug", permanent: true }];
+    return [
+      { source: "/showcase/:slug", destination: "/shops/:slug", permanent: true },
+      { source: "/business/showcase", destination: "/business/shop", permanent: true },
+      { source: "/business/showcase/:path*", destination: "/business/shop/:path*", permanent: true },
+    ];
   },
   async headers() {
     return [

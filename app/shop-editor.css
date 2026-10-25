@@ -1,0 +1,207 @@
+/* Shop editor (/business/shop): brand header, drag-to-reorder lists, save bar.
+   Loaded after shop.css and refine.css, so these rules win. */
+
+/* ---------- Header ---------- */
+.shop-editor-head { display: grid; gap: 4px; margin: 0 0 14px; }
+.shop-editor-back { gap: 4px; justify-self: start; color: #563580; font-size: 15px; }
+.shop-editor-back span { font-size: 22px; line-height: 1; }
+.shop-editor-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.shop-editor-head h1 { margin: 0; font-size: 24px; letter-spacing: -.02em; }
+.shop-editor-head p { font-size: 15px; }
+.shop-editor-head-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.shop-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: #f1ebf8; color: #4f2f86; font: inherit; font-size: 14px; font-weight: 750; text-decoration: none; cursor: pointer; }
+.shop-chip:hover { background: #e8ddf6; }
+.shop-chip.is-quiet { background: transparent; box-shadow: inset 0 0 0 1px #ddd2e6; color: #5f5668; }
+.shop-chip:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-status.is-offline { background: #fdf0e6; color: #9a4b12; }
+
+/* ---------- Cards ---------- */
+.shop-step { gap: 12px; padding: 16px; border-color: #ece5f1; border-radius: 20px; box-shadow: none; }
+.shop-step label { gap: 5px; font-size: 13px; font-weight: 650; color: #4a3f52; }
+.shop-step h2 { font-size: 15px; line-height: 1.3; font-weight: 750; letter-spacing: 0; }
+.shop-step h2 span { font-size: 13px; }
+/* Slim fields that are still easy to type in: 44px tall, 16px text (no zoom on iPhone). Single-line
+   fields stay pills (form-shape.css, matching the app). */
+.shop-step input:not([type="checkbox"]):not([type="file"]), .shop-step textarea { min-height: 44px; padding: 10px 14px; border-color: #e1d8e8; border-radius: 12px; background: #fcfbfd; font-size: 16px; line-height: 1.4; }
+.shop-step textarea { resize: vertical; }
+.shop-step input:focus-visible, .shop-step textarea:focus-visible { outline: 2px solid #c8a7f5; outline-offset: 0; border-color: #7650b7; background: #fff; }
+.shop-hint { margin: 0; color: #6f6377; font-size: 13px; line-height: 1.45; }
+.shop-hint .shop-grip { width: 15px; height: 15px; vertical-align: -3px; }
+
+/* ---------- Brand: cover banner with the logo overlapping it ---------- */
+.shop-brand-step { gap: 0; padding: 0; overflow: hidden; }
+.shop-brand-cover { position: relative; aspect-ratio: 16 / 5; min-height: 112px; background: linear-gradient(120deg, #efe6fb, #fde9f3 55%, #fff1e6); }
+.shop-brand-cover img { object-fit: cover; }
+.shop-brand-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 0 16px; color: #7a6c83; font-size: 13px; font-weight: 650; text-align: center; }
+.shop-brand-pick { position: absolute; display: inline-flex !important; align-items: center; justify-content: center; gap: 6px !important; cursor: pointer; }
+.shop-brand-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.shop-brand-pick:focus-within { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-brand-pick.is-cover { right: 12px; bottom: 12px; min-height: 40px; padding: 0 14px; border-radius: 999px; background: rgba(23, 16, 30, .62); color: #fff; font-size: 13px !important; font-weight: 750 !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.shop-brand-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 0 20px; margin-top: -40px; }
+.shop-brand-logo { position: relative; display: grid; width: 92px; height: 92px; flex: none; place-items: center; border: 4px solid #fff; border-radius: 26px; background: #f4efff; color: #5d329d; font-size: 34px; font-weight: 800; box-shadow: 0 8px 20px rgba(41, 26, 54, .12); }
+.shop-brand-logo img { border-radius: 22px; object-fit: cover; }
+.shop-brand-pick.is-logo { right: -10px; bottom: -10px; width: 36px; height: 36px; border: 3px solid #fff; border-radius: 50%; background: #65409f; color: #fff; }
+.shop-brand-remove { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; padding-bottom: 4px; }
+.shop-brand-step > .shop-hint { padding: 14px 20px 18px; }
+
+/* ---------- Drag-to-reorder rows (gallery and layout) ---------- */
+.shop-sort-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.shop-sort-row { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 6px 4px 6px 0; border: 1px solid #ece5f1; border-radius: 16px; background: #fff; transition: transform .2s cubic-bezier(.2, .8, .2, 1), box-shadow .2s ease; }
+.shop-sort-row[data-dragging] { border-color: #cdb7ef; box-shadow: 0 14px 34px rgba(54, 30, 92, .2); transform-origin: center; }
+.shop-sort-handle { display: grid; width: 36px; min-height: 44px; flex: none; place-items: center; align-self: stretch; padding: 0; border: 0; border-radius: 12px; background: none; color: #a397ab; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.shop-sort-handle:hover { color: #65409f; background: #f6f1fb; }
+.shop-sort-handle:active, .shop-sort-row[data-dragging] .shop-sort-handle { cursor: grabbing; color: #65409f; }
+.shop-sort-handle:focus-visible { outline: 3px solid #c8a7f5; outline-offset: -2px; }
+.shop-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Gallery rows: thumbnail, title with tags, description and a quick action. */
+.shop-media-row { align-items: center; }
+.shop-media-row .shop-sort-handle { align-self: center; }
+.shop-media-thumb { position: relative; display: grid; width: 52px; height: 52px; flex: none; place-items: center; overflow: hidden; border-radius: 12px; background: #17131f; color: #fff; }
+.shop-media-thumb img, .shop-media-thumb video { width: 100%; height: 100%; object-fit: cover; }
+.shop-editor-media-play { position: absolute; display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, .9); color: #2b2133; font-size: 10px; padding-left: 2px; }
+.shop-media-copy { display: grid; flex: 1; min-width: 0; gap: 2px; }
+.shop-media-title { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; }
+.shop-media-copy strong { font-size: 14px; font-weight: 750; line-height: 1.3; }
+.shop-media-copy em { padding: 1px 7px; border-radius: 999px; background: #f1ebf8; color: #5d329d; font-size: 11px; font-style: normal; font-weight: 750; }
+.shop-step .shop-media-copy input:not([type="checkbox"]):not([type="file"]) { width: 100%; min-height: 34px; padding: 4px 0; border: 0; border-bottom: 1px dashed #ddd2e6; border-radius: 0; background: transparent; color: #4a3f52; font-size: 16px; }
+/* A borderless line, not a field: square so the underline stays straight. */
+.shop-step .shop-media-copy input:not([type="checkbox"]):not([type="file"]) { border-radius: 0 !important; }
+.shop-step .shop-media-copy input:focus-visible { outline: 0; border-bottom: 1px solid #7650b7; background: transparent; }
+.shop-row-action { min-height: 28px; padding: 0 2px; border: 0; background: none; color: #5d329d; font: inherit; font-size: 12px; font-weight: 750; cursor: pointer; }
+.shop-row-action:hover { text-decoration: underline; text-underline-offset: 3px; }
+.shop-row-remove { display: grid; width: 40px; height: 44px; flex: none; place-items: center; border: 0; border-radius: 50%; background: none; color: #7a6c83; cursor: pointer; }
+.shop-row-remove:hover { background: #fdeef2; color: #b4234d; }
+.shop-row-remove:focus-visible, .shop-row-action:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+
+/* Layout rows */
+.shop-order .shop-sort-row { padding-right: 12px; }
+.shop-order li > strong { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+.shop-order li > strong small { padding: 2px 8px; border-radius: 999px; background: #f1eef3; font-size: 12px; }
+.shop-order-show { min-height: 44px !important; padding: 0 !important; }
+
+/* Add photos or videos */
+.shop-add-media { position: relative; display: flex !important; align-items: center; gap: 12px !important; min-height: 60px; padding: 8px 12px; border: 1.5px dashed #d3c3e6; border-radius: 16px; background: #fbf8fe; color: #4f2f86; cursor: pointer; }
+.shop-add-media:hover { background: #f4eefc; border-color: #b99ae2; }
+.shop-add-media:focus-within { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-add-media input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.shop-add-media > span:first-of-type { display: grid; width: 40px; height: 40px; flex: none; place-items: center; border-radius: 12px; background: #65409f; color: #fff; font-size: 26px; font-weight: 500; line-height: 1; }
+.shop-add-media strong { display: block; font-size: 14px; }
+.shop-add-media small { display: block; color: #7a6c83; font-size: 12px; font-weight: 550; }
+.shop-upload-status { display: flex; align-items: center; gap: 10px; margin: 0; color: #4f2f86; font-size: 14px; font-weight: 650; }
+.shop-upload-spinner { width: 18px; height: 18px; flex: none; border: 2.5px solid #e2d6f3; border-top-color: #65409f; border-radius: 50%; animation: shop-spin .8s linear infinite; }
+@keyframes shop-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Save bar: compact, sitting flush on the phone bottom bar ---------- */
+.shop-actions { bottom: 0; margin: 0 -4px; padding: 10px 4px calc(10px + env(safe-area-inset-bottom)); background: rgba(251, 249, 245, .94); -webkit-backdrop-filter: saturate(1.5) blur(14px); backdrop-filter: saturate(1.5) blur(14px); }
+.shop-actions .product-primary, .shop-actions .product-secondary { min-height: 44px; padding: 0 18px; font-size: 15px; }
+
+/* More details: Safari can't lay out <details> itself as a grid, so the body wrapper does. */
+.shop-more { display: block; padding: 0; }
+.shop-more summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 10px 16px; list-style: none; cursor: pointer; }
+.shop-more summary::-webkit-details-marker { display: none; }
+.shop-more summary strong { display: block; font-size: 15px; font-weight: 750; }
+.shop-more summary small { display: block; color: #7a6c83; font-size: 12px; font-weight: 550; }
+.shop-more summary svg { flex: none; color: #7a6c83; transition: transform .2s ease; }
+.shop-more[open] summary svg { transform: rotate(180deg); }
+.shop-more summary:focus-visible { outline: 3px solid #c8a7f5; outline-offset: -3px; border-radius: 20px; }
+.shop-more-body { display: grid; gap: 12px; padding: 4px 16px 16px; }
+.shop-more-body .shop-video { gap: 8px; padding-top: 12px; }
+.shop-more-body .shop-video > strong { font-size: 14px; font-weight: 750; }
+.shop-more-body textarea[rows="1"] { min-height: 44px; }
+
+@media (max-width: 700px) {
+  .shop-form { gap: 10px; }
+  .shop-step { padding: 14px; border-radius: 18px; }
+  .shop-brand-step, .shop-more { padding: 0; }
+  .shop-brand-row { padding: 0 14px; }
+  .shop-brand-step > .shop-hint { padding: 10px 14px 14px; }
+  .shop-more summary { padding: 10px 14px; }
+  .shop-more-body { padding: 2px 14px 14px; }
+  /* One "‹ Your account" link is enough on phones; the bottom bar covers the rest. */
+  .shop-editor-back { display: none; }
+  .shop-actions { bottom: calc(var(--app-bottom-bar-offset) - 1px); margin: 0 -16px; padding: 8px 16px calc(8px + var(--app-bottom-safe)); border-top: 1px solid #ece5f1; }
+  .shop-actions > span { flex: 1; flex-wrap: nowrap; gap: 8px; }
+  .shop-actions .product-primary { flex: 1; justify-content: center; }
+}
+
+/* No extra space under the editor: the save bar ends flush on the bottom bar even at the end of
+   the page (the page and workspace otherwise reserve 110px + 96px there on phones). */
+@media (max-width: 700px) {
+  .product-page:has(.shop-form) { padding-bottom: 0; }
+}
+/* A fixed amount (not the live nav offset), so reaching the end of the page never changes its height. */
+@media (max-width: 600px) {
+  .business-workspace:has(.shop-form) { padding-bottom: calc(63px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shop-sort-row, .shop-more summary svg { transition: none; }
+  .shop-upload-spinner { animation-duration: 2s; }
+}
+
+/* Your business: kind of business (sets the template) and accent colour. */
+.shop-business-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 4px; }
+.shop-business-option { display: flex; min-height: 48px; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid #ded6e5; border-radius: 14px; background: #fff; color: #241d29; font-size: 14px; font-weight: 650; text-align: left; cursor: pointer; }
+.shop-business-option span { font-size: 20px; }
+.shop-business-option:hover { border-color: #b9a6cf; }
+.shop-business-option.is-selected { border-color: #6840ad; box-shadow: 0 0 0 2px #6840ad33; }
+.shop-business-option:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-accent-field { margin: 16px 0 0; padding: 0; border: 0; }
+.shop-accent-field legend { margin-bottom: 8px; color: #332a3b; font-size: 14px; font-weight: 700; }
+.shop-accent-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.shop-accent-swatch { position: relative; display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; cursor: pointer; }
+.shop-accent-swatch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.shop-accent-swatch span[aria-hidden] { width: 30px; height: 30px; border-radius: 50%; }
+.shop-accent-swatch.is-selected { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #241d29; }
+.shop-accent-swatch:has(input:focus-visible) { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-order-name { display: grid; flex: 1; min-width: 0; gap: 4px; }
+.shop-order-name input { min-height: 36px; padding: 6px 10px; border: 1px solid #ded6e5; border-radius: 10px; font-size: 14px; }
+
+/* Your shop uses the same layout as Sell an item / Create an event (create-shell + summary). */
+.create-shop .shop-form { max-width: none; }
+.create-shop .shop-editor-intro { max-width: 60ch; margin: 6px 0 0; color: #62546b; font-size: 15px; line-height: 1.5; }
+.create-shop .create-section h2 { display: flex; align-items: center; gap: 10px; }
+/* Details: roomy, one field per row on phones, two columns on wide screens. */
+.shop-details-grid { display: grid; gap: 18px; margin-top: 6px; }
+.shop-details-grid > label { display: grid; gap: 8px; font-weight: 650; }
+.shop-details-grid textarea { min-height: 96px; line-height: 1.5; }
+.shop-details-grid input, .shop-details-grid textarea { padding: 12px 14px; }
+.shop-details-grid .shop-video { display: grid; gap: 10px; padding-top: 6px; }
+@media (min-width: 900px) {
+  .shop-details-grid { grid-template-columns: 1fr 1fr; column-gap: 20px; }
+  .shop-details-grid > label:first-child, .shop-details-grid .shop-video { grid-column: 1 / -1; }
+  .shop-details-grid > label:first-child textarea { min-height: 140px; }
+}
+/* Summary card: the shop at a glance, in its accent colour. */
+.shop-summary-preview .create-preview-media { position: relative; }
+.shop-summary-identity { display: flex; align-items: center; gap: 10px; }
+.shop-summary-logo { position: relative; display: grid; width: 40px; height: 40px; flex: 0 0 40px; place-items: center; overflow: hidden; border-radius: 50%; background: #f1ebf8; color: var(--shop-accent); font-weight: 800; }
+.shop-summary-sections { color: var(--shop-accent) !important; font-size: 13px; font-weight: 700; }
+
+/* Shop layout, folded: the section order on one line; open to edit. */
+.shop-layout-fold > summary { display: flex; min-height: 52px; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px solid #ded6e5; border-radius: 14px; background: #faf8fc; cursor: pointer; list-style: none; }
+.shop-layout-fold > summary::-webkit-details-marker { display: none; }
+.shop-layout-fold > summary:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-layout-summary { min-width: 0; overflow: hidden; color: #332a3b; font-size: 14px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.shop-layout-edit { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; color: #6840ad; font-size: 14px; font-weight: 700; }
+.shop-layout-edit svg { transition: transform .18s ease; }
+.shop-layout-fold[open] > summary { margin-bottom: 12px; }
+.shop-layout-fold[open] .shop-layout-edit svg { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .shop-layout-edit svg { transition: none; } }
+/* Create pages: where to go instead (e.g. meals belong on a service's menu). */
+.create-kind-hint { max-width: 60ch; margin: 8px 0 0; padding: 10px 12px; border-radius: 12px; background: #f6f1fc; color: #3d3247; font-size: 14px; line-height: 1.45; }
+.create-kind-hint a { color: #5d329d; font-weight: 700; }
+/* Cover & logo: the step heading sits above the full-width banner, with room around it. */
+.create-shop .shop-brand-step > h2 { padding: 16px 16px 10px; margin: 0; }
+/* Below desktop the shop editor keeps its own save bar; the steps at the top show progress. */
+@media (max-width: 1099px) { .create-shop .create-summary { display: none; } }
+/* The shop editor keeps its sticky save bar (create pages make .shop-actions a plain row). */
+.create-shop .shop-actions { position: sticky; bottom: 0; z-index: 5; flex-direction: row; align-items: center; margin: 0 -4px; padding: 10px 4px calc(10px + env(safe-area-inset-bottom)); border-top: 0; background: rgba(251, 249, 245, .94); }
+.create-shop .shop-actions > span { width: auto; }
+@media (max-width: 760px) {
+  .create-shop .shop-actions { bottom: calc(var(--app-bottom-bar-offset) - 1px); margin: 0 -16px; padding: 8px 16px calc(8px + var(--app-bottom-safe)); border-top: 1px solid #ece5f1; }
+  .create-shop .shop-actions > span { flex: 1; flex-wrap: nowrap; gap: 8px; }
+  .create-shop .shop-actions .product-primary { flex: 1; width: auto; justify-content: center; }
+}
+/* No room needed for the create pages' bottom bar: the shop editor uses its own save bar. */
+.create-shop .create-shell { padding-bottom: 0; }

@@ -1,4 +1,11 @@
 import { test, expect } from "@playwright/test";
+
+// The "Bring your idea to Tivorah" invitation opens after a short idle on first visit and takes
+// focus; these tests are about search, so they start as a visitor who has already seen it
+// (tests/create-promo.spec.ts covers the invitation itself).
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => { try { sessionStorage.setItem("tivorah-create-invitation-seen-v2", "1"); } catch { /* storage off */ } });
+});
 import { safeReturnPath } from "../lib/auth/return-path";
 
 for (const width of [390, 1440]) {
@@ -218,7 +225,8 @@ test("narrow dark layout supports reduced motion and keyboard focus", async ({
     route.fulfill({ json: { data: { items: [], nextSkip: null } } }),
   );
   await page.goto("/services");
-  await expect(page.getByText("No services match this search.")).toBeVisible();
+  // No search yet: the empty state says there's nothing yet (a search says nothing matched).
+  await expect(page.getByText("No services yet")).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -262,7 +270,7 @@ test("live search debounces typing and reuses public results within its cache wi
     return route.fulfill({ json: { data: { items: [], nextSkip: null } } });
   });
   await page.goto("/events");
-  await expect(page.getByText("No upcoming events match this search.")).toBeVisible();
+  await expect(page.getByText("No events yet")).toBeVisible();
   const input = page.getByLabel("What are you looking for?");
   await input.pressSequentially("music", { delay: 30 });
   await expect(page).toHaveURL(/query=music/);
@@ -277,18 +285,23 @@ test("live search debounces typing and reuses public results within its cache wi
 });
 
 test("search honours server cooldown without sending requests for further typing", async ({ page }) => {
+  // Counts search requests only (the location filter's countries list retries on its own schedule).
   let calls = 0;
+  const searched: string[] = [];
   await page.route("**/api/v1/public/discovery/**", route => {
-    calls++;
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/discovery/events")) { calls++; searched.push(new URL(route.request().url()).searchParams.get("query") ?? ""); }
     return route.fulfill({ status: 429, headers: { "Retry-After": "60" }, json: { message: "Too many requests" } });
   });
   await page.goto("/events");
   await expect(page.getByRole("button", { name: /Try again in/ })).toBeDisabled();
   const callsBeforeTyping = calls;
-  await page.getByLabel("What are you looking for?").fill("music");
+  // Typed like a person (fill() can land before the page has wired up its handlers in dev).
+  await page.getByLabel("What are you looking for?").pressSequentially("music", { delay: 30 });
   await expect(page).toHaveURL(/query=music/);
   await expect(page.getByText("Search is paused briefly. Please wait before trying again.")).toBeVisible();
   expect(calls).toBe(callsBeforeTyping);
+  expect(searched).not.toContain("music");
 });
 
 test("mobile filters preserve search and selected locality through API requests", async ({ page }) => {

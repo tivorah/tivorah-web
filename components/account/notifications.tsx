@@ -7,6 +7,7 @@ import { AccountGate } from "./gate";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { useMutation } from "../../hooks/use-mutation";
 import { PAGE_SIZE, Pagination } from "../ui/pagination";
+import { notificationLink } from "./notification-link";
 function Notices() {
   const [page, setPage] = useState(1);
   const skip = (page - 1) * PAGE_SIZE;
@@ -16,6 +17,7 @@ function Notices() {
       title: string;
       body: string;
       category: string;
+      deepLink: string | null;
       read: boolean;
       createdAt: string;
     }[];
@@ -45,21 +47,7 @@ function Notices() {
             <h2>{item.title}</h2>
             <p>{item.body}</p>
             <div className="account-actions">
-              <Link
-                href={
-                  item.category === "events"
-                    ? "/account/tickets"
-                    : item.category === "marketplace"
-                      ? "/account/bookings"
-                      : "/contact"
-                }
-              >
-                {item.category === "events"
-                  ? "View tickets"
-                  : item.category === "marketplace"
-                    ? "View appointments"
-                    : "Get support"}
-              </Link>
+              <Link href={notificationLink(item).href}>{notificationLink(item).label}</Link>
               {!item.read ? (
                 <button
                   className="product-secondary"

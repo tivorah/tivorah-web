@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { BrandLogo } from "./brand-logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 export function SiteFooter() {
@@ -9,13 +9,7 @@ export function SiteFooter() {
           <footer>
             <div className="page-shell footer-inner">
               <div>
-                <Image
-                  className="footer-logo"
-                  src="/tivorah-logo.png"
-                  alt="Tivorah"
-                  width={708}
-                  height={226}
-                />
+                <BrandLogo className="footer-logo" />
                 <p>Community, opportunity and belonging in one place.</p>
               </div>
               <div className="footer-links">

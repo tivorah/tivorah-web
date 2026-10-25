@@ -12,7 +12,7 @@ export function BusinessShell({ children }: { children: ReactNode }) {
   const active = (name: string) => name === "events" ? view === "events" && !createType && (path === "/business" || path.startsWith("/business/events/")) : view === "products" && !createType && (path === "/business" || path.startsWith("/business/listings/"));
   if (path.startsWith("/business/events/") || path.startsWith("/business/listings/")) return <div className="product-page page-shell event-manage-shell">{children}</div>;
   // The shop preview is a full page, exactly like the public shop.
-  if (path === "/business/showcase/preview") return <>{children}</>;
+  if (path === "/business/shop/preview") return <>{children}</>;
   return <div className="product-page page-shell business-shell"><div className="business-workspace">
     <aside className="business-sidebar" aria-label="Business navigation">
       <Link className="business-sidebar-account" href="/account">← Your account</Link>
@@ -27,11 +27,12 @@ export function BusinessShell({ children }: { children: ReactNode }) {
         <Link href="/business/create?type=service" aria-current={createType === "service" ? "page" : undefined}>Offer a service</Link>
         <Link href="/business/create?type=item" aria-current={createType === "item" ? "page" : undefined}>Sell an item</Link>
         <Link href="/business/hubs/new" aria-current={path === "/business/hubs/new" ? "page" : undefined}>Create a Hub</Link>
+        <Link href="/business/shop" aria-current={path === "/business/shop" ? "page" : undefined}>Your shop</Link>
       </div>
       <div className="business-sidebar-group"><p>Tools</p>
+        <Link href="/business/orders" aria-current={path === "/business/orders" ? "page" : undefined}>Orders</Link>
         <Link href="/business/appointments" aria-current={path === "/business/appointments" ? "page" : undefined}>Appointments</Link>
         <Link href="/business/requests" aria-current={path === "/business/requests" ? "page" : undefined}>Refunds &amp; complaints</Link>
-        <Link href="/business/showcase" aria-current={path === "/business/showcase" ? "page" : undefined}>Your showcase</Link>
         <Link href="/business/payouts" aria-current={path === "/business/payouts" ? "page" : undefined}>Payout settings</Link>
       </div>
     </aside>
@@ -48,11 +49,12 @@ export function BusinessShell({ children }: { children: ReactNode }) {
           <Link href="/business/create?type=service">Offer a service</Link>
           <Link href="/business/create?type=item">Sell an item</Link>
           <Link href="/business/hubs/new">Create a Hub</Link>
+          <Link href="/business/shop">Your shop</Link>
         </div></details>
         <details className="business-mobile-create business-mobile-tools-menu"><summary>Business tools</summary><div>
+          <Link href="/business/orders">Orders</Link>
           <Link href="/business/appointments">Appointments</Link>
           <Link href="/business/requests">Refunds &amp; complaints</Link>
-          <Link href="/business/showcase">Your showcase</Link>
           <Link href="/business/payouts">Payout settings</Link>
         </div></details>
       </nav>
@@ -64,6 +66,6 @@ export function BusinessShell({ children }: { children: ReactNode }) {
 export function BusinessShellFallback({ children }: { children: ReactNode }) {
   const path = usePathname();
   if (path.startsWith("/business/events/") || path.startsWith("/business/listings/")) return <div className="product-page page-shell event-manage-shell">{children}</div>;
-  if (path === "/business/showcase/preview") return <>{children}</>;
+  if (path === "/business/shop/preview") return <>{children}</>;
   return <div className="product-page page-shell business-shell"><div className="business-workspace"><aside className="business-sidebar" aria-label="Business navigation"><Link className="business-sidebar-account" href="/account">← Your account</Link><div className="business-sidebar-title"><p className="product-eyebrow">YOUR TIVORAH</p><strong>Business</strong></div></aside><div className="business-workspace-main">{children}</div></div></div>;
 }

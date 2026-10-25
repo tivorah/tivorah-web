@@ -1,4 +1,5 @@
 "use client";
+import { randomId } from "../../lib/random-id";
 import { BookingSetupNotice, type BookingSetupIssue } from "./booking-setup-notice";
 import { LoadingState } from "../ui/loading-state";
 import Link from "next/link";
@@ -19,9 +20,12 @@ import { HubShareField } from "./hub-share-field";
 import { TicketPackageList, newPackage, packagesPayload, type PackageDraft } from "./events/packages-editor";
 import { Sheet } from "../ui/sheet";
 import { conditionOptions, priceTypeOptions } from "./select-options";
+import { asksCondition, createCopy } from "./listing-kinds";
+import type { ShopRecord } from "./shop/types";
 import { ServiceMenuEditor, useServiceTemplate } from "./service-menu-editor";
 import { hasMenuItems, menuPayload, type ServiceMenuValue } from "../../lib/service-menu";
 import categories from "../../lib/discovery-categories.json";
+import { ItemOrderingFields } from "./item-ordering-fields";
 function CreationForm({ kind }: { kind: CreationKind }) {
   const [settings, setSettings] = useState(defaultServiceSettings);
   const [mode, setMode] = useState(kind === "event" ? "venue" : "at_provider");
@@ -40,6 +44,9 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [error, setError] = useState("");
   const [created, setCreated] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  // Wording follows the seller's shop type (e.g. a food shop's service is "Add your menu").
+  const ownShop = usePrivateResource<{ shop: ShopRecord | null }>("/web/business/shop");
+  const businessType = ownShop.data?.shop?.published?.businessType ?? ownShop.data?.shop?.draft?.businessType ?? null;
   const [draft, setDraft] = useState<DraftFields>({ title: "", description: "", category: "", price: "", onlineUrl: "", externalTicketUrl: "", startsAt: "", endsAt: "" });
   const [prompts, setPrompts] = useState(["", "", ""]);
   const [menu, setMenu] = useState<ServiceMenuValue>([]);
@@ -95,7 +102,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
     setError("");
     setSetupIssues([]);
     try {
-      key.current ??= crypto.randomUUID();
+      key.current ??= randomId();
       const payload = creationPayload(
         new FormData(event.currentTarget),
         kind,
@@ -137,22 +144,20 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       setBusy(false);
     }
   }
-  const copy = {
-    item: { title: "Sell an item", intro: "Add clear photos, a fair price and where to collect it. Your item appears in your showcase and on Tivorah Shop.", noun: "item" },
-    service: { title: "Offer a service", intro: "Explain what you do, where you work and how customers book. Your service appears in your showcase and on Tivorah Services.", noun: "service" },
-    event: { title: "Create an event", intro: "Set the details, place and tickets. Your event is saved as a draft so you can review it before publishing.", noun: "event" },
-  }[kind];
-  const header = <header className="showcase-editor-head">
+  // What this kind is for, in plain words, so nobody wonders where something goes (listing-kinds.ts).
+  const copy = { ...createCopy(kind, businessType), noun: kind };
+  const header = <header className="shop-editor-head">
     <div>
-      <Link className="showcase-editor-back" href="/business">← Your business</Link>
+      <Link className="shop-editor-back" href="/business">← Your business</Link>
       <h1>{created ? (kind === "event" ? "Your event draft is ready" : "Your listing is live") : copy.title}</h1>
-      <p>{created ? (kind === "event" ? "Review it and publish from your business workspace." : "Customers can now find it in your showcase and on Tivorah.") : copy.intro}</p>
+      <p>{created ? (kind === "event" ? "Review it and publish from your business workspace." : "Customers can now find it in your shop and on Tivorah.") : copy.intro}</p>
+      {!created && copy.hint ? <p className="create-kind-hint">{copy.hint.text} <Link href={copy.hint.href}>{copy.hint.link}</Link>.</p> : null}
     </div>
   </header>;
   if (created)
-    return <div className={`showcase-page business-create-page create-${kind}`}>
+    return <div className={`shop-editor-page business-create-page create-${kind}`}>
       {header}
-      <div className="showcase-actions business-create-done"><span><Link className="product-primary" href="/business">Back to your business</Link></span></div>
+      <div className="shop-actions business-create-done"><span><Link className="product-primary" href="/business">Back to your business</Link></span></div>
     </div>;
   // Live summary: what's filled in so far (drives the preview card and the checklist).
   const checklist = checklistFor(kind, { ...draft, mode, images, locality, packages, ticketContact: tivorahTicketing ? null : ticketContact, menuItems: usesMenu ? menu.filter((item) => item.name.trim() && item.price.trim()).length : null });
@@ -178,7 +183,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const stages = [...new Set(checklist.map((item) => item.section))].map((section) => ({ section, label: stageLabels[section], done: checklist.filter((item) => item.section === section).every((item) => item.done) }));
 
   return (
-    <div className={`showcase-page business-create-page create-${kind}`}>
+    <div className={`shop-editor-page business-create-page create-${kind}`}>
       {header}
       <nav className="create-stages" aria-label="Steps">
         <ol>{stages.map((stage, index) => <li key={stage.section} className={`${stage.done ? "is-done" : ""}${activeStage === stage.section ? " is-active" : ""}`}>
@@ -195,7 +200,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           if (["title", "description", "price", "onlineUrl", "externalTicketUrl"].includes(field.name)) setDraft((current) => ({ ...current, [field.name]: field.value }));
         }}>
         <div className="create-main">
-          <section id="create-basics" className="showcase-step create-section">
+          <section id="create-basics" className="shop-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">1</span>Basics</h2>
             <label>
               {kind === "event" ? "Event name" : kind === "service" ? "Service title" : "Item title"}
@@ -205,32 +210,32 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               Description
               <textarea name="description" required minLength={10} maxLength={10000} rows={4} placeholder={kind === "event" ? "What can people expect?" : kind === "service" ? "What is included, and how should customers prepare?" : "Condition, size, age and anything buyers should know"} />
             </label>
-            {kind === 'event' && <label>Refund policy<SelectField name="refundPolicyPreset" label="Refund policy" placeholder="Choose a refund policy" options={[...refundPolicyOptions]} /><span className="showcase-hint">Buyers can request a refund from their booking while your policy allows it.</span></label>}
-            {kind === 'event' && <details className="showcase-more event-visit-fields"><summary>Plan your visit · optional</summary>{(['agePolicy','arrival','accessibility','refundPolicy'] as const).map(key => <label key={key}>{({agePolicy:'Age and ID requirements',arrival:'Arrival, parking and doors',accessibility:'Accessibility',refundPolicy:'Refund details'})[key]}<textarea name={key} rows={3} maxLength={key === 'agePolicy' ? 200 : 1200} /></label>)}<p className="showcase-hint">Refund instructions cannot remove applicable consumer rights.</p>{Array.from({length:3},(_, index) => <div key={index}><label>Question {index + 1}<input name={`faq-question-${index}`} maxLength={200} minLength={3} /></label><label>Answer {index + 1}<textarea name={`faq-answer-${index}`} rows={3} maxLength={1600} minLength={2} /></label></div>)}</details>}
+            {kind === 'event' && <label>Refund policy<SelectField name="refundPolicyPreset" label="Refund policy" placeholder="Choose a refund policy" options={[...refundPolicyOptions]} /><span className="shop-hint">Buyers can request a refund from their booking while your policy allows it.</span></label>}
+            {kind === 'event' && <details className="shop-more event-visit-fields"><summary>Plan your visit · optional</summary>{(['agePolicy','arrival','accessibility','refundPolicy'] as const).map(key => <label key={key}>{({agePolicy:'Age and ID requirements',arrival:'Arrival, parking and doors',accessibility:'Accessibility',refundPolicy:'Refund details'})[key]}<textarea name={key} rows={3} maxLength={key === 'agePolicy' ? 200 : 1200} /></label>)}<p className="shop-hint">Refund instructions cannot remove applicable consumer rights.</p>{Array.from({length:3},(_, index) => <div key={index}><label>Question {index + 1}<input name={`faq-question-${index}`} maxLength={200} minLength={3} /></label><label>Answer {index + 1}<textarea name={`faq-answer-${index}`} rows={3} maxLength={1600} minLength={2} /></label></div>)}</details>}
 
-            <div className="showcase-row">
+            <div className="shop-row">
               <label>
                 Category
                 <SelectField key={kind} name="category" label="Category" required placeholder="Choose a category" requiredMessage="Choose a category." onChange={(value) => setDraft((current) => ({ ...current, category: value }))} options={(kind === "event" ? categories.events : kind === "service" ? categories.services : categories.items).map((category) => ({ value: category, label: category }))} />
               </label>
-              {kind === "item" ? <label>
+              {kind === "item" && asksCondition(draft.category) ? <label>
                 Condition
                 <SelectField name="condition" label="Condition" defaultValue="new" options={conditionOptions} />
-              </label> : <label><span className="showcase-label">Display name <span className="showcase-optional">Optional</span></span>
+              </label> : kind === "item" ? <input type="hidden" name="condition" value="new" /> : <label><span className="shop-label">Display name <span className="shop-optional">Optional</span></span>
                 <input name="businessName" maxLength={100} placeholder="Shown instead of your username" />
               </label>}
             </div>
-            {kind === "item" ? <label><span className="showcase-label">Display name <span className="showcase-optional">Optional</span></span><input name="businessName" maxLength={100} placeholder="Shown instead of your username" /></label> : null}
+            {kind === "item" ? <label><span className="shop-label">Display name <span className="shop-optional">Optional</span></span><input name="businessName" maxLength={100} placeholder="Shown instead of your username" /></label> : null}
           </section>
 
-          <section id="create-media" className="showcase-step create-section">
+          <section id="create-media" className="shop-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">2</span>{kind === "event" ? "Cover photo" : "Photos"}</h2>
-            <p className="showcase-hint">{kind === "event" ? "The first photo is your event cover." : "The first photo is the one customers see first."} Up to five photos, 10 MB each, checked before publishing.</p>
+            <p className="shop-hint">{kind === "event" ? "The first photo is your event cover." : "The first photo is the one customers see first."} Up to five photos, 10 MB each, checked before publishing.</p>
             <MediaField context={kind} onChange={setImages} onBusy={setUploading} />
           </section>
 
-          <section id="create-place" className="showcase-step create-section">
-            <h2><span className="create-step-no" aria-hidden="true">3</span>{kind === "event" ? "Where" : kind === "service" ? "Where you work" : "Pickup"}</h2>
+          <section id="create-place" className="shop-step create-section">
+            <h2><span className="create-step-no" aria-hidden="true">3</span>{kind === "event" ? "Where" : kind === "service" ? "Where you work" : "Pickup & delivery"}</h2>
             {template ? <p className="create-question">{template.modeQuestion}</p> : null}
             {kind !== "item" ? <div className="create-segmented" role="radiogroup" aria-label={kind === "event" ? "Location type" : template?.modeQuestion ?? "How do you provide this service?"}>
               {(kind === "event"
@@ -243,26 +248,27 @@ function CreationForm({ kind }: { kind: CreationKind }) {
             </div> : null}
             {kind === "item" || mode !== "online" ? <LocalityField required onChange={setLocality} onCountryChange={setPlaceCountry} /> : null}
             {kind === "service" && (mode === "mobile" || mode === "flexible") ? <label>Travel distance (km)<input name="serviceAreaKm" type="number" min={1} max={500} required placeholder="e.g. 15" /></label> : null}
-            {kind === "event" ? (mode === "venue" ? <div className="showcase-row">
-              <label><span className="showcase-label">Venue name <span className="showcase-optional">Optional</span></span><input name="venueName" maxLength={160} placeholder="e.g. Adelaide Town Hall" /></label>
-              <label><span className="showcase-label">Street address <span className="showcase-optional">Optional</span></span><input name="address" maxLength={300} placeholder="e.g. 128 King William St" /></label>
+            {kind === "event" ? (mode === "venue" ? <div className="shop-row">
+              <label><span className="shop-label">Venue name <span className="shop-optional">Optional</span></span><input name="venueName" maxLength={160} placeholder="e.g. Adelaide Town Hall" /></label>
+              <label><span className="shop-label">Street address <span className="shop-optional">Optional</span></span><input name="address" maxLength={300} placeholder="e.g. 128 King William St" /></label>
             </div> : <label>Online joining link<input name="onlineUrl" type="url" placeholder="https://" required /></label>) : null}
-            {kind === "item" ? <label><span className="showcase-label">Pickup details <span className="showcase-optional">Optional</span></span><textarea name="pickupNotes" maxLength={1000} rows={2} placeholder="When and where buyers can collect it" /></label> : null}
+            {kind === "item" ? <label><span className="shop-label">Pickup details <span className="shop-optional">Optional</span></span><textarea name="pickupNotes" maxLength={1000} rows={2} placeholder="When and where buyers can collect it" /></label> : null}
+            {kind === "item" ? <ItemOrderingFields key={draft.category} category={draft.category} /> : null}
           </section>
 
           {kind === "event" ? <>
-            <section id="create-when" className="showcase-step create-section">
+            <section id="create-when" className="shop-step create-section">
               <h2><span className="create-step-no" aria-hidden="true">4</span>When</h2>
-              <div className="showcase-row">
+              <div className="shop-row">
                 <label>Starts<DateField name="startsAt" label="Starts at" kind="datetime" requiredMessage="Choose when the event starts." required onChange={(value) => setDraft((current) => ({ ...current, startsAt: value }))} /></label>
                 <label>Ends<DateField name="endsAt" label="Ends at" kind="datetime" requiredMessage="Choose when the event ends." required onChange={(value) => setDraft((current) => ({ ...current, endsAt: value }))} /></label>
               </div>
-              <p className="showcase-hint">Times are in your local time.</p>
+              <p className="shop-hint">Times are in your local time.</p>
             </section>
-            <section id="create-tickets" className="showcase-step create-section">
+            <section id="create-tickets" className="shop-step create-section">
               <h2><span className="create-step-no" aria-hidden="true">5</span>Tickets</h2>
               {tivorahTicketing ? <>
-                <p className="showcase-hint">Use $0 for free tickets. Paid tickets need <Link href="/business/payouts">payout setup</Link>.</p>
+                <p className="shop-hint">Use $0 for free tickets. Paid tickets need <Link href="/business/payouts">payout setup</Link>.</p>
                 <TicketPackageList value={packages} onChange={setPackages} />
               </> : <>
                 <p className="create-ticket-region" role="note">Tivorah tickets aren’t available in your region at the moment.</p>
@@ -271,28 +277,28 @@ function CreationForm({ kind }: { kind: CreationKind }) {
                   {([["link", "Ticket link"], ["message", "Message me"], ["both", "Both"]] as const).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={ticketContact === value} className={ticketContact === value ? "is-selected" : ""} onClick={() => setTicketContact(value)}>{label}</button>)}
                 </div>
                 {ticketContact !== "message" ? <label>Ticket link<input name="externalTicketUrl" type="url" required placeholder="https://" maxLength={2000} /></label> : null}
-                <p className="showcase-hint">{ticketContact === "link" ? "People open your ticket website from the event page." : ticketContact === "message" ? "People message you on Tivorah; enquiries arrive in your messages." : "People can open your ticket website or message you on Tivorah."}</p>
+                <p className="shop-hint">{ticketContact === "link" ? "People open your ticket website from the event page." : ticketContact === "message" ? "People message you on Tivorah; enquiries arrive in your messages." : "People can open your ticket website or message you on Tivorah."}</p>
               </>}
             </section>
-          </> : <section id="create-price" className="showcase-step create-section">
+          </> : <section id="create-price" className="shop-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">4</span>{kind === "service" ? "Price & bookings" : "Price"}</h2>
             {/* Menu categories: the items carry the prices. Other categories keep a single price. */}
             {template ? <ServiceMenuEditor template={template} value={menu} onChange={setMenu} disabled={busy} /> : null}
             {usesMenu ? <><input type="hidden" name="price" value="0" /><input type="hidden" name="priceType" value="fixed" /></> : null}
-            <div className="showcase-row">
+            <div className="shop-row">
               {usesMenu ? null : <label>Price<input name="price" type="number" min={0} max={1000000} step="0.01" required placeholder="0.00" /></label>}
               <label>Currency<SelectField name="currency" label="Currency" defaultValue="AUD" options={["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map(value => ({ value, label: value }))} /></label>
               {kind === "service" && !usesMenu ? <label>Pricing<SelectField name="priceType" label="Pricing" defaultValue="fixed" options={priceTypeOptions} /></label> : null}
             </div>
             {kind === "service" ? <>
-              <p className="showcase-hint">Customers can discuss custom quotes with you in messages.</p>
+              <p className="shop-hint">Customers can discuss custom quotes with you in messages.</p>
               <div className="business-create-appointments"><ServiceSettings localityState={locality?.state} localityCountry={locality?.countryCode ?? placeCountry?.code} value={settings} onChange={setSettings} /></div>
-              <label><span className="showcase-label">Booking notes <span className="showcase-optional">Optional</span></span><textarea name="pickupNotes" maxLength={1000} rows={2} placeholder="Availability, notice or anything customers should know" /></label>
+              <label><span className="shop-label">Booking notes <span className="shop-optional">Optional</span></span><textarea name="pickupNotes" maxLength={1000} rows={2} placeholder="Availability, notice or anything customers should know" /></label>
             </> : null}
           </section>}
 
           <section id="create-extras" className="create-extras" aria-labelledby="create-extras-title">
-            <h2 id="create-extras-title">Extras <span className="showcase-optional">Optional</span></h2>
+            <h2 id="create-extras-title">Extras <span className="shop-optional">Optional</span></h2>
             <div className="create-extras-list">
               <HubShareField kind={kind === "event" ? "event" : "listing"} value={hubIds} onChange={setHubIds} disabled={busy} />
               <div className="create-extra-row">
@@ -306,7 +312,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               {kind === "event" ? <label className="create-extra-row create-extra-switch">
                 <span className="create-extra-icon" aria-hidden="true">👯</span>
                 <span className="create-extra-text"><strong>Allow group bookings</strong><small>Show “Book as a group” on your event page</small></span>
-                <span className="showcase-switch"><input type="checkbox" role="switch" name="allowGroupBookings" /><span className="showcase-switch-track" aria-hidden="true" /></span>
+                <span className="shop-switch"><input type="checkbox" role="switch" name="allowGroupBookings" /><span className="shop-switch-track" aria-hidden="true" /></span>
               </label> : null}
             </div>
             {prompts.map((value, index) => <input key={index} type="hidden" name={`prompt${index + 1}`} value={value.trim()} />)}
@@ -359,7 +365,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           <button className="product-primary press-fx create-submit" disabled={submitDisabled}>
             {busy ? <span className="button-progress" aria-hidden="true" /> : null}{submitLabel}
           </button>
-          <p className="create-submit-hint">{kind === "event" ? "Saved as a draft — publish when you're ready." : "Goes live in your showcase straight away."}</p>
+          <p className="create-submit-hint">{kind === "event" ? "Saved as a draft — publish when you're ready." : "Goes live in your shop straight away."}</p>
           <Link className="create-cancel" href="/business">Cancel</Link>
         </aside>
 

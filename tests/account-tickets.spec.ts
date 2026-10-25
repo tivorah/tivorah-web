@@ -6,7 +6,7 @@ test("account ticket uses the established pass, downloads and preserves input af
   await page.route("**/api/auth/get-session**", route => route.fulfill({ json: { session: { id: "session-test", userId: "1", token: "test-only", expiresAt: "2030-01-01T00:00:00Z" }, user: { id: "1", name: "Member", email: "member@example.test", emailVerified: true, createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-01T00:00:00Z" } } }));
   await page.route("**/api/v1/web/account", route => route.fulfill({ json: { data: { id: 1, username: "member", firstName: "Member", email: "member@example.test" } } }));
   let attendeeName: string | null = null;
-  const ticket = { publicId: "47105f94-b675-4ed5-887b-92996f1e74bb", orderId: 23, shortCode: "123456", status: "valid", checkedInAt: null, qrPayload: "signed-test-entry", canManage: true, event: { title: "Sunday gathering", startsAt: "2026-10-18T01:00:00Z", location: "Adelaide" }, ticketType: { name: "General admission" } };
+  const ticket = { publicId: "47105f94-b675-4ed5-887b-92996f1e74bb", orderId: 23, shortCode: "123456", status: "valid", checkedInAt: null, qrPayload: "signed-test-entry", canManage: true, event: { title: "Sunday gathering", startsAt: "2030-10-18T01:00:00Z", location: "Adelaide" }, ticketType: { name: "General admission" } };
   await page.route("**/api/v1/events/tickets/me", route => route.fulfill({ json: { data: { tickets: [{ ...ticket, attendeeName }] } } }));
   await page.route("**/api/v1/events/tickets/*/attendee", route => {
     attendeeName = route.request().postDataJSON().name;

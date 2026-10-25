@@ -125,7 +125,7 @@ export function EventCheckIn({ id, published }: { id: number; published: boolean
     </div>
 
     <div className={`checkin-grid${camera === "error" ? " is-camera-error" : ""}`}>
-      <div className="showcase-step checkin-camera">
+      <div className="shop-step checkin-camera">
         <div className="checkin-method-head"><h3>Scan with camera</h3><span>Phone or computer camera</span></div>
         <div className={`checkin-viewfinder${camera === "on" ? " is-on" : ""}${camera === "error" ? " is-error" : ""}`}>
           <video ref={video} muted playsInline aria-label="Camera preview for scanning tickets" />
@@ -140,16 +140,16 @@ export function EventCheckIn({ id, published }: { id: number; published: boolean
         {camera === "on"
           ? <button type="button" className="product-secondary press-fx" onClick={stopCamera}>Stop camera</button>
           : <button type="button" className="product-secondary press-fx" onClick={() => void startCamera()} disabled={camera === "starting"}>{camera === "starting" ? "Starting camera…" : camera === "error" ? "Try camera again" : "Open camera"}</button>}
-        {camera === "on" ? <p className="showcase-hint">Hold the QR code inside the frame. Check-in happens automatically.</p> : null}
+        {camera === "on" ? <p className="shop-hint">Hold the QR code inside the frame. Check-in happens automatically.</p> : null}
       </div>
 
-      <form className="showcase-step checkin-manual" onSubmit={submit}>
+      <form className="shop-step checkin-manual" onSubmit={submit}>
         <div className="checkin-method-head"><h3>Enter ticket code</h3><span>6-digit code or barcode scanner</span></div>
         <label>Ticket code
           <input ref={input} className="checkin-code" value={code} onChange={(event) => setCode(event.target.value)} inputMode="text" autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={4000} placeholder="482913" />
         </label>
         <button className="product-primary press-fx" disabled={busy || !code.trim()}>{busy ? "Checking…" : "Check in guest"}</button>
-        <p className="showcase-hint">Using a barcode scanner? Focus this field and scan. A scanner that sends Enter submits automatically.</p>
+        <p className="shop-hint">Using a barcode scanner? Focus this field and scan. A scanner that sends Enter submits automatically.</p>
       </form>
     </div>
 

@@ -15,7 +15,7 @@ export function AccountSurfaceLoading({ embedded = false, route }: { embedded?: 
   const searchParams = useSearchParams();
   const path = route ?? currentPath;
   if (path === "/business/payouts") return <PayoutsLoading />;
-  if (path === "/business/showcase/preview") return <ShopSkeleton />;
+  if (path === "/business/shop/preview") return <ShopSkeleton />;
   const dashboard = path === "/account";
   const tickets = path === "/account/tickets";
   const bookings = path === "/account/bookings";
@@ -33,7 +33,7 @@ export function AccountSurfaceLoading({ embedded = false, route }: { embedded?: 
   // A conversation loads into the same shape as the real thread (heading, bubbles, reply bar).
   if (thread) return embedded ? <MessageThreadLoading /> : <div className="product-page page-shell message-workspace message-thread-page"><MessageThreadLoading /></div>;
   if (messages || thread) return <div className={`${wrapper} account-message-loading`} role="status" aria-busy="true" aria-label={`Loading ${title.toLowerCase()}`}><div className="account-loading-breadcrumb" aria-hidden="true">{bar("short")}{bar("tiny")}</div><header aria-hidden="true">{bar("account-loading-eyebrow")}{bar("account-loading-title")}{bar("account-loading-summary")}</header>{thread ? <div className="account-loading-thread" aria-hidden="true">{bar("account-loading-thread-topic")}{bar("account-loading-bubble mine")}{bar("account-loading-bubble")}{bar("account-loading-compose")}</div> : <div className="account-loading-inbox" aria-hidden="true">{Array.from({ length: 3 }, (_, index) => <div key={index}>{bar("account-loading-avatar")}<section>{bar("account-loading-row-title")}{bar("account-loading-row-copy")}</section></div>)}</div>}</div>;
-  if (path === "/business/showcase") return <BusinessFormSkeleton shop />;
+  if (path === "/business/shop") return <BusinessFormSkeleton shop />;
   if (path === "/business/create") return <BusinessFormSkeleton />;
   if (path.startsWith("/business/listings/")) return <div className={`${wrapper} business-form-loading`} role="status" aria-busy="true" aria-label="Loading business form"><section className="product-form business-create" aria-hidden="true">{bar("business-form-eyebrow")}{bar("business-form-title")}<div className="business-form-fields">{bar("business-form-field")}{bar("business-form-divider")}{bar("business-form-heading")}{bar("business-form-field")}{bar("business-form-field")}{bar("business-form-wide")}{bar("business-form-field")}</div></section></div>;
   if (path.startsWith("/business/events/")) return <div className={`${wrapper} event-manage business-event-loading`} role="status" aria-busy="true" aria-label="Loading event workspace"><div className="account-loading-breadcrumb" aria-hidden="true">{bar("short")}{bar("tiny")}</div><header className="event-manage-header" aria-hidden="true"><div>{bar("business-form-eyebrow")}{bar("business-form-title")}{bar("account-loading-summary")}</div>{bar("event-loading-publish")}</header><div className="business-event-loading-tabs" aria-hidden="true">{Array.from({ length: 5 }, (_, index) => <span className="tivorah-shimmer" key={index} />)}</div><div className="event-manage-content"><section className="product-form" aria-hidden="true">{bar("business-form-heading")}{bar("business-form-field")}{bar("business-form-field")}{bar("business-form-wide")}{bar("business-form-heading")}{bar("business-form-field")}{bar("business-form-field")}</section></div></div>;

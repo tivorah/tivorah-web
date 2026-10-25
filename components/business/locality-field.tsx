@@ -154,9 +154,9 @@ function PlaceElsewhere({ country, required, onChange }: { country: PlaceCountry
     ? lgas.filter((lga) => lga.toLowerCase().includes(needle)).slice(0, 12)
     : [];
   return (
-    <div className="showcase-row">
+    <div className="shop-row">
       <label>
-        <span className="showcase-label">{country.regionLabel}{nigeria ? null : <> <span className="showcase-optional">Optional</span></>}</span>
+        <span className="shop-label">{country.regionLabel}{nigeria ? null : <> <span className="shop-optional">Optional</span></>}</span>
         {regions.length
           ? <SelectField label={country.regionLabel} value={region} required={required && nigeria} searchable placeholder={`Choose a ${country.regionLabel.toLowerCase()}`}
               options={regions.map((item) => ({ value: item, label: item }))}

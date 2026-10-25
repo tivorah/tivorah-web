@@ -12,7 +12,7 @@ test("moveItem drops an entry at its new position without touching the original"
 });
 
 test("the hand-off loader names where people are going", () => {
-  assert.equal(destinationLabel("/business/showcase"), "your showcase");
+  assert.equal(destinationLabel("/business/shop"), "your shop");
   assert.equal(destinationLabel("/business/listings/12"), "your listing");
   assert.equal(destinationLabel("/business/events/4#tickets"), "your event");
   assert.equal(destinationLabel("/business"), "your business dashboard");

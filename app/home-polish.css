@@ -149,8 +149,8 @@ section[id] { scroll-margin-top: 100px; }
 .company-details dt { color: #625a6d; }
 .company-details dd { margin: 0; font-weight: 600; }
 .company-record-link { text-decoration: underline; text-underline-offset: 4px; }
-.showcase-photo { overflow: clip; border-radius: 24px; }
-.showcase-photo img { transform: none; border: 0; box-shadow: none; border-radius: 24px; }
+.shop-photo { overflow: clip; border-radius: 24px; }
+.shop-photo img { transform: none; border: 0; box-shadow: none; border-radius: 24px; }
 
 .local-tools { padding: 96px 0; background: #fff; border-top: 1px solid #ebe5ee; border-bottom: 1px solid #ebe5ee; }
 .local-tools-layout { display: grid; grid-template-columns: minmax(260px, .78fr) minmax(0, 1.22fr); gap: clamp(48px, 8vw, 110px); align-items: start; }

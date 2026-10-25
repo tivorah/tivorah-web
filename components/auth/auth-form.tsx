@@ -1,7 +1,7 @@
 "use client";
+import { BrandLogo } from "../brand-logo";
 import Link from "next/link";
-import Image from "next/image";
-import { FormEvent, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { ChangeEvent } from "react";
 import { memberAuth } from "../../lib/auth/client";
 import { adminApiBase } from "../../app/admin/api-base";
@@ -16,6 +16,7 @@ import { PasswordStrength, passwordMeetsRules } from "./password-strength";
 import { passwordHint } from "../../lib/password-policy";
 import { Turnstile } from "./turnstile";
 import { UsernameField } from "./username-field";
+import { Sheet } from "../ui/sheet";
 export type AuthMode =
   "signin" | "signup" | "verify" | "recover" | "two-factor";
 const titles: Record<AuthMode, string> = {
@@ -32,6 +33,16 @@ const titles: Record<AuthMode, string> = {
 const noSubscription = () => () => {};
 function useQueryString() {
   return useSyncExternalStore(noSubscription, () => window.location.search, () => "");
+}
+
+type AuthFailure = { code?: string; errorCode?: string; status?: number; statusCode?: number; message?: string } | null;
+function isUnverifiedEmailFailure(failure: AuthFailure) {
+  if (!failure) return false;
+  const code = String(failure.code ?? failure.errorCode ?? "").trim().toUpperCase().replace(/[\s-]+/g, "_");
+  if (code === "EMAIL_NOT_VERIFIED" || code === "EMAIL_VERIFICATION_REQUIRED") return true;
+  const status = failure.status ?? failure.statusCode;
+  return (status === 401 || status === 403)
+    && /email (?:is )?not verified|verify your email|email verification (?:is )?required/i.test(failure.message ?? "");
 }
 
 export function AuthForm({
@@ -68,7 +79,43 @@ export function AuthForm({
   const underage = !!birthDate && birthRules.validate(birthDate) !== "";
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  // An account that still needs verifying: ask before sending a code (same as the app's sheet).
+  const [verifyPrompt, setVerifyPrompt] = useState<{ email: string; shownEmail: string; source: "signin" | "signup"; identity?: string; password?: string } | null>(null);
+  const [sendingCode, setSendingCode] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
+  const linkedEmail = params.get("email")?.trim().toLowerCase() ?? "";
+  useEffect(() => {
+    if (initialMode !== "verify" || email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(linkedEmail)) return;
+    setEmail(linkedEmail.slice(0, 254));
+  }, [email, initialMode, linkedEmail]);
+  /** Sends the code they asked for, then shows the code step. */
+  async function sendVerificationCode() {
+    const prompt = verifyPrompt;
+    if (!prompt || sendingCode) return;
+    setSendingCode(true);
+    try {
+      if (prompt.source === "signin") {
+        const response = await fetch(`${adminApiBase() || ""}/api/v1/public/auth/unverified-sign-in`, {
+          method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userIdentity: prompt.identity, password: prompt.password, send: true }),
+        });
+        const body = await response.json().catch(() => null) as { message?: string } | null;
+        if (!response.ok) throw new Error(body?.message || "Could not send a verification code.");
+      } else {
+        const result = await memberAuth.emailOtp.sendVerificationOtp({ email: prompt.email, type: "email-verification" });
+        if (result.error) throw new Error(result.error.message || "Could not send a verification code.");
+      }
+      setEmail(prompt.email);
+      setMode("verify");
+      setNotice(`We’ve sent a 6-digit code to ${prompt.shownEmail}.`);
+      setVerifyPrompt(null);
+    } catch (cause) {
+      setNotice(cause instanceof Error ? cause.message : "Could not send a verification code.");
+    } finally {
+      setSendingCode(false);
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -95,7 +142,7 @@ export function AuthForm({
         const result = identity.includes("@")
           ? await memberAuth.signIn.email({ email: identity, password }, fetchOptions)
           : await memberAuth.signIn.username({ username: identity, password }, fetchOptions);
-        const failure = result.error as (typeof result.error & { code?: string; siteKey?: string }) | null;
+        const failure = result.error as (typeof result.error & { code?: string; siteKey?: string; statusCode?: number }) | null;
         if (failure?.code === "CAPTCHA_REQUIRED") {
           // Each token works once: show a fresh check, and sign in again as soon as it passes.
           const siteKey = failure.siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
@@ -106,23 +153,21 @@ export function AuthForm({
         }
         if (sentToken) setCaptcha((current) => current && { ...current, token: null, attempt: current.attempt + 1 });
         // Signed up but never verified (the password was right): send a fresh code and verify here.
-        if (failure?.code === "EMAIL_NOT_VERIFIED") {
-          let verifyEmail = identity;
-          if (!identity.includes("@")) {
-            const response = await fetch(`${adminApiBase() || ""}/api/v1/public/auth/unverified-sign-in`, {
-              method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ username: identity, password }),
-            });
-            const body = await response.json().catch(() => null) as { data?: { email?: string }; message?: string } | null;
-            if (!response.ok || !body?.data?.email) throw new Error(body?.message || "Your email isn’t verified yet. Sign in with your email address and we’ll send you a new code.");
-            verifyEmail = body.data.email;
-          } else {
-            await memberAuth.emailOtp.sendVerificationOtp({ email: identity, type: "email-verification" });
-          }
-          setEmail(verifyEmail);
-          setMode("verify");
-          // Typed email: shown in full. Looked up from a username: masked.
-          setNotice(`You haven’t verified your email yet. We’ve sent a new code to ${identity.includes("@") ? verifyEmail : maskEmail(verifyEmail)}.`);
+        if (isUnverifiedEmailFailure(failure) || failure?.status === 401 || failure?.statusCode === 401) {
+          const response = await fetch(`${adminApiBase() || ""}/api/v1/public/auth/unverified-sign-in`, {
+            method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
+            // Only checks: the code is sent when they choose "Send verification code".
+            body: JSON.stringify({ userIdentity: identity, password, send: false }),
+          });
+          const body = await response.json().catch(() => null) as { data?: { email?: string }; message?: string } | null;
+          if (!response.ok || !body?.data?.email) throw new Error(
+            isUnverifiedEmailFailure(failure)
+              ? body?.message || "Could not send a new verification code."
+              : result.error?.message || "Check your sign-in details.",
+          );
+          const verifyEmail = body.data.email;
+          // Typed their email: show it in full. Signed in with a username: keep it masked.
+          setVerifyPrompt({ email: verifyEmail, shownEmail: identity.includes("@") ? verifyEmail : maskEmail(verifyEmail), source: "signin", identity, password });
           return;
         }
         if (result.error)
@@ -165,9 +210,8 @@ export function AuthForm({
               body: JSON.stringify({ email: email.trim().toLowerCase() }),
             }).then((response) => response.json()).then((body) => body?.data?.status as string | undefined).catch(() => undefined);
             if (status === "unverified") {
-              await memberAuth.emailOtp.sendVerificationOtp({ email: email.trim().toLowerCase(), type: "email-verification" });
-              setMode("verify");
-              setNotice(`You’ve already started signing up with this email. We’ve sent a new code to ${email.trim().toLowerCase()}.`);
+              const typed = email.trim().toLowerCase();
+              setVerifyPrompt({ email: typed, shownEmail: typed, source: "signup" });
               return;
             }
             if (status === "registered") {
@@ -260,7 +304,7 @@ export function AuthForm({
     (mode === "recover" && codeSent);
   return (
     <div className={`auth-layout${mode === "signup" ? " auth-layout-signup" : ""}`}>
-    <div className="auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
+    <div className="auth-brand"><BrandLogo priority /></div>
     <section className="product-form auth-form">
       <p className="product-eyebrow">{mode === "signup" ? "JOIN TIVORAH" : "YOUR TIVORAH"}</p>
       <h1>{createLabel && (mode === "signin" || mode === "signup") ? mode === "signin" ? `Sign in to create ${createLabel}.` : `Create your account to get started.` : titles[mode]}</h1>
@@ -279,6 +323,17 @@ export function AuthForm({
         </>
       )}
       {mode === "signup" && <SocialSignIn socialFirst returnTo={returnTo} disabled={busy} onBusy={setBusy} initialProviders={initialProviders} />}
+      <Sheet open={Boolean(verifyPrompt)} onClose={() => { if (!sendingCode) setVerifyPrompt(null); }}
+        title="Finish verifying your email"
+        description={verifyPrompt ? verifyPrompt.source === "signin"
+          ? `The account for ${verifyPrompt.shownEmail} still needs email verification. We’ll send a 6-digit code to this email.`
+          : `You started signing up with ${verifyPrompt.shownEmail} but haven’t verified it yet. We’ll send you a new code.` : undefined}
+        footer={<><span /><span className="tv-sheet-foot-actions">
+          <button type="button" className="product-secondary" disabled={sendingCode} onClick={() => setVerifyPrompt(null)}>Cancel</button>
+          <button type="button" className="product-primary press-fx" disabled={sendingCode} onClick={() => void sendVerificationCode()}>{sendingCode ? "Sending…" : verifyPrompt?.source === "signin" ? "Send verification code" : "Send code and verify"}</button>
+        </span></>}>
+        <p className="auth-verify-hint">The code expires in 10 minutes. Check your spam folder if it doesn&apos;t arrive.</p>
+      </Sheet>
       <form onSubmit={submit} key={mode} ref={formRef}>
         {mode === "signup" ? (
           <>

@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useSyncExternalStore, type ReactNode } from "react";
+
+const subscribeNothing = () => () => {};
 import { createPortal } from "react-dom";
 import { useSheetGestures } from "../../hooks/use-sheet-gestures";
 
@@ -19,6 +21,7 @@ export function Sheet({ open, onClose, title, description, children, footer, wid
   wide?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const mounted = useSyncExternalStore(subscribeNothing, () => true, () => false);
   const opener = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -39,9 +42,10 @@ export function Sheet({ open, onClose, title, description, children, footer, wid
       element.close();
       opener.current?.focus();
     }
-  }, [open]);
+  }, [open, mounted]);
 
-  if (typeof document === "undefined") return null;
+  // Nothing on the server or the first browser render (they must match), then the portal.
+  if (!mounted) return null;
   return createPortal(
     <dialog ref={dialog} className={`tv-sheet${wide ? " is-wide" : ""}`} aria-labelledby={titleId} aria-describedby={description ? descriptionId : undefined}
       onCancel={(event) => { event.preventDefault(); onClose(); }}

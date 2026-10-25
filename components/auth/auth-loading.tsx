@@ -1,5 +1,5 @@
+import { BrandLogo } from "../brand-logo";
 import type { AuthMode } from "./auth-form";
-import Image from "next/image";
 import Link from "next/link";
 
 // Shown while an /auth/* page loads: the real logo, card and home link with
@@ -16,7 +16,7 @@ const layout: Record<AuthMode, { lines: number; fields: number; checkbox?: boole
 export function AuthFormLoading({ mode }: { mode: AuthMode }) {
   const { lines, fields, checkbox, social, label } = layout[mode];
   return <div className={`auth-layout auth-skeleton${mode === "signup" ? " auth-layout-signup" : ""}`}>
-    <div className="auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
+    <div className="auth-brand"><BrandLogo priority /></div>
     <section className="product-form auth-form" role="status" aria-busy="true" aria-label={label}>
       <div aria-hidden="true">
         <span className="auth-skeleton-eyebrow tivorah-shimmer" />

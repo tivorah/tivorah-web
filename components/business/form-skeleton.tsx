@@ -1,28 +1,28 @@
-// Loading state shaped like the business forms (Your showcase, Sell an item,
+// Loading state shaped like the business forms (Your shop, Sell an item,
 // Offer a service, Create an event): page header, then white step cards.
 const bar = (name: string) => <span className={`${name} tivorah-shimmer`} />;
 const field = (key: number) => <div key={key} className="form-skel-field">{bar("form-skel-label")}{bar("form-skel-input")}</div>;
 
 export function BusinessFormSkeleton({ shop = false }: { shop?: boolean }) {
-  const basics = <section className="showcase-step">
+  const basics = <section className="shop-step">
     {bar("form-skel-heading")}
     {field(0)}
     <div className="form-skel-field">{bar("form-skel-label")}{bar("form-skel-textarea")}</div>
-    <div className="showcase-row">{field(1)}{field(2)}</div>
+    <div className="shop-row">{field(1)}{field(2)}</div>
   </section>;
-  const photos = (count: number) => <section className="showcase-step">
+  const photos = (count: number) => <section className="shop-step">
     {bar("form-skel-heading")}{bar("form-skel-hint")}
-    <div className="showcase-photos">{Array.from({ length: count }, (_, index) => <span key={index} className="form-skel-tile tivorah-shimmer" />)}</div>
+    <div className="shop-photos">{Array.from({ length: count }, (_, index) => <span key={index} className="form-skel-tile tivorah-shimmer" />)}</div>
   </section>;
-  return <div className={`showcase-page form-skel${shop ? "" : " business-create-page"}`} role="status" aria-busy="true" aria-label={shop ? "Loading your showcase" : "Loading form"}>
-    <header className="showcase-editor-head" aria-hidden="true">
+  return <div className={`shop-editor-page form-skel${shop ? "" : " business-create-page"}`} role="status" aria-busy="true" aria-label={shop ? "Loading your shop" : "Loading form"}>
+    <header className="shop-editor-head" aria-hidden="true">
       <div>{bar("form-skel-back")}{bar("form-skel-title")}{bar("form-skel-intro")}{bar("form-skel-intro short")}</div>
-      {shop ? <div className="showcase-editor-head-actions">{bar("form-skel-pill")}{bar("form-skel-button")}</div> : null}
+      {shop ? <div className="shop-editor-head-actions">{bar("form-skel-pill")}{bar("form-skel-button")}</div> : null}
     </header>
-    {shop ? <div className="showcase-form" aria-hidden="true">
-      <section className="showcase-step">
+    {shop ? <div className="shop-form" aria-hidden="true">
+      <section className="shop-step">
         {bar("form-skel-heading")}{bar("form-skel-hint")}
-        <div className="showcase-brand"><div className="showcase-brand-slot is-cover">{bar("form-skel-label")}<div className="showcase-brand-frame tivorah-shimmer" /></div><div className="showcase-brand-slot is-logo">{bar("form-skel-label")}<div className="showcase-brand-frame tivorah-shimmer" /></div></div>
+        <div className="shop-brand"><div className="shop-brand-slot is-cover">{bar("form-skel-label")}<div className="shop-brand-frame tivorah-shimmer" /></div><div className="shop-brand-slot is-logo">{bar("form-skel-label")}<div className="shop-brand-frame tivorah-shimmer" /></div></div>
       </section>
       {basics}
       {photos(4)}
@@ -31,7 +31,7 @@ export function BusinessFormSkeleton({ shop = false }: { shop?: boolean }) {
       <div className="create-main">
         {basics}
         {photos(3)}
-        <section className="showcase-step">{bar("form-skel-heading")}<div className="showcase-row">{field(3)}{field(4)}</div></section>
+        <section className="shop-step">{bar("form-skel-heading")}<div className="shop-row">{field(3)}{field(4)}</div></section>
       </div>
       <div className="create-summary">
         <span className="form-skel-preview tivorah-shimmer" />

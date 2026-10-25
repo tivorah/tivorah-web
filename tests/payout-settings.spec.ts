@@ -70,7 +70,8 @@ test("payout statistics recover from an error and remain readable with zoom", as
   let attempts = 0;
   await page.route("**/api/v1/payments/connect/payout-summary", route => {
     attempts++;
-    return attempts === 1 ? route.fulfill({ status: 503, json: { status: false, message: "Unavailable" } }) : route.fulfill({ json: { data: { connected: true, livemode: true, updatedAt: "2026-10-06T01:00:00.000Z", currencies: [{ currency: "AUD", minorUnitExponent: 2, paidOutAmount: 0, paidOutCount: 0, availableAmount: 0, pendingAmount: 0, inTransitAmount: 0 }] } } });
+    // 500, not 503: the web client retries temporary errors (408/429/502/503/504) by itself.
+    return attempts === 1 ? route.fulfill({ status: 500, json: { status: false, message: "Unavailable" } }) : route.fulfill({ json: { data: { connected: true, livemode: true, updatedAt: "2026-10-06T01:00:00.000Z", currencies: [{ currency: "AUD", minorUnitExponent: 2, paidOutAmount: 0, paidOutCount: 0, availableAmount: 0, pendingAmount: 0, inTransitAmount: 0 }] } } });
   });
   await page.goto("/business/payouts");
   await expect(page.getByText(/Payout amounts could not load/)).toBeVisible();

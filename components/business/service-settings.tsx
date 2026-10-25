@@ -89,7 +89,7 @@ export function ServiceSettings({
   return (
     <fieldset className="service-settings">
       <legend className="sr-only">Appointment settings</legend>
-      <label className="showcase-switch service-booking-toggle">
+      <label className="shop-switch service-booking-toggle">
         <input
           type="checkbox"
           checked={value.bookingEnabled}
@@ -100,7 +100,7 @@ export function ServiceSettings({
             })
           }
         />
-        <span className="showcase-switch-track" aria-hidden="true" />
+        <span className="shop-switch-track" aria-hidden="true" />
         <span><strong>Accept online bookings</strong><small>Customers can choose an available appointment time on your service page.</small></span>
       </label>
       {value.bookingEnabled ? (
@@ -243,13 +243,13 @@ export function ServiceSettings({
             + Add time period
           </button>
           </div>
-          <div className="service-settings-section service-settings-payment"><div className="service-settings-section-head"><h3>Payment</h3></div><label className="showcase-switch">
+          <div className="service-settings-section service-settings-payment"><div className="service-settings-section-head"><h3>Payment</h3></div><label className="shop-switch">
             <input
               type="checkbox"
               checked={value.paymentRequired}
               onChange={(e) => update({ paymentRequired: e.target.checked })}
             />
-            <span className="showcase-switch-track" aria-hidden="true" />
+            <span className="shop-switch-track" aria-hidden="true" />
             <span><strong>Collect payment online</strong><small>Otherwise, customers reserve a time and arrange payment with you.</small></span>
           </label>
           {value.paymentRequired ? <>

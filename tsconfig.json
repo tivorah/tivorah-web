@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next-dev/types/**/*.ts",
     ".next/types/**/*.ts",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    ".next-turbo-check/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

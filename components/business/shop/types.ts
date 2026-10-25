@@ -1,4 +1,4 @@
-export type ShowcaseContent = {
+export type ShopContent = {
   name: string;
   slug: string;
   about: string;
@@ -14,7 +14,7 @@ export type ShowcaseContent = {
   videoId: number | null;
   videoTranscript: string;
   videoCaptions: string;
-  /** Where the showcase card also appears: the seller's item, service and event pages. */
+  /** Where the shop card also appears: the seller's item, service and event pages. */
   placements?: { items: boolean; services: boolean; events: boolean; hubs?: boolean; gallery?: boolean };
   /** Order of the sections on the shop page (Gallery, Items, Services, Events, Hubs). */
   sectionOrder?: ShopBlock[];
@@ -22,6 +22,12 @@ export type ShowcaseContent = {
   hiddenSections?: ShopBlock[];
   /** Taken offline by the seller: no public shop page, cards or links. */
   offline?: boolean;
+  /** Kind of business; its template (templates.ts) set the starting layout and section names. */
+  businessType?: "drinks" | "food" | "beauty" | "fitness" | "creative" | "tutoring" | "trades" | "retail" | "events" | "other";
+  /** One of Tivorah's accent colours (templates.ts). */
+  accent?: "violet" | "coral" | "amber" | "emerald" | "ocean" | "rose" | "graphite";
+  /** The seller's own section names, e.g. { items: "Menu" }. */
+  sectionTitles?: Partial<Record<ShopBlock, string>>;
 };
 export type ShopSection = "items" | "services" | "events";
 export type ShopBlock = "gallery" | ShopSection | "hubs";
@@ -34,8 +40,8 @@ export const normalizeSectionOrder = (order?: string[] | null): ShopBlock[] => {
 };
 export const sectionLabels: Record<ShopBlock, string> = { gallery: "Gallery", items: "Items for sale", services: "Services", events: "Events", hubs: "Hubs" };
 export const defaultPlacements: { items: boolean; services: boolean; events: boolean; hubs?: boolean; gallery?: boolean } = { items: true, services: true, events: true, hubs: true, gallery: true };
-export type ShowcaseEligibility = { items: number; services: number; events?: number; eligible: boolean };
-export type ShowcaseAsset = {
+export type ShopEligibility = { items: number; services: number; events?: number; eligible: boolean };
+export type ShopAsset = {
   id: number;
   kind: "image" | "video";
   status: string;
@@ -43,13 +49,13 @@ export type ShowcaseAsset = {
   mimeType: string;
   reviewNote?: string | null;
 };
-export type ShowcaseRecord = {
-  draft: ShowcaseContent;
-  published: ShowcaseContent | null;
+export type ShopRecord = {
+  draft: ShopContent;
+  published: ShopContent | null;
   version: number;
   slug: string;
 };
-export const emptyShowcase = (username: string): ShowcaseContent => ({
+export const emptyShop = (username: string): ShopContent => ({
   name: "",
   slug: username
     .toLowerCase()

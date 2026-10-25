@@ -41,6 +41,16 @@ export type DiscoveryItem = {
   testimonials?: { quote: string; author: string; context?: string }[];
   rating?: { average: number | null; count: number };
   reviews?: { id: number; rating: number; comment: string | null; providerReply: string | null; createdAt: string; author: { firstName: string } }[];
+  /** Items: how buyers order and get it (item detail only). */
+  orderMode?: "message" | "request";
+  readyInMinutes?: number | null;
+  offersPickup?: boolean;
+  offersDelivery?: boolean;
+  deliveryFeeCents?: number | null;
+  deliveryAreaKm?: number | null;
+  pickupNotes?: string | null;
+  inventory?: number | null;
+  createdAt?: string;
   guidelines?: { key: string; text: string }[];
   creatorUsername?: string;
   memberCount?: number;

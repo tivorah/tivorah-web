@@ -1,15 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { DiscoveryItem } from "../../lib/api/discovery";
 import { DiscoveryCard } from "../discovery/card";
-import { ShopBlock, ShopSection, ShowcaseAsset, ShowcaseContent, normalizeSectionOrder } from "../business/showcase/types";
+import { ShopBlock, ShopSection, ShopAsset, ShopContent, normalizeSectionOrder } from "../business/shop/types";
 import { AboutSummary } from "./about-summary";
 import { MediaGallery } from "./media-gallery";
 import { MessageShopLink } from "./message-shop-link";
+import { SHOP_ACCENTS, sectionTitle } from "../business/shop/templates";
 
-// A seller's shop, shared by the public page (/showcase/[slug]) and the owner's
-// preview (/business/showcase/preview) so both look exactly the same.
+// A seller's shop, shared by the public page (/shops/[slug]) and the owner's
+// preview (/business/shop/preview) so both look exactly the same.
 // Overview: hero → short About (read more) → photos & videos → the seller's
 // sections in the order they chose. Gallery has every photo and video.
 
@@ -17,12 +18,12 @@ export type ShopTab = "all" | ShopBlock;
 export type ShopHub = { id: number; name: string; avatar: string | null; description: string | null; suburb: string | null; state: string | null };
 export type ShopData = {
   username?: string;
-  content: ShowcaseContent;
-  assets: ShowcaseAsset[];
+  content: ShopContent;
+  assets: ShopAsset[];
   offerings: (DiscoveryItem & { listingType: string })[];
   events?: DiscoveryItem[];
   nextSkip: number | null;
-  hasShowcase?: boolean;
+  hasShop?: boolean;
   counts?: { items: number; services: number; events: number; hubs?: number };
   hubs?: ShopHub[];
 };
@@ -57,21 +58,21 @@ export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, p
 }) {
   const counts = data.counts ?? { items: 0, services: 0, events: data.events?.length ?? 0 };
   const asset = (id: number | null | undefined) => data.assets.find((item) => item.id === id && (preview || item.status === "approved"));
-  const showcase = data.hasShowcase ? data.content : null;
-  const cover = showcase ? asset(showcase.coverId) : undefined;
-  const logo = showcase ? asset(showcase.logoId) : undefined;
-  const introVideo = showcase ? asset(showcase.videoId) : undefined;
-  const galleryMedia = showcase ? showcase.gallery.map((item) => { const found = asset(item.assetId); return found?.url ? { id: found.id, kind: found.kind, url: found.url, alt: item.alt || `${showcase.name} media` } : null; }).filter((item): item is NonNullable<typeof item> => !!item) : [];
+  const shop = data.hasShop ? data.content : null;
+  const cover = shop ? asset(shop.coverId) : undefined;
+  const logo = shop ? asset(shop.logoId) : undefined;
+  const introVideo = shop ? asset(shop.videoId) : undefined;
+  const galleryMedia = shop ? shop.gallery.map((item) => { const found = asset(item.assetId); return found?.url ? { id: found.id, kind: found.kind, url: found.url, alt: item.alt || `${shop.name} media` } : null; }).filter((item): item is NonNullable<typeof item> => !!item) : [];
   // The introduction video leads the photos & videos (with its captions).
   const media = introVideo?.url && galleryMedia.some((item) => item.id === introVideo.id)
-    ? galleryMedia.map((item) => item.id === introVideo.id ? { ...item, captions: showcase?.videoCaptions || "", transcript: showcase?.videoTranscript || "" } : item)
+    ? galleryMedia.map((item) => item.id === introVideo.id ? { ...item, captions: shop?.videoCaptions || "", transcript: shop?.videoTranscript || "" } : item)
     : introVideo?.url && !galleryMedia.some((item) => item.id === introVideo.id)
-    ? [{ id: introVideo.id, kind: "video" as const, url: introVideo.url, alt: `${data.content.name} introduction`, captions: showcase?.videoCaptions || "", transcript: showcase?.videoTranscript || "" }, ...galleryMedia]
+    ? [{ id: introVideo.id, kind: "video" as const, url: introVideo.url, alt: `${data.content.name} introduction`, captions: shop?.videoCaptions || "", transcript: shop?.videoTranscript || "" }, ...galleryMedia]
     : galleryMedia;
   const name = data.content.name;
   // The seller's chosen order, without the sections they hid.
-  const hidden = new Set(showcase?.hiddenSections ?? []);
-  const blocks = normalizeSectionOrder(showcase?.sectionOrder).filter((key) => !hidden.has(key));
+  const hidden = new Set(shop?.hiddenSections ?? []);
+  const blocks = normalizeSectionOrder(shop?.sectionOrder).filter((key) => !hidden.has(key));
   const order = blocks.filter((key): key is ShopSection => key === "items" || key === "services" || key === "events");
   const hubs = hidden.has("hubs") ? [] : data.hubs ?? [];
   const shownMedia = hidden.has("gallery") ? [] : null;
@@ -80,12 +81,16 @@ export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, p
     services: data.offerings.filter((item) => item.listingType === "service"),
     events: data.events ?? [],
   };
-  const filledDetails = showcase ? details.filter(([key]) => showcase[key]) : [];
+  const filledDetails = shop ? details.filter(([key]) => shop[key]) : [];
   const gallery = shownMedia ?? media;
+  // The seller's own section names (e.g. "Menu") and accent colour.
+  const titleFor = (key: ShopBlock) => sectionTitle(key, shop, key === "items" || key === "services" || key === "events" ? sectionTitles[key] : key === "gallery" ? "Gallery" : "Hubs");
+  const tabFor = (key: ShopBlock) => sectionTitle(key, shop, tabTitles[key]);
+  const accent = shop?.accent ? SHOP_ACCENTS[shop.accent]?.color : undefined;
   const blockCount = (key: ShopBlock) => key === "gallery" ? gallery.length : key === "hubs" ? hubs.length : counts[key];
   const tabs: [ShopTab, string, number | null][] = [
     ["all", "Overview", null],
-    ...blocks.filter((key) => key === "gallery" || key === "hubs" ? blockCount(key) > 0 : true).map((key) => [key, tabTitles[key], blockCount(key)] as [ShopTab, string, number]),
+    ...blocks.filter((key) => key === "gallery" || key === "hubs" ? blockCount(key) > 0 : true).map((key) => [key, tabFor(key), blockCount(key)] as [ShopTab, string, number]),
   ];
   const hubCards = (list: ShopHub[]) => <div className="shop-hub-grid">{list.map((hub) => <Link key={hub.id} href={`/hubs/${hub.id}`} className="shop-hub-card">
     <span className="shop-hub-avatar" aria-hidden="true">{hub.avatar ? <HubAvatar src={hub.avatar} /> : hub.name.trim().charAt(0).toUpperCase()}</span>
@@ -101,7 +106,7 @@ export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, p
   const kindFor = (item: DiscoveryItem, section: ShopSection) => section === "events" ? "events" as const : (item as { listingType?: string }).listingType === "service" ? "services" as const : "items" as const;
   const grid = (list: DiscoveryItem[], section: ShopSection) => <div className="discover-grid">{list.map((item) => <DiscoveryCard key={`${section}-${item.id}`} kind={kindFor(item, section)} item={item} />)}</div>;
 
-  return <div className="shop-view">
+  return <div className="shop-view" data-accent={accent ? "" : undefined} style={accent ? ({ "--shop-accent": accent } as CSSProperties) : undefined}>
     {banner}
     <header className={`shop-hero${cover?.url ? " has-cover" : ""}`}>
       <div className="shop-hero-cover">{cover?.url ? <Image src={cover.url} alt="" fill priority sizes="(max-width: 700px) 100vw, 1280px" /> : null}</div>
@@ -121,31 +126,31 @@ export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, p
     </nav>
 
     {tab === "all" ? <>
-      {showcase && (showcase.story || filledDetails.length) ? <AboutSummary story={showcase.story} details={filledDetails.map(([key, label]) => [label, showcase[key]] as [string, string])} /> : null}
+      {shop && (shop.story || filledDetails.length) ? <AboutSummary story={shop.story} details={filledDetails.map(([key, label]) => [label, shop[key]] as [string, string])} /> : null}
       {blocks.map((key) => {
         if (key === "gallery") return gallery.length ? <section key={key} className="shop-section" aria-labelledby="shop-media">
-          <div className="shop-section-head"><h2 id="shop-media">Gallery</h2><Link href={href("gallery")}>View all {gallery.length} <span aria-hidden="true">→</span></Link></div>
+          <div className="shop-section-head"><h2 id="shop-media">{titleFor("gallery")}</h2><Link href={href("gallery")}>View all {gallery.length} <span aria-hidden="true">→</span></Link></div>
           <MediaGallery items={gallery} title={name} />
         </section> : null;
         if (key === "hubs") return hubs.length ? <section key={key} className="shop-section" aria-labelledby="shop-hubs">
-          <div className="shop-section-head"><h2 id="shop-hubs">Hubs</h2>{hubs.length > 3 ? <Link href={href("hubs")}>See all {hubs.length} <span aria-hidden="true">→</span></Link> : null}</div>
+          <div className="shop-section-head"><h2 id="shop-hubs">{titleFor("hubs")}</h2>{hubs.length > 3 ? <Link href={href("hubs")}>See all {hubs.length} <span aria-hidden="true">→</span></Link> : null}</div>
           {hubCards(hubs.slice(0, 3))}
         </section> : null;
         return lists[key].length ? <section key={key} className="shop-section" aria-labelledby={`shop-${key}`}>
-          <div className="shop-section-head"><h2 id={`shop-${key}`}>{sectionTitles[key]}</h2>{counts[key] > Math.min(lists[key].length, 4) ? <Link href={href(key)}>See all {counts[key]} <span aria-hidden="true">→</span></Link> : null}</div>
+          <div className="shop-section-head"><h2 id={`shop-${key}`}>{titleFor(key)}</h2>{counts[key] > Math.min(lists[key].length, 4) ? <Link href={href(key)}>See all {counts[key]} <span aria-hidden="true">→</span></Link> : null}</div>
           {grid(lists[key].slice(0, 4), key)}
         </section> : null;
       })}
       {!lists.items.length && !lists.services.length && !lists.events.length ? <p className="shop-empty">Nothing is listed here yet. Check back soon.</p> : null}
-    </> : tab === "gallery" ? <section className="shop-section" aria-label="Photos and videos">
+    </> : tab === "gallery" ? <section className="shop-section" aria-label={titleFor("gallery")}>
       {gallery.length ? <MediaGallery items={gallery} title={name} layout="grid" /> : <p className="shop-empty">No photos or videos yet.</p>}
-    </section> : tab === "hubs" ? <section className="shop-section" aria-label="Hubs">
+    </section> : tab === "hubs" ? <section className="shop-section" aria-label={titleFor("hubs")}>
       {hubs.length ? hubCards(hubs) : <p className="shop-empty">No Hubs to show.</p>}
       {pagination}
-    </section> : tab === "events" ? <section className="shop-section" aria-label="Upcoming events">
+    </section> : tab === "events" ? <section className="shop-section" aria-label={titleFor("events")}>
       {lists.events.length ? grid(lists.events, "events") : <p className="shop-empty">No upcoming events right now.</p>}
       {pagination}
-    </section> : <section className="shop-section" aria-label={tab === "items" ? "Items for sale" : "Services"}>
+    </section> : <section className="shop-section" aria-label={titleFor(tab === "services" ? "services" : "items")}>
       {data.offerings.length ? grid(data.offerings, tab) : <p className="shop-empty">{tab === "services" ? "No services right now." : "No items for sale right now."}</p>}
       {pagination}
     </section>}

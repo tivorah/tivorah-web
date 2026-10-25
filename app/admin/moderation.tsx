@@ -1,11 +1,11 @@
 "use client";
 import { useMemo, useState } from "react";
 import { Person, Snapshot, STATUS, fullName, reasonLabel, targetLabel, when, type DetailedReport } from "./report-card";
-import { ShowcaseMediaReview } from "./showcase-media-review";
+import { ShopMediaReview } from "./shop-media-review";
 
 // Moderation as an inbox: reports on the left, the chosen report on the right, and one clear
 // decision at the bottom. Urgent reasons and repeat reports come first; after a decision the next
-// report opens, so a moderator can work straight down the queue. Showcase videos have their own tab.
+// report opens, so a moderator can work straight down the queue. Shop videos have their own tab.
 
 type Request = (path: string, init?: RequestInit) => Promise<any>;
 type Filter = "todo" | "resolved" | "dismissed";
@@ -64,10 +64,10 @@ export function Moderation({ reports, request, onUpdate }: {
         <button type="button" role="tab" aria-selected={tab === "reports"} onClick={() => setTab("reports")}>
           Reports {groups.todo.length ? <b>{groups.todo.length}</b> : null}
         </button>
-        <button type="button" role="tab" aria-selected={tab === "videos"} onClick={() => setTab("videos")}>Showcase videos</button>
+        <button type="button" role="tab" aria-selected={tab === "videos"} onClick={() => setTab("videos")}>Shop videos</button>
       </div>
 
-      {tab === "videos" ? <div className="mod-videos"><ShowcaseMediaReview request={request} /></div> : (
+      {tab === "videos" ? <div className="mod-videos"><ShopMediaReview request={request} /></div> : (
         <>
           <div className="mod-filters" role="group" aria-label="Show reports">
             {([["todo", "To review"], ["resolved", "Resolved"], ["dismissed", "Dismissed"]] as [Filter, string][]).map(([value, label]) => (

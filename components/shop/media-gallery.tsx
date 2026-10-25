@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ShowcaseVideo } from "../business/showcase/video";
+import { ShopVideo } from "../business/shop/video";
 
-// Showcase media on the shop page: a bento grid (one large tile + four) and a
+// Shop media on the shop page: a bento grid (one large tile + four) and a
 // full-screen viewer. The viewer is a native modal dialog: focus is trapped,
 // Escape closes it, arrow keys move between photos and videos.
 export type GalleryMedia = { id: number; kind: "image" | "video"; url: string; alt: string; captions?: string; transcript?: string };
@@ -53,7 +53,7 @@ export function MediaGallery({ items, title, layout = "bento" }: { items: Galler
         </div>
         <figure className="shop-viewer-stage">
           {current.kind === "video"
-            ? <ShowcaseVideo key={current.url} src={current.url} title={current.alt} captions={current.captions} />
+            ? <ShopVideo key={current.url} src={current.url} title={current.alt} captions={current.captions} />
             : <Image key={current.url} src={current.url} alt={current.alt} fill sizes="100vw" />}
           <figcaption>{current.alt}</figcaption>
         </figure>

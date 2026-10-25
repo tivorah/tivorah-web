@@ -37,7 +37,7 @@
 }
 
 .section,
-.showcase {
+.shop {
   padding-inline: 0;
 }
 
@@ -103,7 +103,7 @@ footer {
 }
 
 /* Match the confident 18px mobile gutter used by the app preview. Keeping the
-   shell rule here also prevents nested sections such as the newcomer showcase
+   shell rule here also prevents nested sections such as the newcomer shop
    from applying horizontal spacing twice. */
 @media (max-width: 600px) {
   main .page-shell,

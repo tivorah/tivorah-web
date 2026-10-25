@@ -81,7 +81,7 @@ section[aria-label=Requests] .appointment-card-date{display:block}
 @media (max-width:560px){.appointment-card-head{grid-template-columns:52px 1fr}.appointment-card-head .booking-chip{grid-column:2;justify-self:start}.appointments-toggle{margin-left:0}}
 /* Time off and reviews */
 .provider-panel{display:grid;gap:12px}
-.time-off-allday{display:inline-flex!important;grid-auto-flow:column;align-items:center;justify-content:start;gap:8px!important;min-height:44px}
+.time-off-allday{display:inline-flex!important;grid-auto-flow:column;align-items:center;justify-content:flex-start;gap:8px!important;min-height:44px}
 .time-off-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
 .time-off-list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid #ece5f3;border-radius:16px}
 .time-off-list li div{display:grid;gap:2px}

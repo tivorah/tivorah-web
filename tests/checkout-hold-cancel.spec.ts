@@ -6,7 +6,10 @@ test.beforeAll(()=>{mkdirSync(fixture,{recursive:true});writeFileSync(`${fixture
 test.afterAll(()=>{rmSync(fixture,{recursive:true,force:true});rmSync(resolve('.next-dev/types/app/hold-cancel-test-preview'),{recursive:true,force:true});});
 test('keeps countdown on failure, then clears it when cancellation succeeds',async({page})=>{
  let attempts=0;await page.route('**/api/v1/web/account/events/orders/7/cancel-checkout',route=>route.fulfill({status:++attempts===1?503:200,json:{status:attempts>1,data:{outcome:'closed'}}}));
- await page.setViewportSize({width:390,height:844});await page.goto('/hold-cancel-test-preview');
+ await page.setViewportSize({width:390,height:844});
+ // The preview route is written while the dev server runs: wait until it serves it, not a 404.
+ await expect.poll(async()=>(await page.request.get('/hold-cancel-test-preview')).status(),{timeout:40000,intervals:[500,1000,2000]}).toBe(200);
+ await page.goto('/hold-cancel-test-preview');
  await expect(page.getByRole('region',{name:'Tickets held for you'})).toBeVisible();
  await page.screenshot({path:'/tmp/tivorah-hold-cancel-phone.png',fullPage:true});
  await page.getByRole('button',{name:'Cancel hold',exact:true}).click();

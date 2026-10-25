@@ -65,7 +65,7 @@ export function CancelEventDialog({ eventId, title, open, onClose, onCancelled }
       <li>The event stays in your list until refunds finish. It can’t be booked again.</li>
     </ul>
 
-    {loadError ? <p className="field-error" role="alert">{loadError}</p> : !orders ? <p className="showcase-hint" role="status">Loading orders…</p> : <>
+    {loadError ? <p className="field-error" role="alert">{loadError}</p> : !orders ? <p className="shop-hint" role="status">Loading orders…</p> : <>
       <div className="event-cancel-summary">
         <div><span>Paid orders</span><strong>{paid.length}</strong></div>
         <div><span>Refunding now</span><strong>{money(refundTotal)}</strong></div>
@@ -73,7 +73,7 @@ export function CancelEventDialog({ eventId, title, open, onClose, onCancelled }
       </div>
       {paid.length ? <>
         <h3>Refunds</h3>
-        <p className="showcase-hint">Everyone is refunded. Untick someone only if you already refunded them yourself or they agreed to a new date — we’ll email them to confirm, and refund them if they don’t agree within 7 days.</p>
+        <p className="shop-hint">Everyone is refunded. Untick someone only if you already refunded them yourself or they agreed to a new date — we’ll email them to confirm, and refund them if they don’t agree within 7 days.</p>
         <ul className="event-cancel-orders">
           {paid.map((order) => {
             const refunding = !(order.id in waivers);
@@ -95,7 +95,7 @@ export function CancelEventDialog({ eventId, title, open, onClose, onCancelled }
           })}
         </ul>
         {leftOut.length ? <p className="event-cancel-note">{leftOut.length} {leftOut.length === 1 ? "buyer" : "buyers"} will be asked to confirm by email. If they don’t agree, they’ll be refunded.</p> : null}
-      </> : <p className="showcase-hint">There are no paid orders, so nothing needs refunding.</p>}
+      </> : <p className="shop-hint">There are no paid orders, so nothing needs refunding.</p>}
     </>}
 
     <label className="event-cancel-confirm"><span>Type <strong>CANCEL</strong> to confirm</span><input value={typed} onChange={(event) => setTyped(event.target.value)} autoComplete="off" autoCapitalize="characters" /></label>
@@ -140,7 +140,7 @@ export function RefundProgress({ eventId }: { eventId: number }) {
       <ul>{data.jobs.map((job) => <li key={job.id} className={`is-${job.status}`}>
         <span><strong>{job.buyerName}</strong><small>#{job.orderId} · {job.quantity} tickets · {money(job.totalCents)}</small></span>
         <span className="refund-job-status">{jobLabel[job.status] ?? job.status}{job.status === "awaiting_buyer" && job.decisionDeadline ? ` (until ${new Date(job.decisionDeadline).toLocaleDateString("en-AU", { day: "numeric", month: "short" })})` : ""}</span>
-        {job.status === "failed" ? <button type="button" className="showcase-link" disabled={mutation.busy} onClick={() => void mutation.run(`/events/${eventId}/refunds/${job.id}/retry`, "POST", undefined, "Refund queued again.")}>Retry</button> : null}
+        {job.status === "failed" ? <button type="button" className="shop-link" disabled={mutation.busy} onClick={() => void mutation.run(`/events/${eventId}/refunds/${job.id}/retry`, "POST", undefined, "Refund queued again.")}>Retry</button> : null}
       </li>)}</ul>
     </details>
     {mutation.error ? <p className="field-error" role="alert">{mutation.error}</p> : null}

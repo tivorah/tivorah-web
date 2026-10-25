@@ -60,73 +60,73 @@ export function EventDetails({
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/events/${event.id}` : `/events/${event.id}`;
   return (
     <div className="event-details-layout">
-    <form className="showcase-form event-details-form" onSubmit={submit} aria-busy={mutation.busy}>
+    <form className="shop-form event-details-form" onSubmit={submit} aria-busy={mutation.busy}>
       <fieldset disabled={mutation.busy} className="event-details-fieldset">
-        <section className="showcase-step">
+        <section className="shop-step">
           <h2>Basics</h2>
-          <p className="showcase-hint">Keep the name and description up to date for your guests.</p>
+          <p className="shop-hint">Keep the name and description up to date for your guests.</p>
           <label>Event name<input name="title" defaultValue={event.title} required minLength={3} maxLength={160} /></label>
           <label>Description<textarea name="description" defaultValue={event.description || ""} rows={6} maxLength={10000} placeholder="What can people expect?" /></label>
-          <label><span className="showcase-label">Category <span className="showcase-optional">Optional</span></span><input name="category" defaultValue={event.category || ""} maxLength={100} /></label>
+          <label><span className="shop-label">Category <span className="shop-optional">Optional</span></span><input name="category" defaultValue={event.category || ""} maxLength={100} /></label>
         </section>
 
-        <section className="showcase-step">
+        <section className="shop-step">
           <h2>Date</h2>
-          <div className="showcase-row">
+          <div className="shop-row">
             <label>Starts (your local time)<DateField kind="datetime" name="startsAt" label="Starts at" defaultValue={localDate(event.startsAt)} required /></label>
             {/* DateField clears any custom validity message when the value changes. */}
             <label>Ends (your local time)<DateField kind="datetime" name="endsAt" label="Ends at" defaultValue={localDate(event.endsAt)} required /></label>
           </div>
         </section>
 
-        <section className="showcase-step">
+        <section className="shop-step">
           <h2>{event.locationType === "online" ? "Online event" : "Location"}</h2>
           {event.locationType === "online" ? (
             <label>Joining link<input type="url" name="onlineUrl" defaultValue={event.onlineUrl || ""} required placeholder="https://" /></label>
           ) : <>
             <p className="event-current-locality"><span>Location</span><strong>{[event.suburb, event.state, event.postcode].filter(Boolean).join(", ") || "Not set"}</strong></p>
-            <details className="showcase-more event-change-locality">
+            <details className="shop-more event-change-locality">
               <summary>Change location</summary>
               <LocalityField required={false} defaultCountry={event.countryCode || "AU"} onChange={setLocality} />
             </details>
-            <div className="showcase-row">
+            <div className="shop-row">
               <label>Venue name<input name="venueName" defaultValue={event.venueName || ""} maxLength={160} /></label>
               <label>Venue address<input name="address" defaultValue={event.address || ""} maxLength={300} /></label>
             </div>
           </>}
         </section>
 
-        <section className="showcase-step">
+        <section className="shop-step">
           <h2>Plan your visit</h2>
-          <p className="showcase-hint">Optional details help people decide and arrive prepared. Only completed answers appear on your event page.</p>
+          <p className="shop-hint">Optional details help people decide and arrive prepared. Only completed answers appear on your event page.</p>
           <label>Refund policy<SelectField name="refundPolicyPreset" label="Refund policy" defaultValue={event.refundPolicy || ""} placeholder="Choose a refund policy" options={[...refundPolicyOptions]} /></label>
           {(['agePolicy', 'arrival', 'accessibility', 'refundPolicy'] as const).map(key => <label key={key}>{({agePolicy: 'Age and ID requirements', arrival: 'Arrival, parking and doors', accessibility: 'Accessibility', refundPolicy: 'Refund details'})[key]}<textarea name={key} defaultValue={event.information?.[key] || ''} rows={key === 'agePolicy' ? 2 : 3} maxLength={key === 'agePolicy' ? 200 : 1200} /></label>)}
-          <p className="showcase-hint">Your policy cannot remove applicable consumer rights. Keep cancellation and refund instructions clear.</p>
-          <details className="showcase-more"><summary>Frequently asked questions</summary>{Array.from({length: 8}, (_, index) => <div className="showcase-step" key={index}><label>Question {index + 1}<input name={`faq-question-${index}`} defaultValue={event.information?.faqs?.[index]?.question || ''} maxLength={200} minLength={3} /></label><label>Answer {index + 1}<textarea name={`faq-answer-${index}`} defaultValue={event.information?.faqs?.[index]?.answer || ''} maxLength={1600} minLength={2} rows={3} /></label></div>)}</details>
+          <p className="shop-hint">Your policy cannot remove applicable consumer rights. Keep cancellation and refund instructions clear.</p>
+          <details className="shop-more"><summary>Frequently asked questions</summary>{Array.from({length: 8}, (_, index) => <div className="shop-step" key={index}><label>Question {index + 1}<input name={`faq-question-${index}`} defaultValue={event.information?.faqs?.[index]?.question || ''} maxLength={200} minLength={3} /></label><label>Answer {index + 1}<textarea name={`faq-answer-${index}`} defaultValue={event.information?.faqs?.[index]?.answer || ''} maxLength={1600} minLength={2} rows={3} /></label></div>)}</details>
         </section>
-        <section className="showcase-step">
+        <section className="shop-step">
           <h2 id="event-gst">Ticket GST</h2>
-          <p className="showcase-hint">AUD ticket sales require a seller declaration. Registered sellers must also choose this event’s GST treatment before customers can book.</p>
-          <p className="showcase-hint">Set your <a href="/business/payouts#event-tax">seller tax details</a> first. Your entered ticket prices include GST when applicable. This affects new bookings only.</p>
+          <p className="shop-hint">AUD ticket sales require a seller declaration. Registered sellers must also choose this event’s GST treatment before customers can book.</p>
+          <p className="shop-hint">Set your <a href="/business/payouts#event-tax">seller tax details</a> first. Your entered ticket prices include GST when applicable. This affects new bookings only.</p>
           <label>Australian GST treatment<SelectField label="Australian GST treatment" name="gstTreatment" defaultValue={event.gstTreatment || "unspecified"} options={[{value:"unspecified", label:"Not specified"}, {value:"taxable", label:"Taxable · 10% GST included"}, {value:"gst_free",label:"GST-free"}, {value:"input_taxed",label:"Input taxed"}]} /></label>
-          <p className="showcase-hint">If you are not GST registered, no GST is charged on your tickets. For a registered seller, select the treatment that applies to this event; ask your accountant if unsure.</p>
+          <p className="shop-hint">If you are not GST registered, no GST is charged on your tickets. For a registered seller, select the treatment that applies to this event; ask your accountant if unsure.</p>
         </section>
-        <section className="showcase-step">
+        <section className="shop-step">
           <h2>Group bookings</h2>
-          <label className="showcase-switch">
+          <label className="shop-switch">
             <input type="checkbox" role="switch" name="allowGroupBookings" defaultChecked={!!event.allowGroupBookings} />
-            <span className="showcase-switch-track" aria-hidden="true" />
+            <span className="shop-switch-track" aria-hidden="true" />
             <span><strong>Allow group bookings</strong><small>Shows “Book as a group” on your event page, with your group packages and a request form for large groups.</small></span>
           </label>
         </section>
 
-        <section className="showcase-step"><HubShareField kind="event" value={hubIds} onChange={setHubIds} disabled={mutation.busy} /></section>
+        <section className="shop-step"><HubShareField kind="event" value={hubIds} onChange={setHubIds} disabled={mutation.busy} /></section>
       </fieldset>
       <BookingSetupNotice issues={mutation.setupIssues} />
       {mutation.error ? <p className="product-error" role="alert">{mutation.error}</p> : null}
       {mutation.notice ? <p className="product-notice" role="status">{mutation.notice}</p> : null}
-      <div className="showcase-actions">
-        <span className="showcase-hint">Changes show on your event page straight away.</span>
+      <div className="shop-actions">
+        <span className="shop-hint">Changes show on your event page straight away.</span>
         <span><button className="product-primary press-fx" disabled={mutation.busy}>{mutation.busy ? "Saving…" : "Save changes"}</button></span>
       </div>
     </form>

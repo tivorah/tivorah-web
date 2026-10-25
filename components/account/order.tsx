@@ -69,7 +69,7 @@ function Order({ id }: { id: string }) {
             await api(`/web/account/events/orders/${held.orderId}/cancel-checkout`, { method: "POST" });
             retry();
           }} /> : null}
-          {data.order.receiptLines?.length ? <details className="showcase-more"><summary>Booking receipt</summary>{data.order.receiptLines.map((line, index) => <p key={index}>{line}</p>)}</details> : null}
+          {data.order.receiptLines?.length ? <details className="shop-more"><summary>Booking receipt</summary>{data.order.receiptLines.map((line, index) => <p key={index}>{line}</p>)}</details> : null}
           <div className="account-actions">
             {data.order.status === "confirmed" ? (
               <Link className="product-primary" href="/account/tickets">

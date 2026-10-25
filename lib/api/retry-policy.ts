@@ -1,3 +1,4 @@
+import { randomId } from "../random-id";
 /**
  * When the website retries a failed API request, and how long it waits (docs/api-conventions.md).
  * Kept identical to the mobile app's api/retryPolicy.ts.
@@ -71,7 +72,7 @@ const sleep = (ms: number, signal?: AbortSignal | null) => new Promise<void>((re
 export async function fetchWithRetry(url: string, init: RequestInit, makeSignal: () => AbortSignal): Promise<Response> {
   const method = (init.method ?? "GET").toUpperCase();
   const headers = new Headers(init.headers);
-  if (MUTATING.has(method) && !headers.has("Idempotency-Key")) headers.set("Idempotency-Key", crypto.randomUUID());
+  if (MUTATING.has(method) && !headers.has("Idempotency-Key")) headers.set("Idempotency-Key", randomId());
   const isMultipart = typeof FormData !== "undefined" && init.body instanceof FormData;
   for (let attempt = 0; ; attempt += 1) {
     const signal = makeSignal();

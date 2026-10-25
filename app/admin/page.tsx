@@ -1,4 +1,5 @@
 "use client";
+import { BrandLogo } from "../../components/brand-logo";
 import { NotificationsWorkspace } from "./notifications-workspace";
 import { type DetailedReport } from "./report-card";
 import { Moderation, openReportCount } from "./moderation";
@@ -9,7 +10,6 @@ import PaymentCountries from "./payment-countries";
 import Compliance from "./compliance";
 import FeatureManager from "./feature-manager";
 import { Escalations } from "./escalations";
-import Image from "next/image";
 import Link from "next/link";
 import "./admin.css";
 import { BrandedQrCode } from "../branded-qr-code";
@@ -705,7 +705,7 @@ export default function AdminPage() {
     return (
       <main className="admin admin-auth-page">
         <div className="content admin-security">
-          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
+          <div className="admin-auth-brand"><BrandLogo priority /></div>
           <span className="eyebrow">Security complete</span>
           <h1>Save your recovery codes</h1>
           <p className="admin-signin-intro">
@@ -760,7 +760,7 @@ export default function AdminPage() {
     return (
       <main className="admin admin-auth-page">
         <div className="content admin-signin">
-          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
+          <div className="admin-auth-brand"><BrandLogo priority /></div>
           <span className="eyebrow">Identity check</span>
           <h1>
             {useRecoveryCode
@@ -834,7 +834,7 @@ export default function AdminPage() {
     return (
       <main className="admin admin-auth-page">
         <div className="content admin-security">
-          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
+          <div className="admin-auth-brand"><BrandLogo priority /></div>
           <span className="eyebrow">One-time setup</span>
           <h1>Protect your account</h1>
           <p className="admin-signin-intro">
@@ -923,7 +923,7 @@ export default function AdminPage() {
     return (
       <main className="admin admin-auth-page">
         <div className="content admin-signin">
-          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
+          <div className="admin-auth-brand"><BrandLogo priority /></div>
           <div className="admin-session-loading" role="status">
             <span />
             <p>Checking your secure session…</p>
@@ -935,7 +935,7 @@ export default function AdminPage() {
     return (
       <main className="admin admin-auth-page">
         <div className="content admin-signin">
-          <div className="admin-auth-brand"><Image src="/tivorah-logo.png" alt="Tivorah" width={708} height={226} priority /></div>
+          <div className="admin-auth-brand"><BrandLogo priority /></div>
           <form
             className="panel admin-signin-form"
             onSubmit={login}

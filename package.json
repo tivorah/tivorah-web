@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "NEXT_DIST_DIR=.next-dev next dev -p 7456",
+    "dev": "NEXT_DIST_DIR=.next-dev next dev --turbopack -p 7456",
+    "dev:webpack": "NEXT_DIST_DIR=.next-dev next dev -p 7456",
     "build": "next build",
+    "theme:dark": "node scripts/build-dark-theme.mjs",
     "prebuild": "npm run env:check",
     "env:check": "tsx scripts/check-env.ts",
     "start": "next start -p 7456",

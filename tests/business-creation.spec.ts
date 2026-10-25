@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+// An Australian browser: the event form picks its country from the browser, and Tivorah tickets
+// (ticket types) are offered in Australia (a US browser gets the ticket-link option instead).
+test.use({ locale: "en-AU", timezoneId: "Australia/Adelaide" });
+
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/auth/get-session**", route => route.fulfill({ json: { session: { id: "session", userId: "1", expiresAt: new Date(Date.now() + 3600000).toISOString() }, user: { id: "1", email: "taylor@example.test", name: "Taylor" } } }));
   await page.route("**/api/v1/web/account", route => route.fulfill({ json: { data: { id: 1, username: "taylor", email: "taylor@example.test", firstName: "Taylor", lastName: null } } }));
@@ -53,11 +57,13 @@ test("business navigation switches between listings and events", async ({ page }
 test("phone workspace keeps creation and business views reachable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/business");
-  await page.getByText("Create on Tivorah").click();
-  await page.getByRole("link", { name: "Offer a service", exact: true }).click();
+  // On phones the app-style bottom bar has Create (a sheet of choices) and the Events tab.
+  const bar = page.getByRole("navigation", { name: "Manage business" });
+  await bar.getByRole("button", { name: "Create" }).click();
+  await page.getByRole("link", { name: /^Offer a service/ }).click();
   await expect(page).toHaveURL(/\/business\/create\?type=service$/);
   await page.goto("/business");
-  await page.getByRole("navigation", { name: "Business navigation on phones" }).getByRole("link", { name: "Events" }).click();
+  await bar.getByRole("link", { name: "Events" }).click();
   await expect(page.getByRole("heading", { name: "Your events" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });

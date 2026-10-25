@@ -1,5 +1,6 @@
 import type { Locality } from "./locality-field";
 import { centsOrThrow } from "../../lib/money";
+import { itemOrderingPayload } from "./item-ordering";
 export type CreationKind = "item" | "service" | "event";
 export function creationPayload(
   form: FormData,
@@ -76,6 +77,7 @@ export function creationPayload(
     condition: text("condition") || "used_good",
     messagePrompts: [text("prompt1"), text("prompt2"), text("prompt3")].filter(Boolean),
     ...(text("pickupNotes") ? { pickupNotes: text("pickupNotes") } : {}),
+    ...(kind === "item" ? itemOrderingPayload(form) : {}),
     ...(kind === "service"
       ? {
           serviceMode: text("mode") || "at_provider",

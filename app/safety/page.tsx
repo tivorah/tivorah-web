@@ -30,7 +30,7 @@ export default function SafetyCentre() {
       </ol>
       <p>
         On the website, use the <strong>Report a concern</strong> link on the item, service, Hub or
-        showcase page. If you cannot access the item or do not have an account, email <a href="mailto:support@tivorah.com?subject=Safety%20report"><strong>support@tivorah.com</strong></a> with
+        shop page. If you cannot access the item or do not have an account, email <a href="mailto:support@tivorah.com?subject=Safety%20report"><strong>support@tivorah.com</strong></a> with
         the subject “Safety report”. Include the relevant username, link or approximate time.
         Do not send passwords, verification codes, identity documents or intimate images.
       </p>

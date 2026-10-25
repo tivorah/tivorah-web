@@ -19,6 +19,8 @@ test('admin can pause all seller countries and recover from a concurrent edit', 
     return route.fulfill({json:{data:policy}});
   });
   await page.setViewportSize({width:390,height:844});
+  // The preview route is written while the dev server runs: wait until it serves it, not a 404.
+  await expect.poll(async () => (await page.request.get('/payment-countries-test-preview')).status(), { timeout: 40000, intervals: [500, 1000, 2000] }).toBe(200);
   await page.goto('/payment-countries-test-preview');
   await expect(page.getByRole('heading',{name:'Seller payment countries'})).toBeVisible();
   await expect(page.getByRole('button',{name:'Save payment countries'})).toBeDisabled();

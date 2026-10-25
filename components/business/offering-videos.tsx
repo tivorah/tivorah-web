@@ -37,7 +37,7 @@ export function OfferingVideosEditor({ kind, id }: { kind: Kind; id: number }) {
       let asset: { id: number; status: string; url: string | null };
       try {
         // Straight to storage in chunks (lib/direct-upload.ts); older form upload as a fallback.
-        const result = await directUpload<{ asset?: typeof asset }>(file, { purpose: "showcase", kind: "video", durationSeconds: seconds || undefined, onProgress: setProgress });
+        const result = await directUpload<{ asset?: typeof asset }>(file, { purpose: "shop", kind: "video", durationSeconds: seconds || undefined, onProgress: setProgress });
         if (!result.asset) throw new Error("Upload finished but the video wasn’t added. Please try again.");
         asset = result.asset;
       } catch (error) {
@@ -59,8 +59,8 @@ export function OfferingVideosEditor({ kind, id }: { kind: Kind; id: number }) {
     } catch (cause) { setSaveError(cause instanceof Error ? cause.message : "Could not save videos."); }
     finally { setBusy(false); }
   }
-  return <section className="showcase-step offering-videos-editor">
-    <h2>Videos</h2><p className="showcase-hint">Pin up to three videos (3 minutes, 200 MB each) on this {kind}’s page. Videos are reviewed before visitors can see them. A transcript and timed WebVTT captions are optional and help more people follow along.</p>
+  return <section className="shop-step offering-videos-editor">
+    <h2>Videos</h2><p className="shop-hint">Pin up to three videos (3 minutes, 200 MB each) on this {kind}’s page. Videos are reviewed before visitors can see them. A transcript and timed WebVTT captions are optional and help more people follow along.</p>
     {loading && !data ? <LoadingState label="Loading videos…" /> : null}
     {error ? <p role="alert">{error} <button type="button" className="product-secondary" onClick={retry}>Try again</button></p> : null}
     {data ? <>

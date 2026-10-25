@@ -78,7 +78,13 @@ export function ReviewsPanel() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
+  const [page, setPage] = useState(0);
   const rows = data?.reviews ?? [];
+  // Ten per page; the average still counts every review.
+  const pageCount = Math.max(1, Math.ceil(rows.length / REVIEWS_PER_PAGE));
+  const currentPage = Math.min(page, pageCount - 1);
+  const pageRows = rows.slice(currentPage * REVIEWS_PER_PAGE, (currentPage + 1) * REVIEWS_PER_PAGE);
+  const goTo = (next: number) => { setPage(next); setReplying(null); document.getElementById("provider-reviews-top")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const average = rows.length ? rows.reduce((sum, row) => sum + row.review.rating, 0) / rows.length : 0;
   async function reply(event: FormEvent, id: number) {
     event.preventDefault();
@@ -91,9 +97,9 @@ export function ReviewsPanel() {
   if (loading && !data) return <LoadingState label="Loading reviews…" variant="compact" />;
   if (error) return <p role="alert">{error} <button type="button" className="product-secondary" onClick={retry}>Try again</button></p>;
   if (!rows.length) return <div className="product-empty"><h2>No reviews yet</h2><p>After each completed appointment we ask the customer for a review. They appear here and on your service pages.</p></div>;
-  return <section className="provider-panel" aria-label="Reviews">
+  return <section className="provider-panel" aria-label="Reviews" id="provider-reviews-top">
     <p className="reviews-summary"><span aria-hidden="true">★</span> <strong>{average.toFixed(1)}</strong> from {rows.length} review{rows.length === 1 ? "" : "s"}</p>
-    <ul className="provider-reviews">{rows.map(({ review, title, customerName }) => <li key={review.id}>
+    <ul className="provider-reviews">{pageRows.map(({ review, title, customerName }) => <li key={review.id}>
       <header><strong>{title}</strong><span aria-label={`${review.rating} out of 5 stars`}>{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span></header>
       <p className="booking-actions-note">{(customerName || "Customer").split(" ")[0]} · {new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short", year: "numeric" }).format(new Date(review.createdAt))}</p>
       {review.comment ? <p>{review.comment}</p> : null}
@@ -101,5 +107,11 @@ export function ReviewsPanel() {
         : replying === review.id ? <form className="booking-actions-panel" onSubmit={(event) => void reply(event, review.id)}><label htmlFor={`reply-${review.id}`}>Public reply (you can reply once)<textarea id={`reply-${review.id}`} rows={3} maxLength={1000} value={text} onChange={(event) => setText(event.target.value)} /></label>{problem ? <p role="alert" className="product-error">{problem}</p> : null}<div><button className="product-primary" disabled={busy || !text.trim()}>{busy ? "Posting…" : "Post reply"}</button><button type="button" className="product-secondary" onClick={() => setReplying(null)}>Cancel</button></div></form>
         : <button type="button" className="booking-actions-link" onClick={() => { setReplying(review.id); setText(""); setProblem(""); }}>Reply publicly</button>}
     </li>)}</ul>
+    {pageCount > 1 ? <nav className="account-ticket-pagination" aria-label="Review pages">
+      {currentPage > 0 ? <button type="button" onClick={() => goTo(currentPage - 1)}>Previous</button> : <span aria-hidden="true" />}
+      <span>Page {currentPage + 1} of {pageCount}</span>
+      {currentPage < pageCount - 1 ? <button type="button" onClick={() => goTo(currentPage + 1)}>Next</button> : <span aria-hidden="true" />}
+    </nav> : null}
   </section>;
 }
+const REVIEWS_PER_PAGE = 10;

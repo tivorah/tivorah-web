@@ -136,7 +136,7 @@ export function PackageFields({ draft, onChange, index, onRemove, lockPrice = fa
       {onRemove ? <button type="button" className="package-card-remove" onClick={onRemove} aria-label={`Remove ${draft.name.trim() || `package ${index + 1}`}`}>×</button> : null}
     </div>
 
-    <div className="showcase-row">
+    <div className="shop-row">
       <label>Package name
         <input value={draft.name} onChange={(event) => set({ name: event.target.value })} required maxLength={100} placeholder={group ? "e.g. Group of 6" : "e.g. Early bird"} />
       </label>
@@ -147,14 +147,14 @@ export function PackageFields({ draft, onChange, index, onRemove, lockPrice = fa
         <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} aria-describedby={lockPrice ? `${id}-locked` : undefined} />
       </label>}
     </div>
-    {group ? <div className="showcase-row">
+    {group ? <div className="shop-row">
       <label>Price per person
         <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} />
       </label>
       <label>{group ? "Groups available" : "Tickets available"}<input type="number" min={1} max={1000000} value={draft.quantity} onChange={(event) => set({ quantity: event.target.value })} required /></label>
     </div> : null}
     {summary ? <p className="package-summary">{summary}</p> : null}
-    {lockPrice ? <span id={`${id}-locked`} className="showcase-hint">Tickets have sold, so the price and group size are fixed.</span> : null}
+    {lockPrice ? <span id={`${id}-locked`} className="shop-hint">Tickets have sold, so the price and group size are fixed.</span> : null}
 
     {!group ? <label className="package-quantity">Tickets available<input type="number" min={1} max={1000000} value={draft.quantity} onChange={(event) => set({ quantity: event.target.value })} required /></label> : null}
 
@@ -164,27 +164,27 @@ export function PackageFields({ draft, onChange, index, onRemove, lockPrice = fa
         <SelectField label="Admission type" value={draft.kind} onChange={(value) => set({ kind: value as PackageDraft["kind"] })} disabled={lockPrice}
           options={[{ value: "standard", label: "Single ticket · one person" }, { value: "group", label: "Group ticket · one booking for everyone" }]} />
       </label>
-      <div className="showcase-row">
+      <div className="shop-row">
         <label>{group ? "Groups per booking" : "Limit per person"}<input type="number" min={1} max={20} value={draft.maxPerBuyer} onChange={(event) => set({ maxPerBuyer: event.target.value })} required /></label>
-        {group ? <label><span className="showcase-label">Usual price per person <span className="showcase-optional">Optional</span></span>
+        {group ? <label><span className="shop-label">Usual price per person <span className="shop-optional">Optional</span></span>
           <input type="number" min={0} max={1000000} step="0.01" value={draft.regularPrice} onChange={(event) => set({ regularPrice: event.target.value })} placeholder="Shows the saving" />
         </label> : null}
       </div>
       <label>What’s included or required
         <textarea rows={2} maxLength={1000} value={draft.description} onChange={(event) => set({ description: event.target.value })} placeholder="e.g. Includes a welcome drink. Student ID required at entry." />
       </label>
-      <div className="showcase-row">
+      <div className="shop-row">
         <label>Sales start<DateField name={`${draft.key}-sales-start`} label="Sales start" kind="datetime" value={draft.salesStartAt} onChange={(value: string) => set({ salesStartAt: value })} /></label>
         <label>Sales end<DateField name={`${draft.key}-sales-end`} label="Sales end" kind="datetime" value={draft.salesEndAt} onChange={(value: string) => set({ salesEndAt: value })} /></label>
       </div>
       {releaseOptions.length ? <label>Goes on sale when this sells out
         <SelectField label="Goes on sale when this sells out" value={draft.releaseAfter} onChange={(value) => set({ releaseAfter: value })}
           options={[{ value: "", label: "Not linked — use the sale dates above" }, ...releaseOptions]} />
-        <span className="showcase-hint">Great for releases: Second release opens automatically when Early bird sells out.</span>
+        <span className="shop-hint">Great for releases: Second release opens automatically when Early bird sells out.</span>
       </label> : null}
-      <label className="showcase-switch package-hidden-switch">
+      <label className="shop-switch package-hidden-switch">
         <input type="checkbox" role="switch" checked={draft.hidden} onChange={(event) => set({ hidden: event.target.checked })} />
-        <span className="showcase-switch-track" aria-hidden="true" />
+        <span className="shop-switch-track" aria-hidden="true" />
         <span><strong>Only with an access code</strong><small>Hidden from the event page until someone enters the code — for presales, VIPs or guest lists.</small></span>
       </label>
       {draft.hidden ? <label>Access code
@@ -210,7 +210,7 @@ export function PackagesEditor({ value, onChange }: { value: PackageDraft[]; onC
           else if (name === "custom") add();
         }} options={[{ value: "", label: "Choose a ticket type" }, ...PACKAGE_PRESETS.filter((preset) => !used.has(preset.name.toLowerCase())).map((preset) => ({ value: preset.name, label: `${preset.icon} ${preset.name} · ${preset.blurb}` })), { value: "custom", label: "Custom package" }]} />
       </label>
-    </div> : <p className="showcase-hint">You can have up to {MAX_PACKAGES} packages.</p>}
+    </div> : <p className="shop-hint">You can have up to {MAX_PACKAGES} packages.</p>}
   </div>;
 }
 
@@ -266,7 +266,7 @@ export function TicketPackageList({ value, onChange }: { value: PackageDraft[]; 
     </ul> : <p className="ticket-list-empty">Add at least one ticket type so people can book.</p>}
     {value.length < MAX_PACKAGES ? <button type="button" className="ticket-list-add press-fx" onClick={() => { setError(""); setPicking(true); }}>
       <span aria-hidden="true">+</span> Add a ticket type
-    </button> : <p className="showcase-hint">You can have up to {MAX_PACKAGES} ticket types.</p>}
+    </button> : <p className="shop-hint">You can have up to {MAX_PACKAGES} ticket types.</p>}
 
     <Sheet open={picking} onClose={close} title="Add a ticket type" description="Start from a common type — you can rename and adjust everything.">
       <div className="ticket-presets" role="list">
