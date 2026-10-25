@@ -71,7 +71,7 @@ export function DiscoveryCard({
           const byline = discoveryByline(kind, item);
           return <p className="discover-seller">{byline ? <>{kind === "events" ? "Organised by " : "By "}{byline}</> : "\u00a0"}</p>;
         })() : null}
-        {kind === "hubs" ? <p className="hub-card-meta">{item.memberCount != null ? `${item.memberCount} ${item.memberCount === 1 ? "person" : "people"}` : "New Hub"}{item.ownerName || item.creatorUsername ? ` · Created by ${item.ownerName || `@${item.creatorUsername}`}` : ""}</p> : null}
+        {kind === "hubs" ? <p className="hub-card-meta">{item.memberCount != null ? `${item.memberCount} ${item.memberCount === 1 ? "person" : "people"}` : "New Hub"}{item.creatorUsername || item.ownerName ? ` · Created by ${item.creatorUsername ? `@${item.creatorUsername}` : item.ownerName}` : ""}</p> : null}
         <div className="discover-card-bottom">
           <strong>
             {kind === "events"
