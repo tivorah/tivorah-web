@@ -1573,6 +1573,9 @@
 .hub-detail-hero { overflow: hidden; border: 1px solid #e4dce9; border-radius: 28px; background: #fff; }
 .hub-detail-cover { position: relative; height: clamp(180px, 24vw, 300px); background: linear-gradient(115deg, #a373d7, #68439e 55%, #35244d); }
 .hub-detail-cover img { object-fit: cover; }
+.hub-detail-cover-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+/* Reduced motion: keep the still cover photo, never a moving one. */
+@media (prefers-reduced-motion: reduce) { .hub-detail-cover-video { display: none; } }
 .hub-detail-identity { display: flex; align-items: center; gap: 24px; padding: 0 clamp(24px, 4vw, 48px) 30px; }
 .hub-detail-identity-copy { min-width: 0; padding-top: 24px; }
 .hub-detail-avatar { width: 108px; height: 108px; position: relative; display: grid; flex: none; place-items: center; overflow: hidden; margin-top: -34px; border: 5px solid #fff; border-radius: 50%; background: #e3d4f1; color: #7043a8; font-size: 52px; box-shadow: 0 8px 20px #21192720; }

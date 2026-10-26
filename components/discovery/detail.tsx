@@ -82,7 +82,9 @@ export async function DiscoveryDetail({
     <OwnerManage ownerUsername={item.creatorUsername} appPath={`hubs/invite/${id}`} label="Manage Hub in the app" />
     <article className="hub-detail">
       <div className="hub-detail-hero">
-        <div className="hub-detail-cover">{item.coverImage ? <Image src={item.coverImage} alt="" fill sizes="(max-width: 760px) 100vw, 1280px" priority /> : null}</div>
+        <div className="hub-detail-cover">{item.coverImage ? <Image src={item.coverImage} alt="" fill sizes="(max-width: 760px) 100vw, 1280px" priority /> : null}
+          {/* An approved cover video plays over the photo, silently and on a loop, like in the app. */}
+          {item.coverVideoUrl ? <video className="hub-detail-cover-video" src={item.coverVideoUrl} poster={item.coverImage ?? undefined} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1} /> : null}</div>
         <div className="hub-detail-identity">
           <div className="hub-detail-avatar">{item.image ? <Image src={item.image} alt="" fill sizes="(max-width: 760px) 76px, 108px" /> : <span aria-hidden="true">◎</span>}</div>
           <div className="hub-detail-identity-copy"><p className="product-eyebrow">TIVORAH HUB</p><h1>{item.title}</h1><p className="hub-detail-location">{[item.locality, item.state].filter(Boolean).join(", ") || "Australia"}</p><div className="hub-detail-stats">{item.creatorUsername ? <span>Created by <strong>@{item.creatorUsername}</strong></span> : null}{item.memberCount != null ? <span><strong>{item.memberCount}</strong> {item.memberCount === 1 ? "person" : "people"}</span> : null}</div></div>

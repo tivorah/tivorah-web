@@ -68,8 +68,10 @@ export default function Privacy() {
         </li>
         <li>
           <strong>Hub and social activity:</strong> Hubs you create, join or
-          request to join; membership and moderation status; Banter, threads,
-          announcements, comments, reactions, polls and reports.
+          request to join, including their cover photos and an optional short
+          cover video (reviewed by Tivorah before it appears publicly);
+          membership and moderation status; Banter, threads, announcements,
+          comments, reactions, polls and reports.
         </li>
         <li>
           <strong>Messages and calls:</strong> conversation content where the

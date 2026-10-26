@@ -90,6 +90,13 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         is not an endorsement of a member&apos;s Hub, event or listing.
       </p>
       <p>
+        <strong>Cover videos.</strong> A Hub can have a short cover video of up
+        to 30 seconds. It plays silently on a loop on the Hub. Tivorah reviews
+        it before it appears publicly; until then, and if it isn’t approved,
+        the Hub shows its cover photo. Cover videos must follow these Terms and
+        our Community Guidelines like any other content.
+      </p>
+      <p>
         <strong>Welcome posts.</strong> When you create a Hub, it can open with
         a welcome post from you. We suggest the words, based on your Hub&apos;s
         name and interests; you can edit them or turn the post off before you

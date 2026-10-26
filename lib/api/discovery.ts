@@ -9,6 +9,8 @@ export type DiscoveryItem = {
   description: string | null;
   image: string | null;
   coverImage?: string | null;
+  /** A Hub's approved short cover video (muted, looping). */
+  coverVideoUrl?: string | null;
   images?: string[];
   category?: string | null;
   locality: string | null;
