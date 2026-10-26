@@ -37,3 +37,7 @@
 .event-viewer button:focus-visible{outline:3px solid #c8a7f5;outline-offset:2px}
 @media(max-width:760px){.event-viewer-stage{margin:0}.event-viewer-nav{display:none}}
 @media(prefers-reduced-motion:reduce){.event-gallery-tile .event-gallery-cover{transition:none}}
+
+/* An event's cover video, playing silently over its first photo; still photo for reduced motion. */
+.gallery-cover-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .gallery-cover-video { display: none; } }
