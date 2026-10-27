@@ -403,25 +403,28 @@ export default function Privacy() {
         bodies. Session replay and automatic touch capture are disabled.
       </p>
       <p>
-        You can stop or resume optional mobile product analytics under
-        <strong> Profile → Settings &amp; privacy → Usage analytics</strong>. This does not
-        disable essential operational, fraud-prevention, security or transaction
-        records.
+        Mobile product analytics is optional and off until you agree: the app
+        asks once, and you can turn it on or off at any time under
+        <strong> Profile → Settings &amp; privacy → Usage analytics</strong>. Saying no
+        does not affect any feature, and it does not disable essential
+        operational, fraud-prevention, security or transaction records.
       </p>
       <p>
         <strong>On the website</strong>, optional PostHog usage analytics
         records the pages you view, how long you stay, errors, basic browser
         and device details and your IP address, linked to an internal account
-        number when you are signed in. It uses no cookies or browser storage,
-        never runs when your browser sends a Global Privacy Control or Do Not
-        Track signal, and can be turned off in our{" "}
+        number when you are signed in. It is off until you choose Allow when
+        the website asks. It uses no cookies, keeps only your choice in browser
+        storage, never runs when your browser sends a Global Privacy Control or
+        Do Not Track signal, and can be changed in our{" "}
         <Link href="/cookies">Cookie Notice</Link> or under{" "}
         <strong>Your account → Profile &amp; security → Privacy</strong>.
       </p>
       <p>
-        <strong>Error monitoring.</strong> When something fails in the app, on
-        the website or on our servers, we send an error report to PostHog so we
-        can fix it. A report contains technical details of the error (such as
+        <strong>Error monitoring.</strong> When something fails on our servers,
+        we send an error report to PostHog so we can fix it and keep Tivorah
+        secure. Error reports from the app and the website are part of usage
+        analytics, so they are sent only if you allowed it. A report contains technical details of the error (such as
         the screen or route, the type of request and the error message), your
         app or browser version and, if you are signed in, an internal account
         number. It is not designed to include your messages, posts, passwords or

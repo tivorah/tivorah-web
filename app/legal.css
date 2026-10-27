@@ -157,6 +157,8 @@ input:focus-visible {
 }
 
 .contact-form { margin: 38px 0 52px; padding: clamp(22px, 4vw, 34px); border: 1px solid #ded6e3; border-radius: 22px; background: #fbf9fc; display: grid; gap: 18px; }
+/* Phones: no card around the form, so the fields use the full width inside the page margin. */
+@media (max-width: 600px) { .contact-form { margin: 28px 0 40px; padding: 0; border: 0; border-radius: 0; background: transparent; } }
 .contact-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .contact-form label { display: grid; gap: 8px; color: #302735; font-size: 14px; font-weight: 750; }
 .contact-form input, .contact-form select, .contact-form textarea { width: 100%; min-height: 48px; border: 1px solid #cfc5d5; border-radius: 12px; background: #fff; color: #211c24; padding: 12px 14px; font: inherit; font-size: 16px; font-weight: 400; }

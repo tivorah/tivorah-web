@@ -337,6 +337,13 @@ label > .shop-hint { justify-self: end; }
 .shop-profile-button:hover { background: #f5f0f7; }
 .shop-profile-button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
 .shop-profile-label { display: none; }
+/* Copy link (components/shop/copy-shop-link.tsx): a pill beside the profile button. */
+.shop-copy-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none; height: 44px; padding: 0 14px; border: 1px solid #ded6e6; border-radius: 999px; background: #ffffff; color: #211d23; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+.shop-copy-button:hover { background: #f5f0f7; }
+.shop-copy-button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-copy-button.is-copied { border-color: #b9e3c9; background: #e9f7ee; color: #14734b; }
+.shop-copy-error { flex-basis: 100%; color: #b3263e; font-size: 13px; font-weight: 600; }
+.shop-hero-actions:has(.shop-copy-error) { flex-wrap: wrap; }
 /* Without a Message button (the owner, or messaging unavailable) the profile button says what it does. */
 .shop-hero-actions:not(:has(.shop-message-button, .shop-message-placeholder)) .shop-profile-button { width: auto; padding: 0 16px; }
 .shop-hero-actions:not(:has(.shop-message-button, .shop-message-placeholder)) .shop-profile-label { display: inline; }

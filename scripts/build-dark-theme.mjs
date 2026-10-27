@@ -24,7 +24,7 @@ export const SOURCES = [
   "app/centered-layout.css", "app/journey-polish.css", "app/legal.css", "app/home-polish.css", "app/date-field.css",
   "app/select-field.css", "app/shop.css", "app/refine.css", "app/sheet.css", "app/form-shape.css", "app/shop-editor.css",
   "app/mobile-app.css", "app/events/events.css", "app/media-gallery.css", "app/hub-preview.css",
-  "components/ui/section-nav.css", "components/discovery/service-highlights.css", "components/discovery/checkout-hold-banner.css",
+  "components/ui/section-nav.css", "components/analytics/analytics-consent.css", "components/discovery/service-highlights.css", "components/discovery/checkout-hold-banner.css",
   "components/orders/item-orders.css", "components/bookings/bookings.css", "components/account/booking-help.css",
   "components/business/hubs/hubs.css",
 ].filter((file) => existsSync(join(root, file)));

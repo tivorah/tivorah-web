@@ -9,6 +9,7 @@ import { MediaGallery } from "./media-gallery";
 import { shopMedia, shopTabKeys } from "./shop-tabs";
 export { shopOpeningTab } from "./shop-tabs";
 import { MessageShopLink } from "./message-shop-link";
+import { CopyShopLink } from "./copy-shop-link";
 import { SHOP_ACCENTS, sectionTitle } from "../business/shop/templates";
 
 // A seller's shop, shared by the public page (/shops/[slug]) and the owner's
@@ -114,6 +115,8 @@ export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, p
           {/* Like the app: the main action (Message, or Manage shop for the owner) beside a round profile button. */}
           {contactSlug || data.username ? <div className="shop-hero-actions">
             {contactSlug ? <MessageShopLink slug={contactSlug} ownerUsername={data.username} /> : null}
+            {/* Public page only (not the owner's preview): copy the shop's address to send it on. */}
+            {contactSlug && !preview ? <CopyShopLink slug={contactSlug} name={name} /> : null}
             {data.username ? <Link className="shop-profile-button" href={`/u/${encodeURIComponent(data.username)}`} aria-label={`View ${name}’s profile`}>
               <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="8.5" r="4" /><path d="M4.5 20.5c1.4-3.6 4.2-5.4 7.5-5.4s6.1 1.8 7.5 5.4" /></svg>
               <span className="shop-profile-label">View profile</span>

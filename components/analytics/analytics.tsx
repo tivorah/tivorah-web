@@ -2,8 +2,9 @@
 import { useEffect, useRef } from "react";
 import { useAccount } from "../../hooks/use-account";
 import { identifyAccount, resetAnalytics, startAnalytics } from "../../lib/analytics";
+import { AnalyticsConsent } from "./analytics-consent";
 
-/** Starts PostHog once and keeps the identified account in step with sign-in and sign-out. */
+/** Starts PostHog once (only after the visitor agreed) and keeps the identified account in step with sign-in and sign-out. */
 export function Analytics() {
   const { account, signedOut } = useAccount();
   const identified = useRef<number | null>(null);
@@ -17,5 +18,5 @@ export function Analytics() {
       resetAnalytics();
     }
   }, [account, signedOut]);
-  return null;
+  return <AnalyticsConsent />;
 }

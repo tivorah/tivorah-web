@@ -12,7 +12,7 @@ const storage = [
   ["Checkout and booking progress", "Browser storage (this tab only)", "Remembers an in-progress ticket or appointment checkout so a refresh or retry does not charge you twice.", "Until the tab is closed or checkout ends"],
   ["Ticket access", "Browser storage (this tab only)", "Lets you view tickets you just bought without an account.", "Until the tab is closed"],
   ["Dismissed messages", "Browser storage (this tab only)", "Stops the same tip appearing again after you close it.", "Until the tab is closed"],
-  ["Usage analytics choice", "Browser storage", "Remembers that you turned usage analytics off, so it stays off. It contains no account details.", "Until you turn analytics back on or clear your browser storage"],
+  ["Usage analytics choice", "Browser storage", "Remembers whether you allowed usage analytics or said no, so we don’t ask again. It contains no account details.", "Until you change it or clear your browser storage"],
 ] as const;
 
 export default function Cookies() {
@@ -20,7 +20,7 @@ export default function Cookies() {
     <article className="content">
       <span className="eyebrow">Privacy</span>
       <h1>Cookie Notice</h1>
-      <p className="legal-meta"><strong>Last updated:</strong> 26 October 2026</p>
+      <p className="legal-meta"><strong>Last updated:</strong> 28 October 2026</p>
       <p>
         This notice explains the cookies and similar browser storage used on tivorah.com. The
         Tivorah mobile app uses device storage and secure storage instead of browser cookies;
@@ -32,7 +32,8 @@ export default function Cookies() {
         <p>
           We only use cookies and browser storage that are needed to make the website work and
           keep your account safe. We do not use advertising cookies or cross-site tracking. Our
-          optional usage analytics uses no cookies at all, and you can turn it off below.
+          optional usage analytics is off unless you allow it, uses no cookies at all, and you can
+          change your choice below at any time.
         </p>
       </div>
 
@@ -59,9 +60,11 @@ export default function Cookies() {
         private codes in ticket, refund or transfer links, and we do not record your screen.
       </p>
       <p>
-        It uses no cookies and stores nothing on your device: it lasts only while the page is
-        open. It never runs if your browser sends a Global Privacy Control or Do Not Track signal.
-        You can turn it off or on here at any time:
+        It is off until you choose <strong>Allow</strong> when we ask, or turn it on here. It uses
+        no cookies and stores nothing on your device apart from your choice: the data lasts only
+        while the page is open. It never runs if your browser sends a Global Privacy Control or Do
+        Not Track signal. Error reports from your browser are part of usage analytics, so they are
+        sent only if you allowed it. You can change your choice here at any time:
       </p>
       <AnalyticsPreference />
 

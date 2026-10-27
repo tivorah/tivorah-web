@@ -1,0 +1,6 @@
+{
+  "cookies": [],
+  "origins": [
+    { "origin": "http://localhost:7456", "localStorage": [{ "name": "tivorah_analytics_choice", "value": "off" }] }
+  ]
+}

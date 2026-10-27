@@ -16,3 +16,10 @@
 .groups summary { cursor: pointer; min-height: 44px; padding: 8px 0; color: #65409f; font-weight: 600; }
 .groups summary:focus-visible { outline: 3px solid #65409f; outline-offset: 3px; }
 @media (max-width: 600px) { .groups { grid-template-columns: 1fr; } }
+
+/* Dark theme (CSS modules aren't covered by the generated app/theme-dark.css), same palette. */
+:global(:root[data-theme="dark"]) .topics { background: #19161a; }
+:global(:root[data-theme="dark"]) .guide a, :global(:root[data-theme="dark"]) .groups summary { color: #c9adf7; }
+:global(:root[data-theme="dark"]) .guide a:focus-visible, :global(:root[data-theme="dark"]) .groups summary:focus-visible { outline-color: #c9adf7; }
+:global(:root[data-theme="dark"]) .section { border-top-color: #3a333e; }
+:global(:root[data-theme="dark"]) .where { color: #b7afbb; }

@@ -1914,6 +1914,12 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
   border: 1px solid #514555;
   background: #19161a;
 }
+@media (max-width: 600px) {
+:root[data-theme="dark"] .contact-form {
+  border: 0;
+  background: transparent;
+}
+}
 :root[data-theme="dark"] .contact-form label {
   color: #ddd7df;
 }
@@ -2702,6 +2708,25 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
 }
 :root[data-theme="dark"] .shop-profile-button:focus-visible {
   outline: 3px solid #53416c;
+}
+:root[data-theme="dark"] .shop-copy-button {
+  border: 1px solid #4f4453;
+  background: #141115;
+  color: #e3dee4;
+}
+:root[data-theme="dark"] .shop-copy-button:hover {
+  background: #211d23;
+}
+:root[data-theme="dark"] .shop-copy-button:focus-visible {
+  outline: 3px solid #53416c;
+}
+:root[data-theme="dark"] .shop-copy-button.is-copied {
+  border-color: #416c52;
+  background: #252027;
+  color: #b1f1d6;
+}
+:root[data-theme="dark"] .shop-copy-error {
+  color: #e995a3;
 }
 :root[data-theme="dark"] .shop-hero-actions .shop-message-button {
   background: #6840ad;
@@ -4799,6 +4824,31 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
 :root[data-theme="dark"] .site-nav .section-nav-menu .section-sidebar-footer {
   color: #c6b1df;
 }
+}
+
+/* components/analytics/analytics-consent.css */
+:root[data-theme="dark"] .analytics-consent {
+  border: 1px solid #4b404f;
+  background: #141115;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.256);
+  color: #e3dee4;
+}
+:root[data-theme="dark"] .analytics-consent-copy p {
+  color: #c7beca;
+}
+:root[data-theme="dark"] .analytics-consent-copy a {
+  color: #bba1e1;
+}
+:root[data-theme="dark"] .analytics-consent-button {
+  border: 1px solid #554e58;
+  background: #6840ad;
+}
+:root[data-theme="dark"] .analytics-consent-button:hover {
+  background: #6840ad;
+}
+:root[data-theme="dark"] .analytics-consent-button:focus-visible,
+:root[data-theme="dark"] .analytics-consent-copy a:focus-visible {
+  outline: 3px solid #53416c;
 }
 
 /* components/discovery/service-highlights.css */
