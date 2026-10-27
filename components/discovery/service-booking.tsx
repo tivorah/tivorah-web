@@ -11,6 +11,7 @@ import { api } from "../../lib/api/client";
 import { money } from "../../lib/api/discovery";
 import { SelectField } from "../ui/select-field";
 import { menuSubtotal, type ServiceMenuItem, type ServiceTemplate } from "../../lib/service-menu";
+import { leaveFor } from "../../lib/leave-page";
 
 type Availability = {
   slots: { startsAt: string; endsAt: string }[];
@@ -20,6 +21,8 @@ type Availability = {
   /** When the provider takes payment; with "customer_choice" the customer picks below. */
   paymentTiming?: "upfront" | "after_service" | "customer_choice";
   paymentAvailable: boolean;
+  /** Admin → Features → Service payments is off: paid bookings are paused for every provider. */
+  paymentsSwitchedOff?: boolean;
   bookingApproval?: "instant" | "request";
   priceType?: string;
   requiresAddress?: boolean;
@@ -260,14 +263,14 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
           target.hostname !== "checkout.stripe.com"
         )
           throw new Error("The payment link could not be verified.");
-        window.location.assign(target.href);
+        await leaveFor(target.href);
       } else {
         if (result.booking.status !== "pending_payment") {
           try {
             sessionStorage.removeItem(storageKey);
           } catch {}
         }
-        window.location.assign(result.booking.status === "requested" ? "/account/bookings?requested=1" : "/account/bookings");
+        await leaveFor(result.booking.status === "requested" ? "/account/bookings?requested=1" : "/account/bookings");
       }
     } catch (cause) {
       setNotice(
@@ -343,7 +346,7 @@ function AppointmentForm({ id, accountId }: { id: number; accountId: number }) {
             {data.healthConsentRequired ? <HealthConsent checked={healthConsent} onChange={setHealthConsent} disabled={busy} kind="booking" /> : null}
             {data.refundPolicyLabel ? <p className="service-section-note"><strong>Cancellation:</strong> {data.refundPolicyLabel}</p> : null}
             {data.paymentRequired && !data.paymentAvailable ? (
-              <p role="status">The provider is finishing payment setup. You can enquire about this service while online booking is unavailable.</p>
+              <p role="status">{data.paymentsSwitchedOff ? "Tivorah hasn’t switched on online payments for services yet, so paid bookings are paused for every provider. Message the provider to arrange your booking for now." : "The provider is finishing payment setup. You can enquire about this service while online booking is unavailable."}</p>
             ) : <button
               className="product-primary"
               disabled={!slot || busy || loading || !addressOk || (!!menu.length && !picked) || (!!data.healthConsentRequired && !healthConsent)}

@@ -57,15 +57,18 @@ test("business navigation switches between listings and events", async ({ page }
 test("phone workspace keeps creation and business views reachable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/business");
-  // On phones the app-style bottom bar has Create (a sheet of choices) and the Events tab.
-  const bar = page.getByRole("navigation", { name: "Manage business" });
-  await bar.getByRole("button", { name: "Create" }).click();
-  await page.getByRole("link", { name: /^Offer a service/ }).click();
+  // No bottom bar on the web: on phones the business side nav (with icons) sits at the top of the header menu.
+  await expect(page.locator(".app-bottom-bar")).toHaveCount(0);
+  const openMenu = async () => { await page.getByRole("button", { name: "Open navigation menu" }).click(); return page.getByRole("navigation", { name: "Manage business" }); };
+  let menu = await openMenu();
+  await expect(menu.locator("svg.bar-icon").first()).toBeVisible();
+  await menu.getByRole("link", { name: "Offer a service" }).click();
   await expect(page).toHaveURL(/\/business\/create\?type=service$/);
-  await page.goto("/business");
-  await bar.getByRole("link", { name: "Events" }).click();
+  menu = await openMenu();
+  await menu.getByRole("link", { name: "Events" }).click();
   await expect(page.getByRole("heading", { name: "Your events" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  if (process.env.TIVORAH_SHOTS_DIR) { await page.getByRole("button", { name: "Open navigation menu" }).click(); await page.waitForTimeout(350); await page.screenshot({ path: `${process.env.TIVORAH_SHOTS_DIR}/business-menu-phone.png` }); }
 });
 
 test("selecting a business listing updates its management panel", async ({ page }) => {
@@ -191,4 +194,23 @@ test("service appointments display and save the selected time zone", async ({ pa
   await page.setViewportSize({ width: 390, height: 844 });
   await zone.scrollIntoViewIfNeeded();
   await page.screenshot({ path: "/tmp/tivorah-service-timezone-phone.png" });
+});
+
+test("choosing a Hub comes first and is required to publish", async ({ page }) => {
+  let posted = false;
+  await page.route("**/api/v1/community/fetch/user/communities**", route => route.fulfill({ json: { data: { allCommunity: [{ id: 4, name: "Adelaide Igbo Network", username: "adl-igbo", isPrivate: false, isOwner: true }] } } }));
+  await page.route("**/api/v1/market/products", route => { posted = true; return route.fulfill({ json: { data: { product: { id: 1 } } } }); });
+  await page.goto("/business/create?type=item");
+  const first = page.locator(".create-main > section").first();
+  await expect(first).toHaveAttribute("id", "create-hubs");
+  await expect(first.getByText("Required · choose 1 to 3.", { exact: false })).toBeVisible();
+  // Straight to submit (the browser's own checks for the other fields would stop it first).
+  await page.locator("form.create-shell").evaluate((form) => form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
+  await expect(page.locator(".hub-share-error")).toHaveText("Choose at least one Hub to share this listing with.");
+  expect(posted).toBe(false);
+  await first.getByRole("button", { name: "Choose" }).click();
+  await page.getByRole("dialog").getByText("Adelaide Igbo Network").click();
+  await page.getByRole("button", { name: "Save hubs" }).click();
+  await expect(page.locator(".hub-share-error")).toHaveCount(0);
+  await expect(page.getByRole("list", { name: "Selected hubs" })).toContainText("Adelaide Igbo Network");
 });

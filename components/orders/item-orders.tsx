@@ -34,10 +34,11 @@ const tabs: { key: string; label: string; statuses: ItemOrder["status"][] }[] = 
 ];
 
 export function ItemOrders({ role }: { role: Role }) {
-  return <AccountGate>{() => <OrdersList role={role} />}</AccountGate>;
+  return <AccountGate>{() => <OrdersList initialRole={role} />}</AccountGate>;
 }
 
-function OrdersList({ role }: { role: Role }) {
+function OrdersList({ initialRole }: { initialRole: Role }) {
+  const [role, setRole] = useState<Role>(initialRole);
   // ?product=ID: one item's orders. ?order=ID: the order a notification is about (opened and highlighted).
   const search = useSearchParams();
   const product = /^\d+$/.test(search.get("product") ?? "") ? search.get("product") : null;
@@ -52,12 +53,22 @@ function OrdersList({ role }: { role: Role }) {
   }
   const orders = data?.orders ?? [];
   const shown = tab === "all" ? orders : orders.filter((order) => tabs.find((item) => item.key === tab)?.statuses.includes(order.status));
+  function switchRole(next: Role) {
+    if (next === role) return;
+    setRole(next);
+    setTab(next === "seller" ? "new" : "all");
+    setTabFor(null);
+  }
   return <section className="item-orders" aria-labelledby="item-orders-title">
     <header className="account-heading">
-      <p className="product-eyebrow">{role === "seller" ? "YOUR BUSINESS" : "YOUR TIVORAH"}</p>
-      <h1 id="item-orders-title">{role === "seller" ? "Orders" : "Your item orders"}</h1>
-      <p>{role === "seller" ? "Order requests for your items. Accept or decline each one, then mark it ready and completed. Payment is arranged with the buyer." : "Order requests you’ve sent. The seller accepts or declines each one; payment is arranged with them."}</p>
+      <p className="product-eyebrow">YOUR TIVORAH</p>
+      <h1 id="item-orders-title">Your orders</h1>
+      <p>Items you ordered and orders customers sent for your items. Payment is arranged directly with the buyer or seller.</p>
     </header>
+    {!product ? <div className="item-orders-role-tabs" role="group" aria-label="Order type">
+      <button type="button" aria-pressed={role === "buyer"} onClick={() => switchRole("buyer")}>Orders I sent</button>
+      <button type="button" aria-pressed={role === "seller"} onClick={() => switchRole("seller")}>Orders I received</button>
+    </div> : null}
     {product ? <p className="item-orders-filter">Orders for {data?.orders[0]?.productTitle ?? "this item"} <a href={role === "seller" ? "/business/orders" : "/account/item-orders"}>Show all</a></p> : null}
     <nav className="item-orders-tabs" aria-label="Order status">
       {(role === "buyer" ? [{ key: "all", label: "All", statuses: [] as ItemOrder["status"][] }, ...tabs] : tabs).map((item) => {

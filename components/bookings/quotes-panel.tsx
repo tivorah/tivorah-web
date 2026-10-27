@@ -7,6 +7,7 @@ import { LoadingState } from "../ui/loading-state";
 import { SlotPicker } from "../discovery/service-booking";
 import { addressLine, type ServiceAddress } from "./booking-actions";
 import "./bookings.css";
+import { leaveFor } from "../../lib/leave-page";
 
 // Quotes for "on quote" services (mirrors mobile components/bookings/QuotesList.tsx).
 // Customer: accept a quote by choosing a time, or withdraw. Provider: send/update a quote or decline.
@@ -54,21 +55,21 @@ function QuoteCard({ quote, perspective, focused, onChanged }: { quote: ServiceQ
   const minutes = Number(duration);
   const quoteReady = Number.isFinite(cents) && cents >= 50 && minutes >= 15 && minutes <= 720 && Number(validDays) >= 1 && Number(validDays) <= 30;
 
-  async function post(path: string, body: unknown, done: string, onResult?: (result: any) => boolean) {
+  async function post(path: string, body: unknown, done: string, onResult?: (result: any) => boolean | Promise<boolean>) {
     if (busy) return;
     setBusy(true); setError("");
     try {
       const result = await api<any>(path, { method: "POST", body: JSON.stringify(body) });
-      if (onResult?.(result)) return;
+      if (await onResult?.(result)) return;
       setPanel(null); onChanged(done);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "That didn’t work. Please try again."); }
     finally { setBusy(false); }
   }
-  const accept = (event: FormEvent) => { event.preventDefault(); if (!slot) return; void post(`/market/quotes/${quote.id}/accept`, { startsAt: slot, checkoutPlatform: "web" }, "Booked! Your appointment is confirmed.", (result: { checkoutUrl: string | null }) => {
+  const accept = (event: FormEvent) => { event.preventDefault(); if (!slot) return; void post(`/market/quotes/${quote.id}/accept`, { startsAt: slot, checkoutPlatform: "web" }, "Booked! Your appointment is confirmed.", async (result: { checkoutUrl: string | null }) => {
     if (!result.checkoutUrl) return false;
     const target = new URL(result.checkoutUrl);
     if (target.protocol !== "https:" || target.hostname !== "checkout.stripe.com") throw new Error("The payment link could not be verified.");
-    window.location.assign(target.href); return true;
+    await leaveFor(target.href); return true;
   }); };
   const sendQuote = (event: FormEvent) => { event.preventDefault(); if (!quoteReady) return; void post(`/market/quotes/${quote.id}/respond`, { action: "quote", amountCents: cents, durationMinutes: minutes, validDays: Number(validDays), message: message.trim() || undefined }, "Quote sent. The customer has been emailed and can accept it and book a time."); };
   const decline = (event: FormEvent) => { event.preventDefault(); void post(`/market/quotes/${quote.id}/respond`, { action: "decline", message: message.trim() || undefined }, "Request declined. The customer has been told."); };

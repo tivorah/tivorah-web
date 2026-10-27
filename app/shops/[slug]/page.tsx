@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { api, ApiError } from "../../../lib/api/client";
-import { ShopData, ShopTab, ShopView } from "../../../components/shop/shop-view";
+import { ShopData, ShopTab, ShopView, shopOpeningTab } from "../../../components/shop/shop-view";
+import { shopTabKeys } from "../../../components/shop/shop-tabs";
 import { pageMetadata } from "../../../lib/site";
 import { BackLink } from "../../../components/ui/back-link";
-import { OwnerManage } from "../../../components/discovery/owner-manage";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { JsonLd, absoluteUrl, summary } from "../../../lib/seo";
@@ -46,7 +46,12 @@ export default async function Page({
   const { slug } = await params;
   const query = await searchParams;
   const skip = Math.max(0, Math.min(10000, Number(query.skip) || 0));
-  const tab: ShopTab = query.tab === "items" || query.tab === "services" || query.tab === "events" || query.tab === "gallery" || query.tab === "hubs" ? query.tab : "all";
+  const identity = await getShopIdentity(slug);
+  // Without ?tab= the shop opens where the seller chose (Overview unless they picked a section).
+  const opening = shopOpeningTab(identity);
+  // A link to a tab that isn't showing (hidden, empty, or its feature switched off) opens Overview.
+  const requested = query.tab === "items" || query.tab === "services" || query.tab === "events" || query.tab === "gallery" || query.tab === "hubs" ? query.tab : null;
+  const tab: ShopTab = requested ? (shopTabKeys(identity).includes(requested) ? requested : "all") : query.tab === "overview" ? "all" : opening;
   const type = tab === "items" ? "&type=item" : tab === "services" ? "&type=service" : tab === "events" ? "&type=event" : tab === "hubs" ? "&type=hub" : "";
   let data: ShopData;
   try {
@@ -57,12 +62,13 @@ export default async function Page({
   }
   const href = (next: ShopTab, nextSkip = 0) => {
     const search = new URLSearchParams();
+    // Overview needs naming when the shop opens on another tab.
     if (next !== "all") search.set("tab", next);
+    else if (opening !== "all") search.set("tab", "overview");
     if (nextSkip) search.set("skip", String(nextSkip));
     const value = search.toString();
     return `/shops/${encodeURIComponent(slug)}${value ? `?${value}` : ""}#shop-offerings`;
   };
-  const identity = await getShopIdentity(slug);
   const shopUrl = absoluteUrl(`/shops/${encodeURIComponent(slug)}`);
   const logo = publicImage(identity, identity.content.logoId);
   const cover = publicImage(identity, identity.content.coverId);
@@ -84,7 +90,7 @@ export default async function Page({
         skip={skip}
         href={href}
         contactSlug={slug}
-        banner={<><BackLink className="shop-back" fallback="/shop" /><OwnerManage ownerUsername={slug} href="/business/shop" label="Manage shop" /></>}
+        banner={<BackLink className="shop-back" fallback="/shop" />}
         footer={<p className="shop-report"><Link href={`/contact?${new URLSearchParams({ subject: `Report shop ${slug}` })}`}>Report a concern</Link></p>}
       />
     </div>

@@ -12,7 +12,6 @@ import { MediaField } from "./media-field";
 import { ListingActivity } from "./listing-activity";
 import { OfferingVideosEditor } from "./offering-videos";
 import { ServiceSettings, ServiceSettingsValue, serviceSettingsPayload, serviceTimezoneForState } from "./service-settings";
-import { WorkspaceBottomBar } from "./workspace-bottom-bar";
 import { SelectField } from "../ui/select-field";
 import { HubShareField } from "./hub-share-field";
 import { conditionOptions, priceTypeOptions } from "./select-options";
@@ -175,7 +174,6 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
       <nav className="event-manage-tabs" aria-label={service ? "Manage service" : "Manage item"}>
         {tabsFor(service).map((value) => <button key={value} type="button" aria-pressed={tab === value} onClick={() => setTab(value)}>{value}</button>)}
       </nav>
-      <WorkspaceBottomBar label={service ? "Manage service" : "Manage item"} tabs={tabsFor(service)} primary={service ? ["Details", "Customers", "Enquiries", "Availability"] : ["Details", "Photos", "Enquiries"]} active={tab} onSelect={setTab} back={{ href: "/business?view=listings", label: "Back to your listings" }} />
       {/* Share: everything about where this listing appears, in one sheet instead of a tab and side panels. */}
       <Sheet open={shareOpen} onClose={() => setShareOpen(false)} title="Share" description={`tivorah.com${publicPath}`}
         footer={<button type="button" className="product-primary press-fx listing-share-save" disabled={mutation.busy} onClick={() => { formRef.current?.requestSubmit(); setShareOpen(false); }}>{mutation.busy ? "Saving…" : "Save Hubs"}</button>}>
@@ -184,7 +182,7 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
           <button type="button" className="listing-share-action" onClick={() => { void navigator.clipboard?.writeText(`${window.location.origin}${publicPath}`); setCopied(true); }}><span aria-hidden="true">⧉</span>{copied ? "Copied" : "Copy link"}</button>
           {canShare ? <button type="button" className="listing-share-action" onClick={() => { void navigator.share?.({ title: item.title, url: `${window.location.origin}${publicPath}` }).catch(() => undefined); }}><span aria-hidden="true">⇪</span>Share…</button> : null}
         </div>
-        <HubShareField value={hubIds} onChange={setHubIds} disabled={mutation.busy} />
+        <HubShareField required kind={service ? "service" : "listing"} value={hubIds} onChange={setHubIds} disabled={mutation.busy} />
       </Sheet>
 
       <div className="event-manage-content">

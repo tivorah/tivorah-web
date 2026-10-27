@@ -10,7 +10,7 @@ const previews = [
     kicker: "Community that feels close",
     title: "Belong somewhere useful.",
     body: "Find a Hub around your interests, culture or city. Share advice, make plans and get to know the people in it.",
-    image: "/app-screens/2026-10-15/hubs.jpg",
+    image: "/app-screens/2026-10-28/hubs.jpg",
     notes: ["Discover Hubs by interest and location", "Conversations, announcements and opportunities", "Clear rules before you join"],
   },
   {
@@ -30,18 +30,10 @@ const previews = [
     notes: ["Local event discovery", "Useful date and category filters", "Tickets and secure QR entry"],
   },
   {
-    label: "Shop",
-    kicker: "Local finds and skills",
-    title: "Buy, sell and book nearby.",
-    body: "Buy or sell new and used local items, find a service provider or offer your services. Message directly to arrange the details.",
-    image: "/app-screens/2026-10-15/shop.jpg",
-    notes: ["New and used local items", "Find or offer services", "Message buyers and sellers"],
-  },
-  {
     label: "Messages",
     kicker: "Conversations with context",
     title: "Keep talking.",
-    body: "Continue conversations with friends, sellers and people you meet through Tivorah in one calm, private inbox.",
+    body: "Continue conversations with friends, organisers and people you meet through Tivorah in one calm, private inbox.",
     image: "/app-screens/2026-09-22/messages.png",
     notes: ["Real profile avatars", "Private one-to-one chat", "Friends and connection requests"],
   },

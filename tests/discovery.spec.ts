@@ -233,9 +233,11 @@ test("narrow dark layout supports reduced motion and keyboard focus", async ({
     ),
   ).toBe(true);
   await expect(page.locator(".discover-artwork canvas")).toHaveCount(0);
+  // Phones keep only the search on screen; the place and every other filter are behind the filter button.
+  await expect(page.getByRole("combobox", { name: "Suburb" })).toHaveCount(0);
   await page.getByLabel("What are you looking for?").focus();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("combobox", { name: "Suburb" })).toBeFocused();
+  await expect(page.getByRole("button", { name: /More filters/ })).toBeFocused();
   await page.screenshot({ path: "/tmp/tivorah-dark-320.png", fullPage: true });
 });
 
@@ -314,24 +316,26 @@ test("mobile filters preserve search and selected locality through API requests"
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/shop?query=chair');
-  await page.getByRole('combobox', { name: 'Category', exact: true }).click();
+  // Phones: category, place and the rest are all in the filter sheet.
+  await page.getByRole('button', { name: /More filters/ }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('combobox', { name: 'Category', exact: true }).click();
   await page.getByRole('option', { name: 'Furniture & home', exact: true }).click();
-  const location = page.getByLabel('Suburb', { exact: true });
-  await location.fill('Ade');
-  await expect(page.locator('datalist option')).toHaveCount(1);
-  await location.fill('Adelaide, SA 5000');
-  await expect(page).toHaveURL(/locality=Adelaide/);
-  expect(new URL(page.url()).searchParams.has('postcode')).toBe(false);
-  await page.getByText('More filters', { exact: false }).click();
-  await page.getByRole('combobox', { name: 'Condition', exact: true }).click();
+  const location = dialog.getByLabel('Suburb', { exact: true });
+  await location.fill('Adelaide');
+  await dialog.getByRole('option', { name: 'Adelaide SA 5000' }).click();
+  await dialog.getByRole('combobox', { name: 'Condition', exact: true }).click();
   await page.getByRole('option', { name: 'Used — good', exact: true }).click();
   await page.getByLabel('Minimum price', { exact: true }).fill('10');
   await page.getByLabel('Maximum price', { exact: true }).fill('50');
   await page.getByRole('button', { name: 'Apply filters' }).click();
   await expect.poll(() => requests.some(url => url.searchParams.get('minPrice') === '1000' && url.searchParams.get('category') === 'Furniture & home' && url.searchParams.get('latitude') === '-34.9' && url.searchParams.get('query') === 'chair')).toBe(true);
-  await page.getByRole('button', { name: 'Reset all' }).click();
+  expect(new URL(page.url()).searchParams.has('postcode')).toBe(false);
+  await page.getByRole('button', { name: /More filters/ }).click();
+  await dialog.getByRole('button', { name: 'Reset all' }).click();
   await expect(page).toHaveURL('http://localhost:7456/shop');
-  await expect(location).toHaveValue('');
+  await page.getByRole('button', { name: /More filters/ }).click();
+  await expect(dialog.getByLabel('Suburb', { exact: true })).toHaveValue('');
 });
 
 for (const width of [390, 1440]) {
@@ -339,7 +343,12 @@ for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.route('**/api/v1/public/discovery/**', route => route.fulfill({ json: { data: { items: [], nextSkip: null } } }));
     await page.goto('/shop');
-    const category = page.getByRole('combobox', { name: 'Category', exact: true });
+    const more = page.getByRole('button', { name: /More filters/ });
+    const dialog = page.getByRole('dialog');
+    // Phones: Category is in the filter sheet; larger screens show it beside the filter button.
+    const phone = width < 600;
+    if (phone) await more.click();
+    const category = (phone ? dialog : page).getByRole('combobox', { name: 'Category', exact: true });
     await category.click();
     const search = page.getByRole('textbox', { name: 'Search category' });
     await expect(search).toBeFocused();
@@ -349,10 +358,9 @@ for (const width of [390, 1440]) {
     await page.keyboard.press('Enter');
     await page.keyboard.press('Escape');
     await expect(category).toBeFocused();
+    if (phone) await dialog.getByRole('button', { name: 'Apply filters' }).click();
     await expect(page.getByRole('button', { name: 'Remove Furniture & home' })).toBeVisible();
-    const more = page.getByRole('button', { name: /More filters/ });
     await more.click();
-    const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await page.getByLabel('Minimum price', { exact: true }).fill('200');
     await page.getByRole('combobox', { name: 'Condition', exact: true }).click();
@@ -365,7 +373,7 @@ for (const width of [390, 1440]) {
     await more.click();
     await expect(page.getByLabel('Minimum price', { exact: true })).toHaveValue('');
     await dialog.screenshot({ path: `/tmp/tivorah-filter-dialog-${width}.png` });
-    await page.getByRole('button', { name: 'Close filters' }).click();
+    if (!phone) await page.getByRole('button', { name: 'Close filters' }).click();
     await category.click();
     await page.screenshot({ path: `/tmp/tivorah-filter-dropdown-${width}.png` });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

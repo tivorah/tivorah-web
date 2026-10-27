@@ -48,8 +48,10 @@
   cursor: pointer;
   border: 1px solid transparent;
 }
+/* The app's primary fill (tivorah-mobile constants/theme.ts button): dark on light; the dark theme
+   turns it brand purple (scripts/build-dark-theme.mjs). */
 .product-primary {
-  background: var(--purple);
+  background: #211d23;
   color: #fff !important;
 }
 .product-secondary {
@@ -58,7 +60,10 @@
   border-color: #d9d0e2;
 }
 .product-primary:hover {
-  background: #59328f;
+  background: #2d2830;
+}
+html[data-theme="dark"] .product-primary:hover {
+  background: #5a3596;
 }
 .product-secondary:hover {
   background: #f5f0fa;
@@ -609,6 +614,11 @@
   flex-wrap: wrap;
   margin: 20px 0;
 }
+/* The dashboard's Dark theme toggle (components/account/dashboard.tsx). */
+.account-appearance { margin: 16px 0 0; padding: 12px 0; border-top: 1px solid #efe7f2; border-bottom: 1px solid #efe7f2; cursor: pointer; }
+.account-appearance span { display: grid; gap: 2px; }
+.account-appearance strong { font-size: 16px; color: #211d23; }
+.account-appearance small { font-size: 14px; line-height: 1.4; color: #62546b; }
 .app-handoff {
   margin-top: 25px;
   padding: 24px;
@@ -784,17 +794,20 @@
 .business-create-prompts p { margin: 4px 0 10px; color: #65596d; }
 .business-overview-heading { margin-bottom: 22px; }
 .business-overview-heading h1 { font-size: clamp(30px, 3vw, 40px); }
-.business-workspace { display: grid; grid-template-columns: 272px minmax(0, 1fr); gap: 32px; align-items: start; padding: 38px 0 70px; }
-.business-sidebar { position: sticky; top: 100px; display: grid; gap: 24px; min-height: 580px; padding: 24px 16px; border: 1px solid var(--line); border-radius: 22px; background: #fff; }
-.business-sidebar-title { padding: 0 10px 16px; border-bottom: 1px solid var(--line); }
-.business-sidebar-title .product-eyebrow { margin: 0 0 6px; }
-.business-sidebar-title strong { font-size: 20px; }
+.business-workspace { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: clamp(28px, 3.5vw, 54px); align-items: start; padding: 28px 0 70px; }
+.business-sidebar { position: sticky; top: 78px; display: grid; gap: 18px; min-height: calc(100dvh - 106px); padding: 0 22px 18px 0; border: 0; border-right: 1px solid #e7e1ea; border-radius: 0; background: transparent; }
+.business-sidebar-title { min-height: 56px; display: flex; align-items: center; gap: 11px; padding: 0 10px 16px; border-bottom: 1px solid #e7e1ea; }
+.business-sidebar-title > img { width: 36px; height: 36px; object-fit: contain; }
+.business-sidebar-title > span { min-width: 0; display: grid; gap: 1px; }
+.business-sidebar-title strong { color: #211927; font-size: 14px; line-height: 1.2; }
+.business-sidebar-title small { color: #746b7b; font-size: 12px; line-height: 1.2; }
 .business-sidebar-nav,.business-sidebar-group { display: grid; gap: 4px; }
-.business-sidebar-nav a,.business-sidebar-group a { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 9px 12px; border: 0; border-radius: 12px; background: transparent; color: #3b3045; text-align: left; text-decoration: none; font: inherit; font-weight: 600; cursor: pointer; }
-.business-sidebar-nav a:hover,.business-sidebar-group a:hover { background: #f7f2fa; }
-.business-sidebar-nav a[aria-current="page"],.business-sidebar-group a[aria-current="page"] { background: #eee5f7; color: #56347e; }
-.business-sidebar-group p { margin: 0 10px 4px; color: #776b80; font-size: 12px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
-.business-sidebar-account { align-self: end; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; color: #56347e; font-weight: 650; }
+.business-sidebar-nav a,.business-sidebar-group a { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 9px 11px; border: 0; border-radius: 11px; background: transparent; color: #514758; text-align: left; text-decoration: none; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+.business-sidebar-nav a:hover,.business-sidebar-group a:hover { background: #f5f1f7; color: #302536; }
+.business-sidebar-nav a[aria-current="page"],.business-sidebar-group a[aria-current="page"] { background: #f0e9f8; color: #563580; }
+.business-sidebar-nav p,.business-sidebar-group p { margin: 8px 0 5px; padding: 0 12px; color: #6f6577; font-size: 12px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+.business-nav-icon { width: 19px; height: 19px; flex: 0 0 19px; }
+.business-sidebar-account { align-self: auto; margin-top: auto; display: inline-flex; align-items: center; min-height: 54px; padding: 10px 8px 0; border-top: 1px solid #e7e1ea; color: #56347e; font-size: 13px; font-weight: 650; }
 .business-sidebar a:focus-visible,.business-sidebar button:focus-visible,.business-mobile-controls a:focus-visible,.business-mobile-controls button:focus-visible,.business-mobile-controls summary:focus-visible,.business-mobile-tools a:focus-visible { outline: 3px solid #8050b3; outline-offset: 2px; }
 .business-workspace-main { min-width: 0; }
 .business-mobile-controls,.business-mobile-tools { display: none; }
@@ -1379,7 +1392,6 @@
 .create-promo-dialog :focus-visible { outline: 3px solid #8f5fed; outline-offset: 3px; }
 .shop-page-loading > span,.shop-page-loading .account-heading span { display: block; border-radius: 8px; }
 .shop-page-loading .shop-loading-back { width: 155px; height: 44px; margin-bottom: 24px; border-radius: 999px; }
-.shop-page-loading .shop-cover { background-image: linear-gradient(100deg,#eee9f2 20%,#faf8fc 45%,#eee9f2 70%); }
 .shop-page-loading .shop-loading-eyebrow { width: 110px; height: 14px; margin-bottom: 20px; }
 .shop-page-loading .shop-loading-title { width: min(430px,75vw); height: 44px; margin-bottom: 18px; }
 .shop-page-loading .shop-loading-copy { width: min(520px,80vw); height: 18px; }
@@ -1574,6 +1586,12 @@
 .hub-detail-cover { position: relative; height: clamp(180px, 24vw, 300px); background: linear-gradient(115deg, #a373d7, #68439e 55%, #35244d); }
 .hub-detail-cover img { object-fit: cover; }
 .hub-detail-cover-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+/* The Hub page's cover slides (hub-cover-slides.tsx): swiped, one at a time, like the app. */
+.hub-cover-track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.hub-cover-track::-webkit-scrollbar { display: none; }
+.hub-cover-slide { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; }
+.hub-cover-slide img { object-fit: cover; }
+.hub-cover-count { position: absolute; z-index: 2; right: 14px; top: 14px; padding: 4px 10px; border-radius: 999px; background: rgba(20, 17, 22, .62); color: #fff; font-size: 12px; font-weight: 800; pointer-events: none; }
 /* Reduced motion: keep the still cover photo, never a moving one. */
 @media (prefers-reduced-motion: reduce) { .hub-detail-cover-video { display: none; } }
 .hub-detail-identity { display: flex; align-items: center; gap: 24px; padding: 0 clamp(24px, 4vw, 48px) 30px; }
@@ -2157,8 +2175,9 @@
 
 /* Owner shortcut (components/discovery/owner-manage.tsx), same look as "Manage event". */
 .owner-manage { display: flex; justify-content: flex-end; margin: -44px 0 14px; pointer-events: none; }
-.owner-manage .owner-manage-link { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 18px; border: 1px solid #6941b4; border-radius: 24px; background: #6941b4; color: #fff; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
-.owner-manage .owner-manage-link:hover { background: #573395; }
+.owner-manage .owner-manage-link { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 18px; border: 1px solid transparent; border-radius: 24px; background: #211d23; color: #fff; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+.owner-manage .owner-manage-link:hover { background: #2d2830; }
+html[data-theme="dark"] .owner-manage .owner-manage-link:hover { background: #5a3596; }
 .owner-manage .owner-manage-link:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 3px; }
 @media (max-width: 600px) { .owner-manage { margin: 0 0 12px; justify-content: flex-start; } }
 
@@ -2277,3 +2296,16 @@
 /* On phones the summary card and Share sheet cover the side panel's photo, link and sharing. */
 @media (max-width: 900px) { .listing-workspace .listing-glance { display: none; } }
 .listing-share-save { width: 100%; justify-content: center; }
+
+/* The + icon is only for the phone button (app/mobile-app.css). */
+.create-promo-plus { display: none; }
+
+/* Hub page: Back sits on the cover like the app's (components/discovery/detail.tsx). */
+.hub-detail-cover-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 10, 18, .05) 30%, rgba(15, 10, 18, .55)); pointer-events: none; }
+.hub-detail-back { position: absolute; z-index: 2; top: 14px; left: 14px; display: inline-flex; align-items: center; min-height: 42px; padding: 0 16px; border-radius: 21px; background: rgba(20, 15, 22, .5); color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.hub-detail-back:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.hub-detail > .owner-manage { margin: 18px 0 0; justify-content: flex-start; }
+/* Choosing Hubs is required on create forms (components/business/hub-share-field.tsx). */
+.hub-share.is-invalid .hub-share-card { border-color: #c4314b; box-shadow: 0 0 0 3px #c4314b1f; }
+.hub-share-error { margin: 8px 0 0; color: #b3263e; font-size: 14px; font-weight: 650; }
+.hub-share-note a { color: #5d329d; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }

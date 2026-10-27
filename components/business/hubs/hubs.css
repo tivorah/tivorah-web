@@ -10,9 +10,10 @@
 .hub-admin-error { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid #e6cbd0; border-radius: 14px; background: #fff1f3; color: #9f2032; }
 .hub-admin-error p { margin: 0; }
 .hub-admin-error-text { margin: 0; color: #9f2032; font-weight: 600; }
-.hub-admin-empty { display: grid; justify-items: start; gap: 10px; padding: 28px; border: 1px dashed #d8cde3; border-radius: 22px; background: #fff; }
+.hub-admin-empty { display: grid; justify-items: center; gap: 10px; padding: 52px 20px; border: 1px dashed #d8cde3; border-radius: 24px; background: transparent; text-align: center; }
 .hub-admin-empty h1, .hub-admin-empty h2 { margin: 0; font-size: 22px; }
-.hub-admin-empty p { margin: 0; color: #62546b; max-width: 56ch; }
+.hub-admin-empty p { margin: 0; color: #62546b; max-width: 56ch; line-height: 1.55; }
+.hub-admin-empty .product-primary { display: inline-flex; margin-top: 8px; }
 
 .hub-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .hub-row { display: flex; align-items: center; gap: 14px; min-height: 84px; padding: 14px 16px; border: 1px solid var(--line, #e4dce9); border-radius: 18px; background: #fff; color: #241c2c; text-decoration: none; }
@@ -111,8 +112,6 @@
 .create-hub .hub-form { max-width: none; }
 .create-hub .create-section { display: grid; gap: 14px; }
 .create-hub .create-section > h2 { display: flex; align-items: center; gap: 10px; margin: 0; }
-.hub-photo-row { display: grid; gap: 16px; }
-@media (min-width: 720px) { .hub-photo-row { grid-template-columns: 1fr 1fr; } }
 .hub-choice-cards { display: grid; gap: 10px; margin: 0; padding: 0; border: 0; }
 @media (min-width: 720px) { .hub-choice-cards { grid-template-columns: 1fr 1fr; } }
 .hub-choice-cards > label { display: flex; min-height: 64px; align-items: flex-start; gap: 10px; padding: 14px; border: 1px solid #ded6e5; border-radius: 14px; background: #fff; cursor: pointer; }
@@ -156,3 +155,41 @@
 .create-hub .hub-welcome-toggle { margin-bottom: 12px; color: #62546b; font-size: 14px; line-height: 1.5; }
 .create-hub .hub-welcome-hint { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 6px; font-size: 13px; }
 .create-hub .hub-welcome-reset { min-height: 44px; padding: 0; border: 0; background: none; color: #7446d8; font: inherit; font-weight: 700; cursor: pointer; }
+/* Photos step: the shop editor's cover & logo layout (app/shop-editor.css), with the Hub photo round like the Hub page. */
+.create-hub .shop-brand-step { gap: 0; }
+.create-hub .shop-brand-step > h2 { padding: 16px 16px 10px; }
+.create-hub .shop-brand-cover > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.create-hub .hub-brand-photo { border-radius: 50%; }
+.create-hub .hub-brand-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.create-hub .hub-brand-photo .shop-brand-pick.is-logo { right: -6px; bottom: -6px; }
+.create-hub .hub-brand-photo.is-invalid { border-color: #b3263a; }
+.create-hub .shop-brand-step > .hub-look-error { padding: 12px 20px 0; }
+@media (max-width: 600px) {
+  .create-hub .shop-brand-step > .hub-look-error { padding: 10px 14px 0; }
+  .create-hub .hub-brand-photo .shop-brand-pick.is-logo { right: -8px; bottom: -8px; }
+}
+/* Hub rules (rule-chooser.tsx): five common rules, then "See all rules" in a sheet, like the app. */
+.hub-rules { display: grid; gap: 12px; }
+.hub-rule-list { display: grid; padding: 0 14px; border: 1px solid #e9e3ee; border-radius: 16px; background: #fff; }
+.hub-rule-row { display: flex; width: 100%; align-items: center; gap: 12px; min-height: 52px; margin: 0; padding: 10px 0; border: 0; border-bottom: 1px solid #ece8ee; border-radius: 0; background: none; color: #2b2131; font: inherit; font-size: 15px; font-weight: 600; line-height: 1.4; text-align: left; cursor: pointer; }
+.hub-rule-group-list { display: grid; }
+.hub-rule-group-list .hub-rule-row:last-child { border-bottom: 0; }
+.hub-rule-row > span:first-child { flex: 1; min-width: 0; }
+.hub-rule-row:disabled { opacity: .45; cursor: not-allowed; }
+.hub-rule-row:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; border-radius: 8px; }
+.hub-rule-check { display: block; width: 22px; height: 22px; flex: none; box-sizing: border-box; border: 2px solid #9a939e; border-radius: 50%; }
+.hub-rule-row.is-on .hub-rule-check { border-color: #8f5fed; background: #8f5fed url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center / 15px no-repeat; }
+.hub-rule-more { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0; border: 0; background: none; color: #65409f; font: inherit; font-size: 15px; font-weight: 800; text-align: left; cursor: pointer; }
+.hub-rule-more > span { flex: 1; }
+.hub-rule-more svg { color: #706a73; }
+.hub-rule-more:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; border-radius: 8px; }
+.hub-rule-sheet { display: grid; gap: 4px; }
+.hub-rule-group { margin: 14px 0 0; color: #706a73; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+/* Create a Hub: the cover slides run edge to edge in the Photos step, like the shop editor's cover. */
+.create-hub .shop-brand-step .cover-slides-stage { border-radius: 0; }
+.create-hub .shop-brand-step .cover-slides-strip { padding: 0 20px; }
+.create-hub .shop-brand-step .cover-slides > .shop-hint, .create-hub .shop-brand-step .cover-slides > .hub-field-error { padding: 8px 20px 0; }
+@media (max-width: 600px) { .create-hub .shop-brand-step .cover-slides-strip { padding: 0 14px; } .create-hub .shop-brand-step .cover-slides > .shop-hint, .create-hub .shop-brand-step .cover-slides > .hub-field-error { padding: 8px 14px 0; } }
+.business-list-mark.hub-list-mark { object-fit: cover; padding: 0; }
+/* An odd last number spans the row instead of leaving an empty cell. */
+.business-event-summary.hub-summary > div:last-child:nth-child(odd) { grid-column: 1 / -1; }

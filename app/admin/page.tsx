@@ -8,9 +8,10 @@ import PricingManager from "./pricing-manager";
 import SellerFees from "./seller-fees";
 import PaymentCountries from "./payment-countries";
 import Compliance from "./compliance";
-import FeatureManager from "./feature-manager";
+import FeatureManager, { type FeatureFlag, type FeatureHistoryRow, type FeatureSetup } from "./feature-manager";
 import { Escalations } from "./escalations";
 import Link from "next/link";
+import Image from "next/image";
 import "./admin.css";
 import { BrandedQrCode } from "../branded-qr-code";
 import { adminAuthClient } from "./auth-client";
@@ -19,15 +20,7 @@ import { PasswordInput } from "../../components/ui/password-input";
 import { PAGE_SIZE, Pagination, usePagedList } from "../../components/ui/pagination";
 import { SelectField } from "../../components/ui/select-field";
 
-type Flag = {
-  id: number;
-  key: string;
-  name: string;
-  enabled: boolean;
-  presentation: "hidden" | "coming_soon" | "maintenance";
-  version: number;
-  config?: { group?: string };
-};
+type Flag = FeatureFlag;
 /** Labels for involvement tags (API: services/userInvolvement.ts). */
 const INVOLVEMENT_LABELS: Record<string, string> = {
   event_organizer: "Event organiser",
@@ -127,8 +120,8 @@ const SECTION_RESOURCES: Partial<Record<Section, AdminResource[]>> = {
 const sections: { id: Section; label: string; description: string }[] = [
   {
     id: "overview",
-    label: "Overview",
-    description: "Monitor Tivorah’s activity and operational health.",
+    label: "Dashboard",
+    description: "See what needs attention and how Tivorah is running.",
   },
   {
     id: "analytics",
@@ -367,10 +360,9 @@ export default function AdminPage() {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   // Admin lists page at 10, the shared web list size.
-  const [featureBusy, setFeatureBusy] = useState<number | null>(null);
-  const [featureHistory, setFeatureHistory] = useState<Record<number, any[]>>(
-    {},
-  );
+  const [featureBusy, setFeatureBusy] = useState<number | "setup" | null>(null);
+  const [featureHistory, setFeatureHistory] = useState<Record<number, FeatureHistoryRow[]>>({});
+  const [featureSetup, setFeatureSetup] = useState<FeatureSetup | null>(null);
   const [loginBusy, setLoginBusy] = useState(false);
   const [actionBusy, setActionBusy] = useState<
     "verify" | "enroll" | "copy-secret" | "copy-recovery" | "sign-out" | null
@@ -395,7 +387,8 @@ export default function AdminPage() {
         for (const row of data.audiences ?? []) totals.set(row.label, (totals.get(row.label) ?? 0) + Number(row.value));
         setAnalytics({ ...data, audiences: Array.from(totals, ([label, value]) => ({ label, value })) });
       }),
-      features: () => request("/api/v1/admin/features").then(setFeatures),
+      features: () => // The setup check is a hint; the switches still load without it.
+        Promise.all([request("/api/v1/admin/features"), request("/api/v1/admin/features/setup").catch(() => null)]).then(([rows, setup]) => { setFeatures(rows); setFeatureSetup(setup); }),
       reports: () => request("/api/v1/admin/reports?pageSize=100").then(setReports),
       broadcasts: () => request("/api/v1/admin/broadcasts").then(setBroadcasts),
       deliveries: () => request("/api/v1/admin/push-deliveries").then(setDeliveries),
@@ -635,13 +628,8 @@ export default function AdminPage() {
       setActionBusy(null);
     }
   }
-  async function updateFlag(flag: Flag, patch: Partial<Flag>) {
-    if (
-      !window.confirm(
-        `${patch.enabled === true ? "Enable" : patch.enabled === false ? "Disable" : "Change"} ${flag.name}? This change will apply to the mobile app and API immediately.`,
-      )
-    )
-      return;
+  // Feature controls (feature-manager.tsx) confirm each change before calling these.
+  async function updateFlag(flag: Flag, patch: Partial<Flag>): Promise<boolean> {
     try {
       setFeatureBusy(flag.id);
       setError("");
@@ -652,17 +640,16 @@ export default function AdminPage() {
       setFeatures((all) =>
         all.map((item) => (item.id === flag.id ? updated : item)),
       );
+      if (featureHistory[flag.id]) void loadFeatureHistory(flag);
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Update failed");
+      return false;
     } finally {
       setFeatureBusy(null);
     }
   }
-  async function toggleHistory(flag: Flag) {
-    if (featureHistory[flag.id]?.length) {
-      setFeatureHistory((all) => ({ ...all, [flag.id]: [] }));
-      return;
-    }
+  async function loadFeatureHistory(flag: Flag) {
     try {
       const rows = await request(`/api/v1/admin/features/${flag.id}/history`);
       setFeatureHistory((all) => ({ ...all, [flag.id]: rows }));
@@ -670,6 +657,37 @@ export default function AdminPage() {
       setError(e instanceof Error ? e.message : "History failed");
     }
   }
+  async function rollbackFlag(flag: Flag, version: number) {
+    try {
+      setFeatureBusy(flag.id);
+      setError("");
+      const updated = await request(`/api/v1/admin/features/${flag.id}/rollback`, {
+        method: "POST",
+        body: JSON.stringify({ version }),
+      });
+      setFeatures((all) => all.map((item) => (item.id === flag.id ? updated : item)));
+      await loadFeatureHistory(flag);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Restore failed");
+    } finally {
+      setFeatureBusy(null);
+    }
+  }
+  async function setUpMissingFeatures() {
+    try {
+      setFeatureBusy("setup");
+      setError("");
+      await request("/api/v1/admin/features/setup", { method: "POST" });
+      const [rows, setup] = await Promise.all([request("/api/v1/admin/features"), request("/api/v1/admin/features/setup")]);
+      setFeatures(rows);
+      setFeatureSetup(setup);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Setup failed");
+    } finally {
+      setFeatureBusy(null);
+    }
+  }
+
   async function updateUser(user: User, patch: Partial<User>) {
     try {
       const updated = await request(`/api/v1/admin/users/${user.id}/access`, {
@@ -988,8 +1006,10 @@ export default function AdminPage() {
       <div className="product-page page-shell business-shell admin-portal">
       <div className="business-workspace">
         <aside className="business-sidebar admin-portal-sidebar" aria-label="Admin navigation">
-          <Link className="business-sidebar-account" href="/account">← Your account</Link>
-          <div className="business-sidebar-title"><p className="product-eyebrow">TIVORAH STAFF</p><strong>Admin</strong></div>
+          <div className="admin-sidebar-brand">
+            <Image src="/tivorah-mark.png" alt="" width={40} height={40} priority />
+            <span><strong>Admin workspace</strong><small>Staff tools</small></span>
+          </div>
           {sectionGroups.map((group) => (
             <div key={group.label} className="business-sidebar-group">
               <p>{group.label}</p>
@@ -1011,8 +1031,11 @@ export default function AdminPage() {
             </div>
           ))}
           <div className="admin-portal-session">
-            <span className="status-dot" aria-hidden="true" />
-            <span>Secure staff session</span>
+            <div><span className="status-dot" aria-hidden="true" /><span>Secure session</span></div>
+            <Link href="/account">Your account</Link>
+            <button type="button" disabled={actionBusy === "sign-out"} onClick={signOut}>
+              {actionBusy === "sign-out" ? "Signing out…" : "Sign out"}
+            </button>
           </div>
         </aside>
         <div className="business-workspace-main admin-workspace">
@@ -1050,7 +1073,7 @@ export default function AdminPage() {
               </button> : null}
               <button
                 type="button"
-                className="product-secondary"
+                className="product-secondary admin-mobile-signout"
                 disabled={actionBusy === "sign-out"}
                 onClick={signOut}
               >
@@ -1060,17 +1083,9 @@ export default function AdminPage() {
                   busyLabel="Signing out…"
                 />
               </button>
+              {lastUpdated && <span className="admin-updated" aria-live="polite">Updated {lastUpdated.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span>}
             </div>
           </header>
-          {lastUpdated && (
-            <p className="admin-updated" aria-live="polite">
-              Updated{" "}
-              {lastUpdated.toLocaleTimeString([], {
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </p>
-          )}
           {visibleError && (
             <div className="admin-error" role="alert">
               <div>
@@ -1082,143 +1097,91 @@ export default function AdminPage() {
           )}
           {section === "overview" && (
             <div className="admin-overview">
-              {dashboard?.compliance?.actionNeeded ? (
-                <div className="compliance-alert" role="status">
-                  <strong>{dashboard.compliance.actionNeeded} legal {dashboard.compliance.actionNeeded === 1 ? "task needs" : "tasks need"} action</strong>
-                  <span>Registrations, representatives and launch checks Tivorah must complete.</span>
-                  <button type="button" onClick={() => goTo("compliance")}>Open Legal &amp; compliance</button>
-                </div>
-              ) : null}
               {!dashboard && dashboardBusy ? (
-                <section
-                  className="metric-grid"
-                  aria-label="Loading dashboard totals"
-                >
-                  {Array.from({ length: 4 }, (_, index) => (
-                    <div className="metric-card metric-skeleton" key={index}>
-                      <span />
-                      <strong />
-                    </div>
+                <>
+                  <section className="admin-summary-grid" aria-label="Loading dashboard summary">
+                    {Array.from({ length: 4 }, (_, index) => (
+                      <div className="admin-summary-card metric-skeleton" key={index}>
+                        <span className="tivorah-shimmer" />
+                        <strong className="tivorah-shimmer" />
+                      </div>
+                    ))}
+                  </section>
+                  <div className="admin-operations-grid admin-operations-skeleton" aria-hidden="true">
+                    <section className="dashboard-panel">
+                      <div className="admin-skeleton-heading"><span className="tivorah-shimmer" /><strong className="tivorah-shimmer" /><small className="tivorah-shimmer" /></div>
+                      {Array.from({ length: 4 }, (_, index) => <div className="admin-skeleton-row" key={index}><i className="tivorah-shimmer" /><span><b className="tivorah-shimmer" /><small className="tivorah-shimmer" /></span></div>)}
+                    </section>
+                    <section className="dashboard-panel">
+                      <div className="admin-skeleton-heading"><span className="tivorah-shimmer" /><strong className="tivorah-shimmer" /><small className="tivorah-shimmer" /></div>
+                      {Array.from({ length: 4 }, (_, index) => <div className="admin-skeleton-stat" key={index}><span className="tivorah-shimmer" /><strong className="tivorah-shimmer" /></div>)}
+                    </section>
+                  </div>
+                </>
+              ) : !dashboard ? (
+                <section className="admin-dashboard-unavailable" role="status">
+                  <span aria-hidden="true">!</span>
+                  <div><h2>Dashboard data is unavailable</h2><p>Refresh to try loading the operational summary again.</p></div>
+                  <button type="button" className="product-primary" onClick={() => void load()}>Refresh dashboard</button>
+                </section>
+              ) : <>
+                <section className="admin-summary-grid" aria-label="Tivorah summary">
+                  {([
+                    ["users", "Members", dashboard.totals.users ?? 0],
+                    ["communities", "Hubs", dashboard.totals.communities ?? 0],
+                    ["events", "Events", dashboard.totals.events ?? 0],
+                    ["orders", "Orders", dashboard.totals.orders ?? 0],
+                  ] as const).map(([key, label, value]) => (
+                    <article className={`admin-summary-card admin-summary-${key}`} key={key}>
+                      <span>{label}</span><strong>{value.toLocaleString()}</strong>
+                    </article>
                   ))}
                 </section>
-              ) : (
-                <section className="metric-grid" aria-label="Tivorah totals">
-                  {Object.entries(dashboard?.totals ?? {}).filter(([key]) => !["activeUsers", "suspendedUsers"].includes(key)).map(
-                    ([key, value], index) => (
-                      <article className="metric-card" key={key}>
-                        <div
-                          className={`metric-icon metric-icon-${index % 4}`}
-                          aria-hidden="true"
-                        >
-                          {humanize(key).charAt(0)}
-                        </div>
-                        <div>
-                          <span>{humanize(key)}</span>
-                          <strong>{value.toLocaleString()}</strong>
-                        </div>
-                      </article>
-                    ),
-                  )}
-                </section>
-              )}
-              {dashboard?.involvement?.length ? (
-                <section className="involvement-summary" aria-label="People by what they do">
-                  <header>
-                    <h2>People by what they do</h2>
-                    <p>One person can be several of these, so the numbers don’t add up to the user total.</p>
-                  </header>
-                  <div className="metric-grid">
-                    {dashboard.involvement.map((row, index) => (
-                      <button key={row.tag} type="button" className="metric-card" onClick={() => { setUserSegment(row.tag); setUserPage(1); goTo("users"); }} aria-label={`${row.label}s: ${row.users}. Show them in Users`}>
-                        <div className={`metric-icon metric-icon-${index % 4}`} aria-hidden="true">{row.label.charAt(0)}</div>
-                        <div>
-                          <span>{row.label}s</span>
-                          <strong>{row.users.toLocaleString()}</strong>
-                        </div>
+
+                <div className="admin-operations-grid">
+                  <section className="dashboard-panel admin-priority-panel">
+                    <div className="panel-heading">
+                      <div><span className="panel-kicker">Action centre</span><h2>Needs attention</h2><p>Open the work that may need a staff decision.</p></div>
+                    </div>
+                    <div className="attention-list">
+                      <button type="button" onClick={() => goTo("moderation")}>
+                        <span className="attention-count">{openReportCount(reports)}</span>
+                        <span><b>Open reports</b><small>Review member safety reports</small></span>
+                        <em>Review <span aria-hidden="true">→</span></em>
                       </button>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-              <div className="overview-grid">
-                <section className="dashboard-panel">
-                  <div className="panel-heading">
-                    <div>
-                      <span className="panel-kicker">Live status</span>
-                      <h2>System health</h2>
+                      <button type="button" onClick={() => goTo("compliance")}>
+                        <span className="attention-count">{dashboard.compliance?.actionNeeded ?? 0}</span>
+                        <span><b>Legal tasks</b><small>Complete due registrations and checks</small></span>
+                        <em>Open <span aria-hidden="true">→</span></em>
+                      </button>
+                      <button type="button" onClick={() => goTo("notifications")}>
+                        <span className="attention-count">{deliveries.filter((item) => item.status === "failed").length}</span>
+                        <span><b>Failed notifications</b><small>Inspect messages that were not delivered</small></span>
+                        <em>Inspect <span aria-hidden="true">→</span></em>
+                      </button>
+                      <button type="button" onClick={() => goTo("users")}>
+                        <span className="attention-count">{dashboard.totals.suspendedUsers ?? 0}</span>
+                        <span><b>Suspended accounts</b><small>Review account access and status</small></span>
+                        <em>Manage <span aria-hidden="true">→</span></em>
+                      </button>
                     </div>
-                    <span className="health-summary">
-                      <i />
-                      Operational
-                    </span>
-                  </div>
-                  {Object.entries(dashboard?.health ?? {}).length === 0 ? (
-                    <p className="admin-empty">
-                      No health checks are available.
-                    </p>
-                  ) : (
-                    <div className="health-list">
-                      {Object.entries(dashboard?.health ?? {}).map(
-                        ([key, value]) => (
-                          <div key={key}>
-                            <span>
-                              <i
-                                className={
-                                  String(value).toLowerCase().includes("ok") ||
-                                  String(value)
-                                    .toLowerCase()
-                                    .includes("healthy")
-                                    ? "healthy"
-                                    : "warning"
-                                }
-                              />
-                              {humanize(key)}
-                            </span>
-                            <strong>{humanize(String(value))}</strong>
-                          </div>
-                        ),
-                      )}
+                  </section>
+
+                  <section className="dashboard-panel admin-activity-panel">
+                    <div className="panel-heading">
+                      <div><span className="panel-kicker">Marketplace and growth</span><h2>Platform activity</h2><p>Secondary totals, kept together for a quick scan.</p></div>
                     </div>
-                  )}
-                </section>
-                <section className="dashboard-panel">
-                  <div className="panel-heading">
-                    <div>
-                      <span className="panel-kicker">Priority queue</span>
-                      <h2>Needs attention</h2>
-                    </div>
-                  </div>
-                  <div className="attention-list">
-                    <button onClick={() => goTo("moderation")}>
-                      <span>
-                        <b>{openReportCount(reports)}</b>
-                        <small>Open reports</small>
-                      </span>
-                      <em>Review</em>
-                    </button>
-                    <button onClick={() => goTo("users")}>
-                      <span>
-                        <b>{dashboard?.totals.suspendedUsers ?? 0}</b>
-                        <small>Suspended users</small>
-                      </span>
-                      <em>Manage</em>
-                    </button>
-                    <button onClick={() => goTo("notifications")}>
-                      <span>
-                        <b>
-                          {
-                            deliveries.filter(
-                              (item) => item.status === "failed",
-                            ).length
-                          }
-                        </b>
-                        <small>Failed deliveries</small>
-                      </span>
-                      <em>Inspect</em>
-                    </button>
-                  </div>
-                </section>
-              </div>
+                    <dl className="admin-activity-list">
+                      <div><dt>Active members</dt><dd>{(dashboard.totals.activeUsers ?? 0).toLocaleString()}</dd></div>
+                      <div><dt>Items for sale</dt><dd>{(dashboard.totals.itemsForSale ?? 0).toLocaleString()}</dd></div>
+                      <div><dt>Service listings</dt><dd>{(dashboard.totals.serviceListings ?? 0).toLocaleString()}</dd></div>
+                      <div><dt>Waitlist</dt><dd>{(dashboard.totals.waitlist ?? 0).toLocaleString()}</dd></div>
+                    </dl>
+                    <button type="button" className="admin-panel-link" onClick={() => goTo("analytics")}>View detailed analytics <span aria-hidden="true">→</span></button>
+                  </section>
+                </div>
+
+              </>}
             </div>
           )}
           {section === "analytics" && (
@@ -1292,7 +1255,7 @@ export default function AdminPage() {
               </div>
             </div>
           )}
-          {section === "features" && <FeatureManager flags={features} loading={dashboardBusy} busy={featureBusy} update={updateFlag} history={featureHistory} toggleHistory={toggleHistory} />}
+          {section === "features" && <FeatureManager flags={features} loading={dashboardBusy} busy={featureBusy} update={updateFlag} history={featureHistory} toggleHistory={loadFeatureHistory} rollback={rollbackFlag} setup={featureSetup} setUpMissing={setUpMissingFeatures} />}
           {section === "payments" && <><PaymentCountries request={request} /><PricingManager request={request} /><SellerFees request={request} /></>}
           {section === "compliance" && <Compliance request={request} />}
           {section === "users" && (

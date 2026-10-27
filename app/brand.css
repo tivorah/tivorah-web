@@ -46,6 +46,7 @@
   color: var(--purple);
   font-weight: 800;
 }
+html[data-theme="dark"] .site-nav-primary { color: #d5b9ff; }
 
 .site-nav { gap: 8px; }
 
@@ -101,20 +102,31 @@ html:not([data-signed-in]) .site-nav .nav-when-signed-in {
   .brand img { width: clamp(124px, 38vw, 146px); }
   .nav-menu-button { display: grid; }
 
+  /* A panel that slides in from the right, under the header (its menu button becomes the close X). */
   .site-nav {
-    position: absolute;
-    top: calc(100% + 1px);
-    right: 20px;
-    left: 20px;
-    display: none;
-    padding: 10px;
-    border: 1px solid var(--line);
-    border-radius: 18px;
+    position: fixed;
+    z-index: 40;
+    top: var(--site-nav-top, 56px);
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    width: min(320px, 84vw);
+    padding: 14px 14px calc(18px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    border-left: 1px solid var(--line);
     background: #fff;
-    box-shadow: 0 20px 50px rgba(39, 27, 52, .14);
+    box-shadow: -18px 0 40px rgba(39, 27, 52, .14);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform .26s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .26s;
   }
 
-  .site-nav.is-open { display: grid; }
+  .site-nav.is-open { transform: none; visibility: visible; transition: transform .26s cubic-bezier(.2, .8, .2, 1); }
+
+  .site-nav-backdrop { position: fixed; z-index: 39; top: var(--site-nav-top, 56px); right: 0; bottom: 0; left: 0; padding: 0; border: 0; border-radius: 0; background: rgba(20, 14, 26, .34); cursor: default; }
 
   .site-nav a {
     display: flex;
@@ -122,7 +134,7 @@ html:not([data-signed-in]) .site-nav .nav-when-signed-in {
     align-items: center;
     padding: 0 14px;
     border-radius: 12px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
   }
 
@@ -135,16 +147,23 @@ html:not([data-signed-in]) .site-nav .nav-when-signed-in {
   .site-nav a:hover,
   .site-nav a:focus-visible { background: var(--soft); }
 
+  /* Your account / Sign in: Tivorah's main button (the app's dark pill; purple in dark mode). */
   .site-nav-primary {
     justify-content: center;
-    margin-top: 6px;
-    background: var(--purple);
+    width: 100%;
+    margin-top: auto;
+    border-radius: 999px !important;
+    background: #211d23;
     color: #fff;
   }
 
   .site-nav-primary:hover,
-  .site-nav-primary:focus-visible { background: #6032c4 !important; }
+  .site-nav-primary:focus-visible { background: #2d2830 !important; }
+  html[data-theme="dark"] .site-nav-primary:hover,
+  html[data-theme="dark"] .site-nav-primary:focus-visible { background: #5a3596 !important; }
 }
+
+@media (max-width: 850px) and (min-width: 601px) { :root { --site-nav-top: 76px; } }
 
 @media (max-width: 600px) {
   .nav .brand { min-height: 44px; }
@@ -153,6 +172,7 @@ html:not([data-signed-in]) .site-nav .nav-when-signed-in {
 
 @media (prefers-reduced-motion: reduce) {
   .nav-menu-button span { transition: none; }
+  .site-nav, .site-nav.is-open { transition: none; }
 }
 
 .phone-logo {

@@ -1,5 +1,9 @@
 /* Item orders (buyer: /account/item-orders, seller: /business/orders). */
 .item-orders { display: grid; gap: 16px; }
+.item-orders-role-tabs { display: grid; width: min(100%, 520px); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border: 1px solid #e2dae8; border-radius: 999px; background: #eee8f3; }
+.item-orders-role-tabs button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: #5d5066; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.item-orders-role-tabs button[aria-pressed="true"] { background: #fff; color: #56347e; box-shadow: 0 2px 8px #33223f12; }
+.item-orders-role-tabs button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
 .item-orders-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
 .item-orders-tabs button { display: inline-flex; min-height: 40px; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid #ded6e5; border-radius: 999px; background: #fff; color: #332a3b; font: inherit; font-weight: 650; cursor: pointer; }
 .item-orders-tabs button[aria-pressed="true"] { border-color: #211d23; background: #211d23; color: #fff; }

@@ -23,7 +23,8 @@ test("a seller accepts a new order with a note for the buyer", async ({ page }) 
     return route.fulfill({ json: { data: { order: current } } });
   });
   await page.goto("/business/orders");
-  await expect(page.getByRole("heading", { level: 1, name: "Orders" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Your orders" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Orders I received" })).toHaveAttribute("aria-pressed", "true");
   const card = page.locator(".item-order-card");
   await expect(card).toContainText("2 × Party jollof rice");
   await expect(card).toContainText("$42.00 (incl. $6.00 delivery)");
@@ -77,7 +78,7 @@ test("a buyer reviews a completed order once", async ({ page }) => {
   await page.route("**/api/v1/market/item-orders?role=buyer", (route) => route.fulfill({ json: { data: { orders: [order({ status: "completed", reviewed })] } } }));
   await page.route("**/api/v1/market/item-orders/41/review", (route) => { posted = route.request().postDataJSON(); reviewed = true; return route.fulfill({ status: 201, json: { data: { review: { id: 3, rating: 5 } } } }); });
   await page.goto("/account/item-orders");
-  await expect(page.getByRole("heading", { level: 1, name: "Your item orders" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Your orders" })).toBeVisible();
   const post = page.getByRole("button", { name: "Post review" });
   await expect(post).toBeDisabled();
   await page.getByRole("button", { name: "5 stars" }).click();
@@ -85,6 +86,23 @@ test("a buyer reviews a completed order once", async ({ page }) => {
   await post.click();
   await expect.poll(() => posted).toEqual({ rating: 5, comment: "Smoky and delicious." });
   await expect(page.getByText("Thanks for your review.")).toBeVisible();
+});
+
+test("orders sent and received share one clear screen", async ({ page }) => {
+  await signIn(page);
+  await page.route("**/api/v1/market/item-orders?role=buyer", (route) => route.fulfill({ json: { data: { orders: [order({ productTitle: "Kids bike", counterparty: { username: "taylor", firstName: "Taylor" } })] } } }));
+  await page.route("**/api/v1/market/item-orders?role=seller", (route) => route.fulfill({ json: { data: { orders: [order({ productTitle: "Indoor plant bundle", counterparty: { username: "priya", firstName: "Priya" } })] } } }));
+  await page.goto("/account/item-orders");
+
+  const sent = page.getByRole("button", { name: "Orders I sent" });
+  const received = page.getByRole("button", { name: "Orders I received" });
+  await expect(sent).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("Kids bike")).toBeVisible();
+
+  await received.click();
+  await expect(received).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("Indoor plant bundle")).toBeVisible();
+  await expect(page.getByText("Kids bike")).toHaveCount(0);
 });
 
 test("phones show orders without sideways scrolling", async ({ page }) => {

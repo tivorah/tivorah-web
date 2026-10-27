@@ -5,3 +5,15 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="
 select {
   border-radius: 999px !important;
 }
+
+/* One height for every single-line field in create and manage forms (text fields and dropdowns),
+   like the app's fields, so a username never sits taller or shorter than the name above it. */
+:is(.create-shell, .shop-form, .hub-panel, .shop-step) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+:is(.create-shell, .shop-form, .hub-panel, .shop-step) select,
+:is(.create-shell, .shop-form, .hub-panel, .shop-step) .select-field .select-field-trigger {
+  box-sizing: border-box;
+  height: 48px;
+  min-height: 48px;
+  padding-top: 0;
+  padding-bottom: 0;
+}

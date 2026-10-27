@@ -6,6 +6,8 @@ import { DiscoveryCard } from "../discovery/card";
 import { ShopBlock, ShopSection, ShopAsset, ShopContent, normalizeSectionOrder } from "../business/shop/types";
 import { AboutSummary } from "./about-summary";
 import { MediaGallery } from "./media-gallery";
+import { shopMedia, shopTabKeys } from "./shop-tabs";
+export { shopOpeningTab } from "./shop-tabs";
 import { MessageShopLink } from "./message-shop-link";
 import { SHOP_ACCENTS, sectionTitle } from "../business/shop/templates";
 
@@ -61,36 +63,28 @@ export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, p
   const shop = data.hasShop ? data.content : null;
   const cover = shop ? asset(shop.coverId) : undefined;
   const logo = shop ? asset(shop.logoId) : undefined;
-  const introVideo = shop ? asset(shop.videoId) : undefined;
-  const galleryMedia = shop ? shop.gallery.map((item) => { const found = asset(item.assetId); return found?.url ? { id: found.id, kind: found.kind, url: found.url, alt: item.alt || `${shop.name} media` } : null; }).filter((item): item is NonNullable<typeof item> => !!item) : [];
-  // The introduction video leads the photos & videos (with its captions).
-  const media = introVideo?.url && galleryMedia.some((item) => item.id === introVideo.id)
-    ? galleryMedia.map((item) => item.id === introVideo.id ? { ...item, captions: shop?.videoCaptions || "", transcript: shop?.videoTranscript || "" } : item)
-    : introVideo?.url && !galleryMedia.some((item) => item.id === introVideo.id)
-    ? [{ id: introVideo.id, kind: "video" as const, url: introVideo.url, alt: `${data.content.name} introduction`, captions: shop?.videoCaptions || "", transcript: shop?.videoTranscript || "" }, ...galleryMedia]
-    : galleryMedia;
   const name = data.content.name;
   // The seller's chosen order, without the sections they hid.
   const hidden = new Set(shop?.hiddenSections ?? []);
   const blocks = normalizeSectionOrder(shop?.sectionOrder).filter((key) => !hidden.has(key));
   const order = blocks.filter((key): key is ShopSection => key === "items" || key === "services" || key === "events");
   const hubs = hidden.has("hubs") ? [] : data.hubs ?? [];
-  const shownMedia = hidden.has("gallery") ? [] : null;
   const lists: Record<ShopSection, DiscoveryItem[]> = {
     items: data.offerings.filter((item) => item.listingType !== "service"),
     services: data.offerings.filter((item) => item.listingType === "service"),
     events: data.events ?? [],
   };
   const filledDetails = shop ? details.filter(([key]) => shop[key]) : [];
-  const gallery = shownMedia ?? media;
+  // The introduction video leads the photos & videos (with its captions).
+  const gallery = shopMedia(data, preview);
   // The seller's own section names (e.g. "Menu") and accent colour.
   const titleFor = (key: ShopBlock) => sectionTitle(key, shop, key === "items" || key === "services" || key === "events" ? sectionTitles[key] : key === "gallery" ? "Gallery" : "Hubs");
   const tabFor = (key: ShopBlock) => sectionTitle(key, shop, tabTitles[key]);
   const accent = shop?.accent ? SHOP_ACCENTS[shop.accent]?.color : undefined;
-  const blockCount = (key: ShopBlock) => key === "gallery" ? gallery.length : key === "hubs" ? hubs.length : counts[key];
+  const blockCount = (key: ShopBlock) => key === "gallery" ? gallery.length : key === "hubs" ? (hidden.has("hubs") ? 0 : counts.hubs ?? hubs.length) : counts[key];
   const tabs: [ShopTab, string, number | null][] = [
     ["all", "Overview", null],
-    ...blocks.filter((key) => key === "gallery" || key === "hubs" ? blockCount(key) > 0 : true).map((key) => [key, tabFor(key), blockCount(key)] as [ShopTab, string, number]),
+    ...shopTabKeys(data, preview).map((key) => [key, tabFor(key), blockCount(key)] as [ShopTab, string, number]),
   ];
   const hubCards = (list: ShopHub[]) => <div className="shop-hub-grid">{list.map((hub) => <Link key={hub.id} href={`/hubs/${hub.id}`} className="shop-hub-card">
     <span className="shop-hub-avatar" aria-hidden="true">{hub.avatar ? <HubAvatar src={hub.avatar} /> : hub.name.trim().charAt(0).toUpperCase()}</span>
@@ -116,11 +110,21 @@ export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, p
           {data.content.locality ? <p className="shop-hero-locality"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></svg>{data.content.locality}</p> : null}
           <h1>{name}</h1>
           {data.content.about ? <p className="shop-hero-about">{data.content.about}</p> : null}
-          <div className="shop-hero-meta"><p className="shop-hero-counts">{order.map((key) => counts[key] ? plural(counts[key], key === "items" ? "item" : key === "services" ? "service" : "upcoming event") : "").filter(Boolean).join(" · ") || "New on Tivorah"}</p>{contactSlug ? <MessageShopLink slug={contactSlug} ownerUsername={data.username} /> : null}</div>
+          <div className="shop-hero-meta"><p className="shop-hero-counts">{order.map((key) => counts[key] ? plural(counts[key], key === "items" ? "item" : key === "services" ? "service" : "upcoming event") : "").filter(Boolean).join(" · ") || "New on Tivorah"}</p></div>
+          {/* Like the app: the main action (Message, or Manage shop for the owner) beside a round profile button. */}
+          {contactSlug || data.username ? <div className="shop-hero-actions">
+            {contactSlug ? <MessageShopLink slug={contactSlug} ownerUsername={data.username} /> : null}
+            {data.username ? <Link className="shop-profile-button" href={`/u/${encodeURIComponent(data.username)}`} aria-label={`View ${name}’s profile`}>
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="8.5" r="4" /><path d="M4.5 20.5c1.4-3.6 4.2-5.4 7.5-5.4s6.1 1.8 7.5 5.4" /></svg>
+              <span className="shop-profile-label">View profile</span>
+            </Link> : null}
+          </div> : null}
         </div>
       </div>
     </header>
 
+    {/* A quick look at the photos & videos above the tabs (as in the app); tap one to see it full screen. */}
+    {gallery.length ? <MediaGallery items={gallery} title={name} layout="strip" /> : null}
     <nav className="shop-tabs" aria-label="Shop sections" id="shop-offerings">
       {tabs.map(([key, label, count]) => <Link key={key} href={href(key)} aria-current={tab === key ? "page" : undefined}>{label}{count !== null ? <span>{count}</span> : null}</Link>)}
     </nav>
@@ -130,10 +134,10 @@ export function ShopView({ data, tab, skip, href, banner, footer, contactSlug, p
       {blocks.map((key) => {
         if (key === "gallery") return gallery.length ? <section key={key} className="shop-section" aria-labelledby="shop-media">
           <div className="shop-section-head"><h2 id="shop-media">{titleFor("gallery")}</h2><Link href={href("gallery")}>View all {gallery.length} <span aria-hidden="true">→</span></Link></div>
-          <MediaGallery items={gallery} title={name} />
+          <MediaGallery items={gallery} title={name} layout="slideshow" />
         </section> : null;
         if (key === "hubs") return hubs.length ? <section key={key} className="shop-section" aria-labelledby="shop-hubs">
-          <div className="shop-section-head"><h2 id="shop-hubs">{titleFor("hubs")}</h2>{hubs.length > 3 ? <Link href={href("hubs")}>See all {hubs.length} <span aria-hidden="true">→</span></Link> : null}</div>
+          <div className="shop-section-head"><h2 id="shop-hubs">{titleFor("hubs")}</h2>{hubs.length > 3 ? <Link href={href("hubs")}>See all {blockCount("hubs")} <span aria-hidden="true">→</span></Link> : null}</div>
           {hubCards(hubs.slice(0, 3))}
         </section> : null;
         return lists[key].length ? <section key={key} className="shop-section" aria-labelledby={`shop-${key}`}>

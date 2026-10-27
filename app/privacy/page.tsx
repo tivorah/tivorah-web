@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 26 October 2026
+        <strong>Last updated:</strong> 28 October 2026
       </p>
 
       <p>
@@ -87,8 +87,9 @@ export default function Privacy() {
         <li>
           <strong>Marketplace and services:</strong> listings, images, prices,
           service areas, enquiries, offers, order records, seller information
-          and information needed to arrange pickup, delivery or a service. If
-          you share a listing to a Hub, members of that Hub can see it. If you
+          and information needed to arrange pickup, delivery or a service. When
+          you create an item, service or event, you choose at least one Hub to
+          share it with, and members of those Hubs can see it. If you
           review a service you booked, your rating, review and first name are
           shown publicly on that service&apos;s page (including to people who
           are not signed in); in the app, signed-in members also see your

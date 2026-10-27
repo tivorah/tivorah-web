@@ -13,7 +13,8 @@ import { ApiError, api } from "../../lib/api/client";
 import { creationPayload, CreationKind } from "./create-payload";
 import { Locality, LocalityField } from "./locality-field";
 import type { PlaceCountry } from "../../lib/api/places";
-import { MediaField } from "./media-field";
+import { CoverSlidesField } from "./cover-slides-field";
+import { coverUploadOrder, type CoverSlide } from "../../lib/cover-slides";
 import { DateField } from "../ui/date-field";
 import { SelectField } from "../ui/select-field";
 import { HubShareField } from "./hub-share-field";
@@ -26,7 +27,10 @@ import { ServiceMenuEditor, useServiceTemplate } from "./service-menu-editor";
 import { hasMenuItems, menuPayload, type ServiceMenuValue } from "../../lib/service-menu";
 import categories from "../../lib/discovery-categories.json";
 import { ItemOrderingFields } from "./item-ordering-fields";
+import { useFeature } from "../discovery/features";
 function CreationForm({ kind }: { kind: CreationKind }) {
+  // Admin → Features → Paid tickets off: new ticket types are free only, as in the app.
+  const paidTicketsOn = useFeature()("paid_tickets");
   const [settings, setSettings] = useState(defaultServiceSettings);
   const [mode, setMode] = useState(kind === "event" ? "venue" : "at_provider");
   const [locality, setLocality] = useState<Locality | null>(null);
@@ -35,10 +39,13 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   // Elsewhere, people get tickets from the organiser's link, by messaging them, or both.
   const tivorahTicketing = kind !== "event" || mode === "online" || (placeCountry?.payments ?? true);
   const [ticketContact, setTicketContact] = useState<"link" | "message" | "both">("link");
-  const [images, setImages] = useState<string[]>([]);
+  // The cover: up to four slides, photos and one video (cover-slides-field.tsx), uploaded on submit.
+  const [covers, setCovers] = useState<CoverSlide[]>([]);
+  const uploadedCovers = useRef(new Map<File, string>());
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [hubIds, setHubIds] = useState<number[]>([]);
+  const [hubsMissing, setHubsMissing] = useState(false);
   const [packages, setPackages] = useState<PackageDraft[]>(() => [newPackage({ name: "General admission" })]);
   const [setupIssues, setSetupIssues] = useState<BookingSetupIssue[]>([]);
   const [error, setError] = useState("");
@@ -98,13 +105,32 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || uploading || (!agreed && !accepted)) return;
+    if (!hubIds.length) {
+      setHubsMissing(true);
+      setError(`Choose at least one Hub to share this ${kind === "event" ? "event" : kind === "service" ? "service" : "listing"} with.`);
+      document.getElementById("create-hubs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     setBusy(true);
     setError("");
     setSetupIssues([]);
     try {
       key.current ??= randomId();
+      const fields = new FormData(event.currentTarget);
+      // One photo per slide (a video's first frame on its slide); kept if a later step fails.
+      const cover = coverUploadOrder(covers);
+      const pending = cover.photos.filter((file) => !uploadedCovers.current.has(file));
+      if (pending.length) {
+        const body = new FormData();
+        body.set("context", kind);
+        for (const file of pending) body.append("files", file);
+        const result = await api<{ images: { url: string }[] }>("/utility/uploads/images", { method: "POST", body, signal: AbortSignal.timeout(120000) });
+        pending.forEach((file, index) => { const url = result.images[index]?.url; if (url) uploadedCovers.current.set(file, url); });
+      }
+      const images = cover.photos.map((file) => uploadedCovers.current.get(file)).filter((url): url is string => !!url);
+      const videoUploadId = cover.videoUpload ? await cover.videoUpload.catch(() => { throw new Error("Your cover video didn’t upload. Remove it, or choose it again."); }) : undefined;
       const payload = creationPayload(
-        new FormData(event.currentTarget),
+        fields,
         kind,
         locality,
         images,
@@ -126,14 +152,21 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       }
       await api(kind === "event" ? "/events" : "/market/products", {
         method: "POST",
+        // The same key on every try of this create (listings also send it in the body), so a
+        // retry after a lost response returns the event instead of making a second one.
+        headers: { "Idempotency-Key": key.current },
         body: JSON.stringify({
           ...payload,
           communityIds: hubIds,
+          ...(videoUploadId ? kind === "event" ? { coverVideoUploadId: videoUploadId, coverVideoPosition: cover.videoPosition } : { coverUploadIds: [videoUploadId], coverVideoPosition: cover.videoPosition } : {}),
           ...(kind === "service" ? { ...serviceSettingsPayload(settings), availabilityTimezone: settings.availabilityTimezone || serviceTimezoneForState(locality?.state, locality?.countryCode ?? placeCountry?.code), ...menuPayload(menu, !!template) } : {}),
         }),
       });
       setCreated(true);
     } catch (cause) {
+      // An answer that wasn't a server failure (e.g. finish payment setup): the next try is a new
+      // request, so it isn't given the stored answer again.
+      if (cause instanceof ApiError && cause.status < 500) key.current = null;
       setSetupIssues(cause instanceof ApiError ? cause.setupIssues : []);
       setError(
         cause instanceof Error
@@ -160,7 +193,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       <div className="shop-actions business-create-done"><span><Link className="product-primary" href="/business">Back to your business</Link></span></div>
     </div>;
   // Live summary: what's filled in so far (drives the preview card and the checklist).
-  const checklist = checklistFor(kind, { ...draft, mode, images, locality, packages, ticketContact: tivorahTicketing ? null : ticketContact, menuItems: usesMenu ? menu.filter((item) => item.name.trim() && item.price.trim()).length : null });
+  const checklist = checklistFor(kind, { ...draft, mode, images: covers.map((slide) => slide.id), locality, packages, ticketContact: tivorahTicketing ? null : ticketContact, menuItems: usesMenu ? menu.filter((item) => item.name.trim() && item.price.trim()).length : null, hubs: hubIds.length });
   const doneCount = checklist.filter((item) => item.done).length;
   const allDone = doneCount === checklist.length;
   const priceLabel = kind === "event"
@@ -175,11 +208,11 @@ function CreationForm({ kind }: { kind: CreationKind }) {
     section?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.setTimeout(() => section?.querySelector<HTMLElement>("input:not([type=hidden]), textarea, button")?.focus({ preventScroll: true }), 350);
   };
-  const submitLabel = busy ? "Saving…" : uploading ? "Photos are uploading…" : kind === "event" ? "Create draft" : "Publish listing";
+  const submitLabel = busy ? "Saving…" : uploading ? "Reading your video…" : kind === "event" ? "Create draft" : "Publish listing";
   const submitDisabled = busy || uploading || (!agreed && (!accepted || !terms));
   const promptCount = prompts.filter((item) => item.trim()).length;
   // Phones: the checklist becomes a sticky stage tracker (one step per section).
-  const stageLabels: Record<string, string> = { "create-basics": "Basics", "create-media": kind === "event" ? "Cover" : "Photos", "create-place": kind === "item" ? "Pickup" : "Where", "create-when": "When", "create-tickets": "Tickets", "create-price": "Price" };
+  const stageLabels: Record<string, string> = { "create-hubs": "Hubs", "create-basics": "Basics", "create-media": kind === "event" ? "Cover" : "Photos", "create-place": kind === "item" ? "Pickup" : "Where", "create-when": "When", "create-tickets": "Tickets", "create-price": "Price" };
   const stages = [...new Set(checklist.map((item) => item.section))].map((section) => ({ section, label: stageLabels[section], done: checklist.filter((item) => item.section === section).every((item) => item.done) }));
 
   return (
@@ -200,8 +233,14 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           if (["title", "description", "price", "onlineUrl", "externalTicketUrl"].includes(field.name)) setDraft((current) => ({ ...current, [field.name]: field.value }));
         }}>
         <div className="create-main">
+          {/* Listings, services and events reach people through Hubs (the Shop tab is out of the
+              bottom nav), so choosing at least one comes first. The API enforces it too. */}
+          <section id="create-hubs" className="shop-step create-section">
+            <h2><span className="create-step-no" aria-hidden="true">1</span>Hubs</h2>
+            <HubShareField required invalid={hubsMissing} kind={kind === "event" ? "event" : kind === "service" ? "service" : "listing"} value={hubIds} onChange={(ids) => { setHubIds(ids); if (ids.length) setHubsMissing(false); }} disabled={busy} />
+          </section>
           <section id="create-basics" className="shop-step create-section">
-            <h2><span className="create-step-no" aria-hidden="true">1</span>Basics</h2>
+            <h2><span className="create-step-no" aria-hidden="true">2</span>Basics</h2>
             <label>
               {kind === "event" ? "Event name" : kind === "service" ? "Service title" : "Item title"}
               <input name="title" required minLength={3} maxLength={160} placeholder={kind === "event" ? "Give your event a clear name" : kind === "service" ? "What service do you offer?" : "What are you selling?"} />
@@ -229,13 +268,13 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           </section>
 
           <section id="create-media" className="shop-step create-section">
-            <h2><span className="create-step-no" aria-hidden="true">2</span>{kind === "event" ? "Cover photo" : "Photos"}</h2>
-            <p className="shop-hint">{kind === "event" ? "The first photo is your event cover." : "The first photo is the one customers see first."} Up to five photos, 10 MB each, checked before publishing.</p>
-            <MediaField context={kind} onChange={setImages} onBusy={setUploading} />
+            <h2><span className="create-step-no" aria-hidden="true">3</span>{kind === "event" ? "Cover" : "Photos"}</h2>
+            <p className="shop-hint">{kind === "event" ? "The first slide is your event cover." : "The first slide is the one customers see first."} Up to 4 photos, or 3 and a video ({kind === "event" ? "15" : "30"} seconds, reviewed before it shows). Photos up to 10 MB each, checked before publishing.</p>
+            <CoverSlidesField id="create-cover" purpose={kind === "event" ? "event-cover" : "listing"} slides={covers} onChange={setCovers} onBusy={setUploading} compact />
           </section>
 
           <section id="create-place" className="shop-step create-section">
-            <h2><span className="create-step-no" aria-hidden="true">3</span>{kind === "event" ? "Where" : kind === "service" ? "Where you work" : "Pickup & delivery"}</h2>
+            <h2><span className="create-step-no" aria-hidden="true">4</span>{kind === "event" ? "Where" : kind === "service" ? "Where you work" : "Pickup & delivery"}</h2>
             {template ? <p className="create-question">{template.modeQuestion}</p> : null}
             {kind !== "item" ? <div className="create-segmented" role="radiogroup" aria-label={kind === "event" ? "Location type" : template?.modeQuestion ?? "How do you provide this service?"}>
               {(kind === "event"
@@ -258,7 +297,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
 
           {kind === "event" ? <>
             <section id="create-when" className="shop-step create-section">
-              <h2><span className="create-step-no" aria-hidden="true">4</span>When</h2>
+              <h2><span className="create-step-no" aria-hidden="true">5</span>When</h2>
               <div className="shop-row">
                 <label>Starts<DateField name="startsAt" label="Starts at" kind="datetime" requiredMessage="Choose when the event starts." required onChange={(value) => setDraft((current) => ({ ...current, startsAt: value }))} /></label>
                 <label>Ends<DateField name="endsAt" label="Ends at" kind="datetime" requiredMessage="Choose when the event ends." required onChange={(value) => setDraft((current) => ({ ...current, endsAt: value }))} /></label>
@@ -266,10 +305,11 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               <p className="shop-hint">Times are in your local time.</p>
             </section>
             <section id="create-tickets" className="shop-step create-section">
-              <h2><span className="create-step-no" aria-hidden="true">5</span>Tickets</h2>
+              <h2><span className="create-step-no" aria-hidden="true">6</span>Tickets</h2>
               {tivorahTicketing ? <>
-                <p className="shop-hint">Use $0 for free tickets. Paid tickets need <Link href="/business/payouts">payout setup</Link>.</p>
-                <TicketPackageList value={packages} onChange={setPackages} />
+                {paidTicketsOn ? <p className="shop-hint">Use $0 for free tickets. Paid tickets need <Link href="/business/payouts">payout setup</Link>.</p>
+                  : <p className="shop-hint">Paid entry is currently unavailable, so tickets are free ($0) for now.</p>}
+                <TicketPackageList value={packages} onChange={setPackages} paidAllowed={paidTicketsOn} />
               </> : <>
                 <p className="create-ticket-region" role="note">Tivorah tickets aren’t available in your region at the moment.</p>
                 <p className="create-question">How do people get tickets?</p>
@@ -281,7 +321,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               </>}
             </section>
           </> : <section id="create-price" className="shop-step create-section">
-            <h2><span className="create-step-no" aria-hidden="true">4</span>{kind === "service" ? "Price & bookings" : "Price"}</h2>
+            <h2><span className="create-step-no" aria-hidden="true">5</span>{kind === "service" ? "Price & bookings" : "Price"}</h2>
             {/* Menu categories: the items carry the prices. Other categories keep a single price. */}
             {template ? <ServiceMenuEditor template={template} value={menu} onChange={setMenu} disabled={busy} /> : null}
             {usesMenu ? <><input type="hidden" name="price" value="0" /><input type="hidden" name="priceType" value="fixed" /></> : null}
@@ -300,7 +340,6 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           <section id="create-extras" className="create-extras" aria-labelledby="create-extras-title">
             <h2 id="create-extras-title">Extras <span className="shop-optional">Optional</span></h2>
             <div className="create-extras-list">
-              <HubShareField kind={kind === "event" ? "event" : "listing"} value={hubIds} onChange={setHubIds} disabled={busy} />
               <div className="create-extra-row">
                 <span className="create-extra-icon" aria-hidden="true">💬</span>
                 <span className="create-extra-text">
@@ -333,7 +372,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
         <aside className="create-summary" aria-label="Summary">
           <div className="create-preview">
             <div className="create-preview-media">
-              {images[0] ? <PreviewImage src={images[0]} /> : <span aria-hidden="true">{kind === "event" ? "🎟️" : kind === "service" ? "🛠️" : "🛍️"}</span>}
+              {covers[0] ? <PreviewImage src={covers[0].kind === "photo" ? covers[0].preview : covers[0].framePreview} /> : <span aria-hidden="true">{kind === "event" ? "🎟️" : kind === "service" ? "🛠️" : "🛍️"}</span>}
             </div>
             <div className="create-preview-body">
               <span className="create-preview-kind">{kind === "event" ? "Event" : kind === "service" ? "Service" : "For sale"}{draft.category ? ` · ${draft.category}` : ""}</span>
@@ -396,11 +435,12 @@ function PreviewImage({ src }: { src: string }) {
 }
 
 type DraftFields = { title: string; description: string; category: string; price: string; onlineUrl: string; externalTicketUrl: string; startsAt: string; endsAt: string };
-type ChecklistInput = DraftFields & { mode: string; images: string[]; locality: Locality | null; packages: PackageDraft[]; ticketContact: "link" | "message" | "both" | null; menuItems: number | null };
+type ChecklistInput = DraftFields & { mode: string; images: string[]; locality: Locality | null; packages: PackageDraft[]; ticketContact: "link" | "message" | "both" | null; menuItems: number | null; hubs: number };
 // What must be done before this listing can be saved, in the order of the form.
 function checklistFor(kind: CreationKind, data: ChecklistInput) {
   const online = kind !== "item" && data.mode === "online";
   const items = [
+    { id: "hubs", section: "create-hubs", label: "Hubs", done: data.hubs > 0 },
     { id: "title", section: "create-basics", label: kind === "event" ? "Event name" : "Title", done: data.title.trim().length >= 3 },
     { id: "description", section: "create-basics", label: "Description", done: data.description.trim().length >= 10 },
     { id: "category", section: "create-basics", label: "Category", done: !!data.category },

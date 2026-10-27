@@ -1,11 +1,19 @@
 "use client";
 
 import { BrandLogo } from "../components/brand-logo";
-import { useEffect, useId, useRef, useState } from "react";
+import { Suspense, useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DiscoveryLinks } from "../components/discovery/features";
 import { memberAuth } from "../lib/auth/client";
+import { SectionMenuLinks, useSection } from "../components/ui/section-nav";
+
+/** On phones and tablets, Your account and the business workspace put their side nav at the top of the menu. */
+function MenuSection({ onNavigate }: { onNavigate: () => void }) {
+  const section = useSection();
+  return section ? <SectionMenuLinks section={section} onNavigate={onNavigate} /> : null;
+}
 
 export const signedInHintKey = "tivorah-signed-in";
 
@@ -24,6 +32,16 @@ export function SiteHeader() {
           : undefined;
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Phones and tablets: the menu slides in from the right. It's rendered at the end of the page, not in
+  // the header, because the header moves while scrolling and would carry a fixed panel with it.
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 850px)");
+    const update = () => setNarrow(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
   const menuId = useId();
   const menuButton = useRef<HTMLButtonElement>(null);
 
@@ -45,8 +63,18 @@ export function SiteHeader() {
     };
 
     window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [menuOpen]);
+    // The menu slides in from the right on phones: the page behind stays put, and focus moves in.
+    // Locked on <html>, not <body>: with <body> locked the sticky header scrolls away (html clips sideways).
+    const root = document.documentElement;
+    const overflow = root.style.overflow;
+    if (window.matchMedia("(max-width: 850px)").matches) root.style.overflow = "hidden";
+    const frame = requestAnimationFrame(() => (document.getElementById(menuId)?.querySelector("a") as HTMLElement | null)?.focus());
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      root.style.overflow = overflow;
+      cancelAnimationFrame(frame);
+    };
+  }, [menuOpen, menuId]);
 
   // Remember only whether this browser is signed in (no account data) so the
   // next page load can show the right button before the session check returns.
@@ -66,6 +94,41 @@ export function SiteHeader() {
   const closeMenu = () => setMenuOpen(false);
 
   if (path.startsWith("/auth")) return null;
+
+  const menu = <>
+    {/* Phones: tapping beside the sliding menu closes it (pointer only: the menu button and Escape
+        close it for keyboards and screen readers, so they don't meet a second close button). */}
+    {menuOpen ? <button type="button" className="site-nav-backdrop" aria-hidden="true" tabIndex={-1} onClick={closeMenu} /> : null}
+    <nav
+      id={menuId}
+      className={`site-nav${menuOpen ? " is-open" : ""}`}
+      aria-label="Primary navigation"
+    >
+      {narrow ? <Suspense fallback={null}><MenuSection onNavigate={closeMenu} /></Suspense> : null}
+      <DiscoveryLinks onClick={closeMenu} active={active} />
+      {isPending ? (
+        // Until the session check finishes, render both choices; the
+        // pre-paint script in the root layout reveals the likely one from
+        // the remembered sign-in hint, so the button never pops in.
+        <>
+          <Link className="site-nav-primary nav-when-signed-out" href="/auth/signin" onClick={closeMenu}>
+            Sign in
+          </Link>
+          <Link className="site-nav-primary nav-when-signed-in" href="/account" onClick={closeMenu}>
+            Your account
+          </Link>
+        </>
+      ) : (
+        <Link
+          className="site-nav-primary"
+          href={accountLink ? "/account" : "/auth/signin"}
+          onClick={closeMenu}
+        >
+          {accountLink ? "Your account" : "Sign in"}
+        </Link>
+      )}
+    </nav>
+  </>;
 
   return (
     <header
@@ -90,34 +153,7 @@ export function SiteHeader() {
           <span aria-hidden="true" />
           <span aria-hidden="true" />
         </button>
-        <nav
-          id={menuId}
-          className={`site-nav${menuOpen ? " is-open" : ""}`}
-          aria-label="Primary navigation"
-        >
-          <DiscoveryLinks onClick={closeMenu} active={active} />
-          {isPending ? (
-            // Until the session check finishes, render both choices; the
-            // pre-paint script in the root layout reveals the likely one from
-            // the remembered sign-in hint, so the button never pops in.
-            <>
-              <Link className="site-nav-primary nav-when-signed-out" href="/auth/signin" onClick={closeMenu}>
-                Sign in
-              </Link>
-              <Link className="site-nav-primary nav-when-signed-in" href="/account" onClick={closeMenu}>
-                Your account
-              </Link>
-            </>
-          ) : (
-            <Link
-              className="site-nav-primary"
-              href={accountLink ? "/account" : "/auth/signin"}
-              onClick={closeMenu}
-            >
-              {accountLink ? "Your account" : "Sign in"}
-            </Link>
-          )}
-        </nav>
+        {narrow ? createPortal(menu, document.body) : menu}
       </div>
     </header>
   );

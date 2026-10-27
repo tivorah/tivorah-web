@@ -74,7 +74,11 @@ export function CreatePromo({ kind }: { kind: Exclude<DiscoveryKind, "hubs"> }) 
   // Hold the button's space while feature flags load so the hero does not jump.
   if (loading) return <span className="create-promo-trigger create-promo-skeleton tivorah-shimmer" aria-hidden="true" />;
   if (!available) return null;
-  return <><button type="button" className="create-promo-trigger" onClick={show}>Create on Tivorah <span aria-hidden="true">↗</span></button><dialog ref={dialog} className="create-promo-dialog" aria-labelledby="create-promo-title" onCancel={(event) => { event.preventDefault(); close(); }} onClick={(event) => { if (event.target === event.currentTarget) { const rect = event.currentTarget.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) close(); } }}>
+  return <><button type="button" className="create-promo-trigger" onClick={show} aria-label="Create on Tivorah">
+    {/* On phones this is a round + button in the bottom corner (app/mobile-app.css). */}
+    <svg className="create-promo-plus" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+    <span className="create-promo-label">Create on Tivorah <span aria-hidden="true">↗</span></span>
+  </button><dialog ref={dialog} className="create-promo-dialog" aria-labelledby="create-promo-title" onCancel={(event) => { event.preventDefault(); close(); }} onClick={(event) => { if (event.target === event.currentTarget) { const rect = event.currentTarget.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) close(); } }}>
     <div className="create-promo-head"><Image src="/tivorah-mark.png" alt="" width={32} height={32} /><button type="button" className="create-promo-close" aria-label="Close invitation" onClick={close}>×</button></div>
     <h2 id="create-promo-title">Bring your idea to Tivorah.</h2>
     <p className="create-promo-intro">What would you like to create?</p>

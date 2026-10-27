@@ -1,0 +1,26 @@
+/* Cover slides on the web create pages (cover-slides-field.tsx), like the app's cover editor. */
+.cover-slides { display: grid; gap: 0; min-width: 0; }
+.cover-slides-stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 18px; background: linear-gradient(120deg, #efe6fb, #fde9f3 55%, #fff1e6); transition: aspect-ratio .26s cubic-bezier(.2, .8, .2, 1); }
+/* Events and listings: shorter while it's only photos; a video grows it back to 16:9. */
+.cover-slides.is-compact .cover-slides-stage { aspect-ratio: 12 / 5; }
+@media (prefers-reduced-motion: reduce) { .cover-slides-stage { transition: none; } }
+.cover-slides.is-invalid .cover-slides-stage { box-shadow: 0 0 0 2px #b3263a; }
+.cover-slides-track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.cover-slides-track::-webkit-scrollbar { display: none; }
+.cover-slides-slide { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; }
+.cover-slides-slide img, .cover-slides-slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cover-slides-count { position: absolute; left: 12px; top: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(20, 17, 22, .62); color: #fff; font-size: 12px; font-weight: 800; pointer-events: none; }
+.cover-slides-picks { position: absolute; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.cover-slides-pick { position: relative; display: inline-flex !important; min-height: 40px; align-items: center; gap: 6px !important; padding: 0 14px; border-radius: 999px; background: rgba(23, 16, 30, .62); color: #fff !important; font-size: 13px !important; font-weight: 750 !important; cursor: pointer; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.cover-slides-pick input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.cover-slides-pick:focus-within { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.cover-slides-strip { display: flex; gap: 8px; margin: 12px 0 0; padding: 0; overflow-x: auto; list-style: none; scrollbar-width: none; }
+.cover-slides-strip > li { position: relative; flex: 0 0 132px; display: grid; gap: 4px; }
+.cover-slides-strip img { width: 132px; aspect-ratio: 16 / 9; border-radius: 10px; object-fit: cover; background: #f4efff; }
+.cover-slides-strip > li.is-failed img { outline: 2px solid #b3263a; }
+.cover-slides-tag { position: absolute; left: 6px; top: 6px; padding: 2px 7px; border-radius: 999px; background: rgba(20, 17, 22, .62); color: #fff; font-size: 11px; font-weight: 800; }
+.cover-slides-tools { display: flex; justify-content: space-between; }
+.cover-slides-tools button { min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 12px; background: none; color: #65409f; font: inherit; font-size: 18px; font-weight: 800; cursor: pointer; }
+.cover-slides-tools button:disabled { opacity: .3; cursor: default; }
+.cover-slides-tools button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 1px; }
+.cover-slides-pick span, .cover-slides-pick svg { color: #fff !important; }

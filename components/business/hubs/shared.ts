@@ -1,6 +1,11 @@
 // Hub management on the web business dashboard. Uses the same /community API as the mobile app.
 
-export type HubRule = { key: string; text: string };
+/** A Hub rule. Catalogue presets also carry the topic they are listed under in the rules sheet. */
+export type HubRule = { key: string; text: string; group?: string };
+/** How many preset rules show before "See all rules" (the app shows the same five). */
+export const FEATURED_RULE_COUNT = 5;
+/** Mirrors MAX_HUB_GUIDELINES on the API. */
+export const MAX_HUB_RULES = 12;
 
 export type ManagedHub = {
   id: number;
@@ -101,7 +106,13 @@ export type NewHub = {
   /** The Hub's country, also for a country-wide Hub with no town (defaults to Australia). */
   countryCode?: string;
   avatar: Blob | null;
-  banner: Blob | null;
+  /** One key per create attempt, reused on retries, so a lost response never makes a second Hub. */
+  idempotencyKey?: string;
+  /** The cover slides, one photo each (a video's first frame on its slide; lib/cover-slides.ts). */
+  covers: Blob[];
+  /** The cover video's finished upload, and the slide it plays on. */
+  coverVideoUploadId?: string;
+  coverVideoPosition?: number;
   /** The opening welcome post. Left out, the API posts its suggested welcome (like older apps). */
   welcome?: { enabled: boolean; message: string };
 };
@@ -139,7 +150,12 @@ export function newHubFormData(hub: NewHub): FormData {
     if (hub.locality.postcode) form.set("postcode", hub.locality.postcode);
   }
   if (hub.avatar) form.set("avatar", hub.avatar);
-  if (hub.banner) form.append("banner", hub.banner);
+  if (hub.idempotencyKey) form.set("idempotencyKey", hub.idempotencyKey);
+  for (const cover of hub.covers) form.append("banner", cover);
+  if (hub.coverVideoUploadId) {
+    form.set("coverVideoUploadId", hub.coverVideoUploadId);
+    form.set("coverVideoPosition", String(hub.coverVideoPosition ?? 0));
+  }
   // Same fields as the app: off, or the creator's text (empty sends the API's suggestion).
   if (hub.welcome) {
     form.set("postWelcome", hub.welcome.enabled ? "true" : "false");

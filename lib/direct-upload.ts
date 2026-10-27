@@ -8,7 +8,7 @@ import { ApiError, api } from "./api/client";
 
 type Part = { partNumber: number; size: number; url: string };
 type Started = { id: string; partSize: number; partCount: number; single?: { url: string; headers: Record<string, string> }; parts?: Part[] };
-export type DirectUploadPurpose = "shop" | "listing" | "hub";
+export type DirectUploadPurpose = "shop" | "listing" | "hub" | "hub-cover" | "event-cover";
 export type DirectUploadKind = "image" | "video";
 
 const CONCURRENCY = 4;

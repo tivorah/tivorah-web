@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "../../../lib/api/client";
 import { ShopVideo } from "./video";
+import { firstFrame } from "../../../lib/video-frame";
 
 // The seller's shop, shown under their item / service details and an
 // organiser's event. The API returns null unless the shop is published, the
@@ -49,7 +50,7 @@ export function ShopCard({ username, surface }: { username: string; surface: "it
       </div>
       {card.about ? <p className="shop-card-about">{card.about}</p> : null}
       {card.gallery.length ? <ul className="shop-card-gallery">
-        {card.gallery.slice(0, 3).map((photo) => <li key={photo.url}>{photo.kind === "video" ? <video src={photo.url} muted playsInline preload="metadata" aria-label={photo.alt} /> : <Image src={photo.url} alt={photo.alt} width={240} height={180} sizes="(max-width: 700px) 33vw, 180px" />}</li>)}
+        {card.gallery.slice(0, 3).map((photo) => <li key={photo.url}>{photo.kind === "video" ? <video src={firstFrame(photo.url)} muted playsInline preload="metadata" aria-label={photo.alt} /> : <Image src={photo.url} alt={photo.alt} width={240} height={180} sizes="(max-width: 700px) 33vw, 180px" />}</li>)}
       </ul> : null}
       {card.video ? watching
         ? <div className="shop-card-video"><ShopVideo src={card.video.url} title={card.name} captions={card.video.captions} poster={card.cover || undefined} /></div>

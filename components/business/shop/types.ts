@@ -28,6 +28,8 @@ export type ShopContent = {
   accent?: "violet" | "coral" | "amber" | "emerald" | "ocean" | "rose" | "graphite";
   /** The seller's own section names, e.g. { items: "Menu" }. */
   sectionTitles?: Partial<Record<ShopBlock, string>>;
+  /** The tab the shop page opens on (web and app). Missing, hidden or empty = Overview. */
+  openTab?: "overview" | ShopBlock;
 };
 export type ShopSection = "items" | "services" | "events";
 export type ShopBlock = "gallery" | ShopSection | "hubs";

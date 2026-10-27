@@ -20,6 +20,8 @@ import {
 } from "../../app/events/api";
 import { CheckoutHoldBanner } from "./checkout-hold-banner";
 import { verifiedStripeCheckoutUrl } from "../../lib/checkout-hold";
+import { leaveFor } from "../../lib/leave-page";
+import { useFeature } from "./features";
 
 /** The organiser's per-person limit, less what this signed-in buyer already holds. */
 const buyerAllowance = (ticket: { maxTicketsPerBuyer: number }, held = 0) => Math.max(0, ticket.maxTicketsPerBuyer - held);
@@ -103,10 +105,13 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
   const selection = JSON.stringify(items);
   const rateKey = `${ticketId}:${accessCode}`;
   const paid = (ticket?.priceCents ?? 0) > 0;
+  // Admin → Features → Paid tickets off: paid tickets can't be bought (free ones still can), as in the app.
+  const featureOn = useFeature();
+  const paidOff = paid && !featureOn("paid_tickets");
   const currentQuote = ticket ? ticketTotals(subtotal, 1, rate?.key === rateKey ? rate.value : null) : null;
   const returnTo = `/events/${event.id}?cart=${encodeURIComponent(selection)}#tickets`;
   useEffect(() => {
-    if (!ticketId || !paid) { setQuoteError(""); return; }
+    if (!ticketId || !paid || paidOff) { setQuoteError(""); return; }
     const controller = new AbortController();
     setQuoteError("");
     eventApi<BookingQuote>(`/${event.id}/quote`, {
@@ -128,7 +133,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
         }
       });
     return () => controller.abort();
-  }, [ticketId, paid, event.id, rateKey, attempt, accessCode]);
+  }, [ticketId, paid, paidOff, event.id, rateKey, attempt, accessCode]);
   async function submit(e: FormEvent) {
     e.preventDefault();
     const guest = signedOut && event.guestBookingAvailable;
@@ -184,7 +189,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
       if (result.checkoutUrl) {
         const url = verifiedStripeCheckoutUrl(result.checkoutUrl);
         if (!url) throw new Error("The payment link could not be verified.");
-        window.location.assign(url);
+        await leaveFor(url);
       } else {
         if (!guest && result.order.status !== "pending_payment") {
           try {
@@ -195,8 +200,8 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
           if (!result.ticketUrl) throw new Error("The private ticket link is unavailable. Check your email or contact Tivorah with your booking number.");
           const ticketUrl = new URL(result.ticketUrl);
           if (ticketUrl.pathname !== `/event-orders/${result.order.id}` || !/^#access=[A-Za-z0-9_-]{43}$/.test(ticketUrl.hash)) throw new Error("The private ticket link could not be verified.");
-          window.location.assign(`${window.location.origin}${ticketUrl.pathname}${ticketUrl.hash}`);
-        } else window.location.assign(`/account/orders/${result.order.id}`);
+          await leaveFor(`${window.location.origin}${ticketUrl.pathname}${ticketUrl.hash}`);
+        } else await leaveFor(`/account/orders/${result.order.id}`);
       }
     } catch (cause) {
       if (cause instanceof Error && cause.message.includes("price has changed")) setAttempt(value => value + 1);
@@ -351,6 +356,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
             quoteError ? <p role="alert">{quoteError}</p> : <div aria-busy="true"><span>Total</span><span className="event-total-pending tivorah-shimmer" aria-label="Loading price" /></div>
           )}
         </div>
+        {paidOff ? <p className="product-notice" role="alert">Paid tickets aren’t available on Tivorah right now. Free tickets can still be booked.</p> : null}
         {quoteError ? (
           <button
             type="button"
@@ -371,7 +377,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
             <label htmlFor="guest-email">Email address</label>
             <input id="guest-email" name="guestEmail" type="email" autoComplete="email" maxLength={254} required value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
             <BookingTermsConsent confirmAge checked={adultConfirmed && termsAccepted} onChange={(value) => { setAdultConfirmed(value); setTermsAccepted(value); }} />
-            <button className="event-primary" disabled={busy || !validSelection || !currentQuote || !!quoteError || !adultConfirmed || !termsAccepted} type="submit">{busy ? "Opening your booking…" : currentQuote?.buyerTotalCents ? "Continue as guest to payment" : "Get free tickets as guest"}</button>
+            <button className="event-primary" disabled={busy || paidOff || !validSelection || !currentQuote || !!quoteError || !adultConfirmed || !termsAccepted} type="submit">{busy ? "Opening your booking…" : currentQuote?.buyerTotalCents ? "Continue as guest to payment" : "Get free tickets as guest"}</button>
             <p className="event-signin-option">Want tickets in your account? <Link href={`/auth/signin?returnTo=${encodeURIComponent(returnTo)}`}>Sign in instead</Link></p>
           </div> : <><p>Guest booking is temporarily unavailable. Sign in to keep your tickets in your account.</p><Link className="event-primary" href={`/auth/signin?returnTo=${encodeURIComponent(returnTo)}`}>Sign in to book</Link></>
         ) : account ? (
@@ -383,7 +389,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
             <BookingTermsConsent checked={termsAccepted} onChange={setTermsAccepted} />
             <button
               className="event-primary"
-              disabled={busy || !validSelection || !currentQuote || !!quoteError || !termsAccepted}
+              disabled={busy || paidOff || !validSelection || !currentQuote || !!quoteError || !termsAccepted}
               type="submit"
             >
               {busy

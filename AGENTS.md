@@ -125,12 +125,22 @@ source documents.
 ## Phone feel, controls and dark theme
 
 - On phones the web must feel like the app (`app/mobile-app.css`, loaded after page styles):
-  compact 56px header, two-column discovery grid, 44px targets, no sideways scroll.
+  compact 56px header, one full-width discovery card per row, 44px targets, no sideways scroll.
+  Listing pages: short title, one grouped search box with a round filter button beside it (category,
+  country and date sit at the top of its sheet; larger screens keep them as chips), and "Create on
+  Tivorah" as a round + button in the bottom corner. Category lists show the app's icons
+  (`lib/category-visuals.ts`; regenerate `lib/category-icons.json` from the app when its icons change).
+  Video tiles without a poster use `firstFrame()` (`lib/video-frame.ts`) so Safari shows a frame.
+  Public pages have no bottom bar (`components/discovery/mobile-nav.tsx`); Account and Business do.
+- Primary buttons (`.product-primary`, `.event-primary`) use the app's fill: `#211d23` on light, brand
+  purple on dark. A button that leaves the page awaits `leaveFor()` (`lib/leave-page.ts`) so it stays
+  busy until the next page loads.
 - Every on/off choice is a toggle, never a bare checkbox: `app/controls.css` draws every
   `input[type="checkbox"]` as the app's toggle (label left, toggle right). `.shop-switch` keeps its
   own track. Don't style checkboxes elsewhere.
 - Dark theme: `<html data-theme="dark">`, set before paint by `lib/theme.ts` from `?theme=` (the app
-  passes its own theme when it opens a page) or the phone's setting. `app/theme-dark.css` is
+  passes its own theme when it opens a page, kept for that tab), else the account dashboard's Dark
+  theme toggle; otherwise light (the phone's setting is not followed). `app/theme-dark.css` is
   GENERATED from every stylesheet by `scripts/build-dark-theme.mjs`: after changing any CSS run
   `npm run theme:dark` (a unit test fails if it's stale). Don't edit it by hand; adjust the mapping
   in the script. `app/controls.css` themes itself with CSS variables and isn't converted.
@@ -487,3 +497,25 @@ Event, item and service detail maps reuse `components/discovery/location-map.tsx
 `.github/workflows/ci.yml` runs locked npm installs, TypeScript and tests on Node 22.
 It also runs lint and the production web build.
 CI runs on pull requests and main/develop pushes; it never deploys or runs migrations.
+
+## Cover slides
+
+- The web create pages (Hub, event, listing) use `components/business/cover-slides-field.tsx`, the
+  same rules as the app: up to four slides, at most one video (first frame read in the browser,
+  uploaded straight to storage). Send `coverUploadOrder()` photos plus `coverVideoPosition`.
+  Hub and event pages play the approved video on its own slide (`lib/cover-slides.ts`).
+
+## Feature switches on the web
+
+`components/discovery/features.tsx` mirrors the app: `useFeature()` reads Admin → Features, and
+`featuresForPath()` maps pages (and create links by `?type=`) to the switches they need.
+`FeatureRouteGate` (root layout) replaces a switched-off page; the side nav and `FeatureLink`
+drop links to it. Header links also honour `config.hideFromNav` (which hides only the tab; shop and
+Hub pages still show that content).
+
+There is no bottom bar on the web. Your account and the business workspace share a side nav with
+icons (`components/ui/section-nav.tsx`): a sidebar above 850px, and at the top of the header's
+slide-out menu (`app/site-header.tsx`) at 850px and below. Manage event / listing keep their own tab
+row. Icons live in `components/ui/nav-icons.tsx`. The API sends shop
+and Hub sections empty when their feature is off, so empty tabs (any seller name, e.g. "Menu")
+disappear. Paid tickets / service payments off show the app's wording and block checkout.

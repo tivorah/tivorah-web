@@ -1,5 +1,6 @@
 "use client";
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { firstFrame } from "../../lib/video-frame";
 type Asset = { id: number; url: string; mimeType: string };
 export function ShopMediaReview({
   request,
@@ -72,7 +73,7 @@ export function ShopMediaReview({
         <article className="panel" key={asset.id}>
           <h4>Video #{asset.id}</h4>
           <video
-            src={asset.url}
+            src={asset.url ? firstFrame(asset.url) : undefined}
             controls
             preload="metadata"
             style={{ width: "100%", maxHeight: 400 }}

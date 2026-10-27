@@ -32,6 +32,7 @@ export function useDiscovery(
       setError("");
       const search = new URLSearchParams(filters);
       search.delete("when");
+      search.delete("theme"); // the page's look (lib/theme.ts), not a filter
       search.set("query", query); search.set("locality", locality); search.set("skip", String(skip));
       // Feeds near a place never look empty: the API continues with the next-closest events,
       // items and services across the country. Hubs stay a strict radius search.

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 export function SiteFooter() {
   const path = usePathname();
-  if (/^\/(events|services|shop|shops|hubs|account|business|admin|auth|connect|event-groups|event-orders|event-tickets|event-ticket-transfer)(\/|$)/.test(path)) return null;
+  if (/^\/(events|services|shop|shops|hubs|account|business|admin|auth|connect|event-groups|event-orders|event-tickets|event-ticket-transfer|u)(\/|$)/.test(path)) return null;
   return (
           <footer>
             <div className="page-shell footer-inner">

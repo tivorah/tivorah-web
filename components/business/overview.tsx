@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { FeatureLink } from "../discovery/feature-route-gate";
+import { featuresForPath, useFeature } from "../discovery/features";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 
 // Top of the business dashboard: greeting, quick create actions, key numbers and
 // the two setup statuses sellers care about (shop, payouts).
 type Summary = {
+  hubs?: { managed: number; members: number; pendingRequests: number };
   listings: { items: number; services: number };
   events: { upcoming: number; drafts: number };
   appointments: { upcoming: number };
@@ -32,13 +35,16 @@ export function BusinessOverviewSkeleton() {
 }
 
 export function BusinessOverview({ firstName }: { firstName: string }) {
+  // Sections switched off in Admin → Features leave the overview, as in the app.
+  const on = useFeature();
   const { data } = usePrivateResource<Summary>("/web/business/summary");
   const stats: { label: string; value: number | undefined; note?: string; href: string }[] = [
     { label: "Items for sale", value: data?.listings.items, href: "/business?view=listings" },
     { label: "Services", value: data?.listings.services, href: "/business?view=listings" },
     { label: "Upcoming events", value: data?.events.upcoming, note: data?.events.drafts ? `${data.events.drafts} draft${data.events.drafts === 1 ? "" : "s"}` : undefined, href: "/business?view=events" },
     { label: "Upcoming appointments", value: data?.appointments.upcoming, href: "/business/appointments" },
-  ];
+    { label: "Your Hubs", value: data ? data.hubs?.managed ?? 0 : undefined, note: data?.hubs?.pendingRequests ? `${data.hubs.pendingRequests} join request${data.hubs.pendingRequests === 1 ? "" : "s"}` : data?.hubs?.members ? `${data.hubs.members} member${data.hubs.members === 1 ? "" : "s"}` : undefined, href: "/business/hubs" },
+  ].filter((stat) => (stat.label === "Items for sale" ? on("marketplace") : stat.label === "Services" ? on("marketplace") && on("services") : featuresForPath(stat.href).every(on)));
   const shop = data?.shop;
   const payouts = data?.payouts;
   const shopCopy = {
@@ -59,12 +65,12 @@ export function BusinessOverview({ firstName }: { firstName: string }) {
       <div>
         <p className="product-eyebrow">YOUR BUSINESS</p>
         <h1>{greeting()}, {firstName}</h1>
-        <p>Here’s what’s happening across your shop, services and events.</p>
+        <p>Here’s what’s happening across your {[on("marketplace") ? "shop" : "", on("marketplace") && on("services") ? "services" : "", on("events") ? "events" : "", on("communities") ? "Hubs" : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1") || "business"}.</p>
       </div>
       <div className="biz-quick-actions" aria-label="Create">
-        <Link className="product-primary" href="/business/create?type=item">+ Sell an item</Link>
-        <Link className="product-secondary" href="/business/create?type=service">Offer a service</Link>
-        <Link className="product-secondary" href="/business/create?type=event">Create an event</Link>
+        <FeatureLink className="product-primary" href="/business/create?type=item">+ Sell an item</FeatureLink>
+        <FeatureLink className="product-secondary" href="/business/create?type=service">Offer a service</FeatureLink>
+        <FeatureLink className="product-secondary" href="/business/create?type=event">Create an event</FeatureLink>
       </div>
     </header>
 
@@ -77,14 +83,14 @@ export function BusinessOverview({ firstName }: { firstName: string }) {
     </div>
 
     <div className="biz-status-grid">
-      <article className="biz-status">
+      {on("marketplace") ? <article className="biz-status">
         <div className="biz-status-top"><h2>Your shop</h2>{shop ? <span className={`biz-pill is-${shop.status}`}>{shopCopy[shop.status][0]}</span> : null}</div>
         {shop ? <p>{shopCopy[shop.status][1]}</p> : <span className="biz-skel-line tivorah-shimmer" aria-label="Checking your shop" role="status" />}
         <div className="biz-status-actions">
           <Link className="product-secondary" href={shop?.status === "locked" ? "/business/create?type=item" : "/business/shop"}>{shop ? shopCopy[shop.status][2] : "Open your shop"}</Link>
           {shop?.status === "live" && shop.slug ? <Link className="biz-text-link" href={`/shops/${encodeURIComponent(shop.slug)}`}>View your shop ↗</Link> : null}
         </div>
-      </article>
+      </article> : null}
       <article className="biz-status">
         <div className="biz-status-top"><h2>Payouts</h2>{payouts ? <span className={`biz-pill is-${payouts.status}`}>{payoutCopy[payouts.status][0]}</span> : null}</div>
         {payouts ? <p>{payoutCopy[payouts.status][1]}</p> : <span className="biz-skel-line tivorah-shimmer" aria-label="Checking your payout setup" role="status" />}

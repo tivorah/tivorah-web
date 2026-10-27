@@ -9,6 +9,7 @@ import {
 import { hubInterestTiers } from "../../lib/category-filter";
 import { distanceLabel } from "../../lib/distance";
 import { discoveryByline } from "../../lib/byline";
+import { hubCoverBackground } from "../../lib/hub-cover-color";
 export function DiscoveryCard({
   item,
   kind,
@@ -31,7 +32,7 @@ export function DiscoveryCard({
             priority={priority}
           />
         ) : (
-          <span className="discover-image-fallback" aria-hidden="true">
+          <span className="discover-image-fallback" aria-hidden="true" style={kind === "hubs" ? { background: hubCoverBackground(item.id, item.coverColor), color: "#ffffff" } : undefined}>
             {kind === "events" ? "↗" : kind === "hubs" ? "◎" : "✳"}
           </span>
         )}

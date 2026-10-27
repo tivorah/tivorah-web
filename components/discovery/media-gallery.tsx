@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import "../../app/media-gallery.css";
 import { galleryLayout, hiddenPhotoCount, MOSAIC_TILES, wrapIndex } from "../../lib/event-detail";
+import { coverVideoSlide } from "../../lib/cover-slides";
 
 // Photo header for event, item and service pages, in the same tile style as the
 // organiser card ("Meet the organiser"): rounded tiles with cover-cropped photos.
@@ -11,9 +12,9 @@ import { galleryLayout, hiddenPhotoCount, MOSAIC_TILES, wrapIndex } from "../../
 //  - two photos: two tiles side by side
 //  - three or more: three equal 4:3 tiles, the last showing "+N"
 // Phones get a swipeable 4:3 carousel with a counter. Every photo opens a full-size viewer
-// that shows the whole, uncropped image. An approved cover video (events) plays silently over the
-// first photo, like in the app.
-export function MediaGallery({ photos, title, coverVideoUrl }: { photos: string[]; title: string; coverVideoUrl?: string | null }) {
+// that shows the whole, uncropped image. An approved cover video (events) plays silently on its
+// own slide, over the photo stored there (its first frame), like in the app; older events: the first.
+export function MediaGallery({ photos, title, coverVideoUrl, coverVideoPosition }: { photos: string[]; title: string; coverVideoUrl?: string | null; coverVideoPosition?: number | null }) {
   const layout = galleryLayout(photos.length);
   const [viewer, setViewer] = useState<number | null>(null);
   const [slide, setSlide] = useState(0);
@@ -43,8 +44,9 @@ export function MediaGallery({ photos, title, coverVideoUrl }: { photos: string[
   if (layout === "none") return null;
   const tiles = photos.slice(0, MOSAIC_TILES);
   const more = hiddenPhotoCount(photos.length);
+  const videoSlide = coverVideoSlide(coverVideoPosition, photos.length);
   const coverVideo = coverVideoUrl
-    ? <video className="gallery-cover-video" src={coverVideoUrl} poster={photos[0]} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1} />
+    ? <video className="gallery-cover-video" src={coverVideoUrl} poster={photos[videoSlide]} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1} />
     : null;
 
   return <>
@@ -56,7 +58,7 @@ export function MediaGallery({ photos, title, coverVideoUrl }: { photos: string[
           <Image src={photo} alt={index === 0 ? title : ""} fill priority={index === 0} unoptimized
             sizes={layout === "mosaic" && index > 0 ? "(max-width: 760px) 100vw, 33vw" : "(max-width: 760px) 100vw, 1200px"}
             className="event-gallery-cover" />
-          {index === 0 ? coverVideo : null}
+          {index === videoSlide && !isLast ? coverVideo : null}
           {isLast ? <span className="event-gallery-more" aria-hidden="true">+{more}</span> : null}
         </button>;
       })}
@@ -74,7 +76,7 @@ export function MediaGallery({ photos, title, coverVideoUrl }: { photos: string[
       }}>
         {photos.map((photo, index) => <button key={photo} type="button" className="event-carousel-slide" aria-label={`View photo ${index + 1} of ${photos.length}`} onClick={(event) => open(index, event.currentTarget)}>
           <Image src={photo} alt={index === 0 ? title : ""} fill sizes="100vw" unoptimized priority={index === 0} className="event-gallery-cover" />
-          {index === 0 ? coverVideo : null}
+          {index === videoSlide ? coverVideo : null}
         </button>)}
       </div>
       {photos.length > 1 ? <span className="event-carousel-count" aria-live="polite">{slide + 1} / {photos.length}</span> : null}

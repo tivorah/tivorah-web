@@ -16,7 +16,6 @@ import { EventCheckIn } from "./check-in";
 import { CancelEventDialog, RefundProgress } from "./cancellation";
 import { money } from "../../../lib/api/discovery";
 import { SellerRequests, openCount, useSellerRequests } from "../booking-requests";
-import { WorkspaceBottomBar } from "../workspace-bottom-bar";
 
 type Summary = { ticketsBooked: number; bookings: number; checkedIn?: number; groupBookings?: number; groupTickets?: number; remaining?: number; collectedCents?: number; attendees?: number; newGroupRequests?: number };
 
@@ -116,7 +115,6 @@ function Workspace({ id, accountId }: { id: string; accountId: number }) {
       <nav className="event-manage-tabs" aria-label="Manage event">
         {tabs.map(value => <button key={value} type="button" aria-pressed={tab === value} onClick={() => setTab(value)}>{value}{badge(value) ? <span className="seller-requests-badge" aria-label={`${badge(value)} need a reply`}>{badge(value)}</span> : null}</button>)}
       </nav>
-      <WorkspaceBottomBar label="Manage event" tabs={tabs} primary={["Details", "Tickets", "Orders & attendees", "Check-in"]} active={tab} badge={badge} onSelect={setTab} back={{ href: "/business?view=events", label: "Back to your events" }} />
       <div className="event-manage-content">
         {tab === "Details" ? <EventDetails key={`${id}:${data.startsAt}`} event={data} refresh={retry} />
           : tab === "Photos" ? <EventPhotos key={data.id} event={data} refresh={retry} />

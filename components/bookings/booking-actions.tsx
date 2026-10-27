@@ -7,6 +7,7 @@ import { money } from "../../lib/api/discovery";
 import { adminApiBase } from "../../app/admin/api-base";
 import { SlotPicker } from "../discovery/service-booking";
 import "./bookings.css";
+import { leaveFor } from "../../lib/leave-page";
 
 // Everything someone can do with one service appointment, for the customer (/account/bookings)
 // and the provider (/business/appointments). Mirrors mobile components/bookings/BookingList.tsx.
@@ -93,7 +94,7 @@ export function BookingActions({ booking, role, onChanged, autoOpen }: { booking
       if (!result.checkoutUrl) { onChanged("Payment status is updating. Refresh shortly."); return; }
       const target = new URL(result.checkoutUrl);
       if (target.protocol !== "https:" || target.hostname !== "checkout.stripe.com") throw new Error("The payment link could not be verified.");
-      window.location.assign(target.href);
+      await leaveFor(target.href);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not open payment. Please try again."); }
     finally { setBusy(false); }
   }

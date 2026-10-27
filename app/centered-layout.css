@@ -440,3 +440,9 @@ body { --site-shell-max: 1536px; --site-shell-gutters: 80px; }
   .footer-bottom { flex-direction: column; gap: 20px; }
   .footer-hometown { text-align: left; }
 }
+
+/* A page whose feature is switched off in Admin → Features (components/discovery/feature-route-gate.tsx). */
+.feature-unavailable { min-height: 50vh; display: grid; align-content: center; justify-items: center; gap: 12px; padding-block: 64px; text-align: center; }
+.feature-unavailable h1 { margin: 0; font-size: clamp(26px, 4vw, 34px); line-height: 1.15; }
+.feature-unavailable p { margin: 0 0 8px; max-width: 420px; color: #6b6370; }
+.feature-unavailable .event-primary { min-height: 48px; padding: 0 22px; display: inline-flex; align-items: center; border-radius: 999px; text-decoration: none; }

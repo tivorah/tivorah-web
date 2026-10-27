@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 // @ts-expect-error plain JavaScript build script
-import { build, darkColor } from "../../scripts/build-dark-theme.mjs";
+import { build, convertStylesheet, darkColor } from "../../scripts/build-dark-theme.mjs";
 
 test("app/theme-dark.css matches the stylesheets (run npm run theme:dark after changing CSS)", () => {
   assert.equal(readFileSync("app/theme-dark.css", "utf8"), build());
@@ -18,4 +18,16 @@ test("maps colours by what they're for", () => {
   assert.equal(darkColor("#ffffff", "text"), "#ffffff");               // light text stays light
   const ink = darkColor("#17131f", "text");                            // dark text becomes light
   assert.ok(parseInt(ink.slice(1, 3), 16) > 200, ink);
+});
+
+test("a later reset still wins in dark, like it does in light", () => {
+  const css = convertStylesheet(".hero { background: #eee7f6; }\n.hero, .other { background: transparent; border: 0; }\n.search { border: 1px solid #ddd; }\n.search { border: 0; }");
+  // The coloured rule is converted, and the later resets follow it in the same order.
+  assert.match(css, /\.hero \{\n  background: #[0-9a-f]{6};\n\}[\s\S]*\.hero,\n:root\[data-theme="dark"\] \.other \{\n  background: transparent;\n\}/);
+  assert.match(css, /\.search \{\n  border: 0;\n\}/);
+});
+
+test("rules with no dark colour to override stay out, so CSS modules keep winning", () => {
+  assert.equal(convertStylesheet("button { background: var(--purple); }"), "");
+  assert.equal(convertStylesheet(".tag { color: #ffffff; }"), "");
 });

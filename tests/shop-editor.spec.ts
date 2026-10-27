@@ -8,17 +8,26 @@ const content = (gallery: number[]) => ({
 });
 const assets = [11, 12, 13].map((id) => ({ id, kind: "image", status: "approved", url: `https://images.unsplash.com/photo-${id}.png`, mimeType: "image/png" }));
 
-async function openEditor(page: Page) {
+async function openEditor(page: Page, eligible = true) {
   await page.route("https://images.unsplash.com/**", (route) => route.fulfill({ body: png, contentType: "image/png" }));
   await page.route("**/_next/image**", (route) => route.fulfill({ body: png, contentType: "image/png" }));
   await page.route("**/api/auth/get-session**", (route) => route.fulfill({ json: { session: { id: "s", userId: "1", expiresAt: new Date(Date.now() + 3600000).toISOString() }, user: { id: "1", email: "taylor@example.test", name: "Taylor" } } }));
   await page.route("**/api/v1/web/account", (route) => route.fulfill({ json: { data: { id: 1, username: "tivorahdemo", firstName: "Taylor" } } }));
   await page.route("**/api/v1/web/business/shop", (route) => route.request().method() === "GET"
-    ? route.fulfill({ json: { data: { shop: { draft: content([11, 12, 13]), published: content([11, 12, 13]), version: 3, slug: "tivorahdemo" }, assets, eligibility: { items: 2, services: 1, eligible: true } } } })
+    ? route.fulfill({ json: { data: { shop: { draft: content([11, 12, 13]), published: content([11, 12, 13]), version: 3, slug: "tivorahdemo" }, assets, eligibility: { items: eligible ? 2 : 0, services: eligible ? 1 : 0, eligible } } } })
     : route.fulfill({ json: { data: { shop: { draft: JSON.parse(route.request().postData() ?? "{}").content, published: content([11, 12, 13]), version: 4, slug: "tivorahdemo" } } } }));
   await page.goto("/business/shop");
-  await expect(page.getByRole("heading", { name: "Your shop" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your shop", exact: true })).toBeVisible();
 }
+
+test("locked shop uses the shared business empty-state layout", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await openEditor(page, false);
+  const empty = page.locator(".product-empty", { hasText: "Add something to unlock your shop" });
+  await expect(empty.getByRole("heading", { name: "Add something to unlock your shop" })).toBeVisible();
+  await expect(empty.getByRole("link", { name: "Sell an item" })).toBeVisible();
+  await page.screenshot({ path: "/tmp/tivorah-business-shop-locked.png", fullPage: true });
+});
 const order = (page: Page) => page.locator(".shop-media-row strong").evaluateAll((rows) => rows.map((row) => row.firstChild?.textContent));
 const altInputs = (page: Page) => page.locator(".shop-media-row input").evaluateAll((inputs) => inputs.map((input) => input.getAttribute("aria-label")));
 
@@ -76,19 +85,17 @@ test("gallery rows reorder with a finger on a phone", async ({ browser }) => {
   await context.close();
 });
 
-test("the end of the editor is fully visible above the save bar and bottom bar", async ({ page }) => {
+test("the end of the editor is fully visible above the save bar", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openEditor(page);
   for (let i = 0; i < 6; i += 1) { await page.mouse.wheel(0, 1200); await page.waitForTimeout(120); }
   await page.waitForTimeout(400);
-  // The bottom bar stays put on this page (it has a save bar), so nothing jumps at the end.
-  expect(await page.evaluate(() => document.documentElement.dataset.bottomBar)).toBe("shown");
   const box = (selector: string) => page.locator(selector).first().evaluate((el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; });
-  // The last section of the form (the shop card placements) ends above the save bar.
+  // The last section of the form (the shop card placements) ends above the save bar, which sits at
+  // the bottom of the screen (there is no bottom bar on the web).
   const more = await box("#shop-placements");
   const save = await box(".shop-actions");
-  const nav = await box(".app-bottom-bar");
   expect(more.bottom).toBeLessThanOrEqual(save.top + 1);
-  expect(Math.abs(save.bottom - nav.top)).toBeLessThanOrEqual(1);
+  expect(save.bottom).toBeLessThanOrEqual(844);
   await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/editor-end.png` : "/tmp/editor-end.png" });
 });

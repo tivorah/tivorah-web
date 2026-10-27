@@ -5,7 +5,7 @@ import { SiteFooter } from "../components/site-footer";
 import { AccountProvider } from "../hooks/use-account";
 import "./discovery-filters.css";
 import { DiscoveryFeatures } from "../components/discovery/features";
-import { MobileProductNav } from "../components/discovery/mobile-nav";
+import { FeatureRouteGate } from "../components/discovery/feature-route-gate";
 import type { Metadata, Viewport } from "next";
 import { indexingDisabled, siteOrigin, socialImage } from "../lib/site";
 import "./styles.css";
@@ -27,7 +27,7 @@ import "./mobile-app.css";
 import "./controls.css";
 import "./theme-dark.css";
 import { SiteHeader } from "./site-header";
-import { themeBootScript } from "../lib/theme";
+import { THEME_BAR_COLOURS, themeBootScript } from "../lib/theme";
 import { loadInitialFeatures } from "../lib/api/server-features";
 import { Suspense } from "react";
 import { NavigationTracker } from "../components/ui/navigation-tracker";
@@ -37,7 +37,8 @@ import { ContentReviewDialog } from "../components/ui/content-review-dialog";
 
 // The browser bar matches the page. No viewport-fit=cover: the browser keeps content clear of the
 // notch and its own bars (cover hid the "Back to the Tivorah app" bar under the in-app browser's bar).
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: [{ media: "(prefers-color-scheme: dark)", color: "#151217" }, { media: "(prefers-color-scheme: light)", color: "#fbf9f5" }] };
+// The browser bar is light like the site; lib/theme.ts switches it when a page shows dark.
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: THEME_BAR_COLOURS.light };
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
@@ -87,9 +88,8 @@ export default async function RootLayout({
           <Suspense fallback={null}><NavProgress /></Suspense>
           <AppReturnBar />
           <SiteHeader />
-          <MobileProductNav />
           <main id="main-content" tabIndex={-1}>
-            {children}
+            <FeatureRouteGate>{children}</FeatureRouteGate>
           </main>
           <SiteFooter />
           <ContentReviewDialog />

@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { FeatureLink } from "../discovery/feature-route-gate";
+import { useFeature } from "../discovery/features";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AvailabilityDropdown } from "./availability-dropdown";
@@ -163,7 +165,7 @@ function BusinessList({ kind }: { kind: "events" | "products" }) {
                   <nav className="preview-action-list" aria-label="More for this event">
                     {selected.status === "draft" ? <Link href={`/business/events/${selected.id}`}><span>Edit event details</span><span aria-hidden="true">→</span></Link> : null}
                     {selected.status === "published" ? <Link href={`/events/${selected.id}`}><span>View public page</span><span aria-hidden="true">↗</span></Link> : null}
-                    <Link href="/account/messages"><span>Messages</span><span aria-hidden="true">→</span></Link>
+                    <FeatureLink href="/account/messages"><span>Messages</span><span aria-hidden="true">→</span></FeatureLink>
                     {selected.status === "published" ? <button type="button" disabled={pending !== null} onClick={() => update(selected, "unpublish")}><span>{pending === selected.id ? "Updating…" : "Unpublish"}</span></button> : null}
                   </nav>
                 </>
@@ -211,7 +213,9 @@ function BusinessList({ kind }: { kind: "events" | "products" }) {
 }
 export function BusinessDashboard() {
   const params = useSearchParams();
-  const view = params.get("view") === "events" ? "events" : "products";
+  const on = useFeature();
+  // With Shop switched off (Admin → Features) the workspace opens on Your events.
+  const view = params.get("view") === "events" || (params.get("view") !== "listings" && !on("marketplace")) ? "events" : "products";
   return <AccountGate>{(account) => <>
     <BusinessOverview firstName={account.firstName || account.username} />
     <BusinessList key={view} kind={view} />

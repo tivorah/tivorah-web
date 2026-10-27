@@ -47,10 +47,13 @@
 @media (max-width: 760px) { .event-app-invite { align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-top: 28px; padding: 18px; } .event-app-mark { width: 40px; height: 40px; } .event-app-copy { flex-basis: calc(100% - 52px); } .event-app-copy h2 { font-size: 18px; } .event-app-copy p { font-size: 14px; } .event-app-links { width: 100%; } .event-app-links .event-store-badge { flex: 1; padding: 10px 8px; font-size: 13px; } }
 @media print { .event-app-invite { display: none !important; } }
 .event-booking input:not([type=checkbox]),.event-booking select { border-radius: 999px; padding-inline: 18px; }
-.event-detail-loading .event-hero { background-image: linear-gradient(100deg,#eee9f2 20%,#faf8fc 45%,#eee9f2 70%); }
 .event-detail-loading .event-loading-back { width: 70px; height: 18px; border-radius: 6px; margin: 13px 0 31px; }
 .event-detail-loading .event-tools span { display: block; width: 120px; height: 44px; border-radius: 999px; }
-.event-detail-loading .event-tools span:last-child { width: 110px; }
+/* Open app on the left, the round share button on the right, as on the loaded page. */
+.event-detail-loading .event-tools span:last-child { width: 44px; margin-left: auto; border-radius: 50%; }
+@media (max-width: 760px) { .event-detail-loading .event-tools span:first-child { width: 96px; height: 40px; } }
+.event-loading-dock span:first-child { display: block; width: 150px; height: 16px; border-radius: 6px; }
+.event-loading-dock span:last-child { display: block; width: 124px; height: 48px; border-radius: 24px; }
 .event-detail-loading .event-loading-eyebrow,.event-detail-loading .event-loading-title,.event-detail-loading .event-loading-organizer,.event-detail-loading .event-details section > span,.event-detail-loading .event-booking > span,.event-detail-loading .event-facts span { display: block; border-radius: 8px; }
 .event-detail-loading .event-loading-eyebrow { width: 118px; height: 14px; margin-bottom: 14px; }
 .event-detail-loading .event-loading-title { width: min(85%,560px); height: 52px; margin: 8px 0 22px; }
@@ -166,8 +169,10 @@
 @media (max-width: 600px) { .ticket-transfer-actions { grid-template-columns: 1fr; } }
 
 /* Organiser shortcut to the web event workspace: one compact button in the tools row. */
-.event-tools .event-manage-link{display:inline-flex;align-items:center;gap:8px;border-color:#6941b4;background:#6941b4;color:#fff;font-weight:700;text-decoration:none}
-.event-tools .event-manage-link:hover{background:#573395}
+/* The app's primary fill: dark on light, brand purple on dark. */
+.event-tools .event-manage-link{display:inline-flex;align-items:center;gap:8px;border-color:transparent;background:#211d23;color:#fff;font-weight:700;text-decoration:none}
+.event-tools .event-manage-link:hover{background:#2d2830}
+html[data-theme="dark"] .event-tools .event-manage-link:hover{background:#5a3596}
 
 /* More events like this. */
 .more-events{margin-top:48px;padding-top:36px;border-top:1px solid #e8e1ec}
@@ -222,3 +227,9 @@
   .event-share-options{position:fixed;top:auto;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:1000;width:auto;max-height:calc(100dvh - 24px);overflow-y:auto;padding:20px 18px 16px;border-radius:24px;box-shadow:0 -8px 40px rgba(41,26,54,.22);animation:open-in-app-up .22s ease-out}
 }
 @media(prefers-reduced-motion:reduce){.event-share-options,.event-share-backdrop{animation:none}}
+
+/* Event buttons use the app's primary fill (tivorah-mobile constants/theme.ts button): dark on light,
+   brand purple on dark (scripts/build-dark-theme.mjs). */
+.event-primary{background:#211d23}
+.event-primary:hover:not(:disabled){background:#2d2830}
+html[data-theme="dark"] .event-primary:hover:not(:disabled){background:#5a3596}

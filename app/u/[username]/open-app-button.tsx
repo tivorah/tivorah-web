@@ -13,7 +13,7 @@ export function OpenAppButton({ username, downloadUrl, iosUrl, androidUrl }: Pro
   const appPath = `u/${encodeURIComponent(username)}`;
 
   return <div className="profile-actions">
-    <OpenInApp className="button profile-open-button press-fx" appPath={appPath}>Open in Tivorah <span aria-hidden="true">→</span></OpenInApp>
+    <OpenInApp className="button profile-open-button press-fx" appPath={appPath}>Open in Tivorah</OpenInApp>
     <div className="profile-store-links" aria-label="Download Tivorah">
       {iosUrl ? <a href={iosUrl}>Download for iPhone</a> : null}
       {androidUrl ? <a href={androidUrl}>Download for Android</a> : null}

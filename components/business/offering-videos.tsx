@@ -4,6 +4,7 @@ import { api } from "../../lib/api/client";
 import { directUpload, directUploadUnavailable } from "../../lib/direct-upload";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { LoadingState } from "../ui/loading-state";
+import { firstFrame } from "../../lib/video-frame";
 
 type Kind = "event" | "service" | "item";
 type Video = { assetId: number; status: string; url: string | null; reviewNote?: string | null; transcript: string; captions: string };
@@ -67,7 +68,7 @@ export function OfferingVideosEditor({ kind, id }: { kind: Kind; id: number }) {
       {videos.map((video, index) => <div className="offering-video-edit" key={video.assetId}>
         <div className="offering-video-edit-head"><strong>Video {index + 1} · {video.status === "approved" ? "Approved" : video.status === "rejected" ? "Needs attention" : "In review"}</strong><button type="button" className="product-secondary" disabled={busy} onClick={() => setDraft(videos.filter((_, i) => i !== index))}>Remove</button></div>
         {video.status === "rejected" ? <p role="status">{video.reviewNote || "This video was not approved. Remove it and upload a revised version."}</p> : null}
-        {video.url ? <video controls preload="metadata" src={video.url} aria-label={`Preview video ${index + 1}`} /> : null}
+        {video.url ? <video controls preload="metadata" src={firstFrame(video.url)} aria-label={`Preview video ${index + 1}`} /> : null}
         <label>Transcript (optional)<textarea rows={3} maxLength={10000} value={video.transcript} onChange={event => setDraft(videos.map((row, i) => i === index ? { ...row, transcript: event.target.value } : row))} /></label>
         <label>Timed captions (WebVTT, optional)<textarea rows={4} maxLength={100000} value={video.captions} onChange={event => setDraft(videos.map((row, i) => i === index ? { ...row, captions: event.target.value } : row))} placeholder={"WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nWelcome"} /></label>
       </div>)}
@@ -82,5 +83,5 @@ export function PublicOfferingVideos({ kind, id }: { kind: Kind; id: number }) {
   const { data, error, retry } = usePrivateResource<{ videos: Array<{ id: number; url: string | null; transcript: string; captions: string }> }>(`${path(kind, id)}/public`);
   if (error && !data) return <p role="alert">Videos are unavailable. <button type="button" className="product-secondary" onClick={retry}>Try again</button></p>;
   if (!data?.videos.length) return null;
-  return <section className="offering-videos-public" aria-label="Videos"><h2>Videos</h2><div>{data.videos.filter(video => !!video.url).map((video, index) => <figure key={video.id}><video controls preload="metadata" src={video.url!} aria-label={`${kind} video ${index + 1}`}>{video.captions?.trim() ? <track kind="captions" src={`data:text/vtt;charset=utf-8,${encodeURIComponent(video.captions)}`} srcLang="en" label="English" default /> : null}</video>{video.transcript?.trim() ? <figcaption><details><summary>Read transcript</summary><p>{video.transcript}</p></details></figcaption> : null}</figure>)}</div></section>;
+  return <section className="offering-videos-public" aria-label="Videos"><h2>Videos</h2><div>{data.videos.filter(video => !!video.url).map((video, index) => <figure key={video.id}><video controls playsInline preload="metadata" src={firstFrame(video.url!)} aria-label={`${kind} video ${index + 1}`}>{video.captions?.trim() ? <track kind="captions" src={`data:text/vtt;charset=utf-8,${encodeURIComponent(video.captions)}`} srcLang="en" label="English" default /> : null}</video>{video.transcript?.trim() ? <figcaption><details><summary>Read transcript</summary><p>{video.transcript}</p></details></figcaption> : null}</figure>)}</div></section>;
 }

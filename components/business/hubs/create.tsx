@@ -1,37 +1,32 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { randomId } from "../../../lib/random-id";
 import { AccountGate } from "../../account/gate";
 import { usePrivateResource } from "../../../hooks/use-private-resource";
 import { api, ApiError } from "../../../lib/api/client";
 import { LocalityField, type Locality } from "../locality-field";
-import { HUB_USERNAME_PATTERN, HUB_WELCOME_MAX, newHubErrors, newHubFormData, suggestHubUsername, type HubRule } from "./shared";
+import { RuleChooser } from "./rule-chooser";
+import { CoverSlidesField } from "../cover-slides-field";
+import { coverUploadOrder, type CoverSlide } from "../../../lib/cover-slides";
+import { HUB_USERNAME_PATTERN, HUB_WELCOME_MAX, MAX_HUB_RULES, newHubErrors, newHubFormData, suggestHubUsername, type HubRule } from "./shared";
 import { Sheet } from "../../ui/sheet";
 import "./hubs.css";
 
 type Interest = { id: number; name: string };
 
-function ImagePicker({ label, hint, file, onChange, error, id }: { label: string; hint: string; file: File | null; onChange: (file: File | null) => void; error?: string; id: string }) {
-  const [preview, setPreview] = useState<string | null>(null);
-  useEffect(() => {
-    if (!file) { setPreview(null); return; }
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+const IMAGE_TYPES = "image/jpeg,image/png,image/webp";
+
+/** The camera button on the cover and the photo, like the shop editor's cover & logo step. */
+function PhotoPick({ id, kind, label, has, onPick, describedBy, invalid }: { id: string; kind: "cover" | "logo"; label: string; has: boolean; onPick: (file: File | null) => void; describedBy?: string; invalid?: boolean }) {
   return (
-    <div className="hub-field">
-      <label htmlFor={id}>{label}</label>
-      <p className="hub-field-hint" id={`${id}-hint`}>{hint}</p>
-      <div className="hub-image-picker">
-        {/* eslint-disable-next-line @next/next/no-img-element -- local preview of a picked file */}
-        {preview ? <img src={preview} alt="" className="hub-image-preview" /> : <span className="hub-image-preview" aria-hidden="true" />}
-        <input id={id} type="file" accept="image/jpeg,image/png,image/webp" aria-describedby={`${id}-hint${error ? ` ${id}-error` : ""}`} aria-invalid={error ? true : undefined}
-          onChange={(event) => onChange(event.currentTarget.files?.[0] ?? null)} />
-      </div>
-      {error ? <p className="hub-field-error" id={`${id}-error`}>{error}</p> : null}
-    </div>
+    <label className={`shop-brand-pick is-${kind}`}>
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.2" /></svg>
+      {kind === "cover" ? <span>{has ? "Change cover" : "Add cover"}</span> : null}
+      <input id={id} type="file" accept={IMAGE_TYPES} aria-label={has ? `Change ${label}` : `Add ${label}`} aria-describedby={describedBy} aria-invalid={invalid ? true : undefined}
+        onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) onPick(file); event.currentTarget.value = ""; }} />
+    </label>
   );
 }
 
@@ -51,7 +46,10 @@ function CreateHubForm() {
   const [locality, setLocality] = useState<Locality | null>(null);
   const [country, setCountry] = useState<{ code: string; name: string }>({ code: "AU", name: "Australia" });
   const [avatar, setAvatar] = useState<File | null>(null);
-  const [banner, setBanner] = useState<File | null>(null);
+  // The cover: up to four slides, photos and one short video (cover-slides-field.tsx).
+  const [covers, setCovers] = useState<CoverSlide[]>([]);
+  const [readingVideo, setReadingVideo] = useState(false);
+  const createKey = useRef<string | undefined>(undefined);
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
@@ -74,11 +72,8 @@ function CreateHubForm() {
     return () => { live = false; window.clearTimeout(timer); };
   }, [name, interestKey, welcomeEnabled, welcomeEdited]);
 
-  const draft = { name, username, slogan, bio, isPrivate, interestIds, ruleKeys, customRule, locality, countryCode: country.code, avatar, banner, welcome: { enabled: welcomeEnabled, message: welcomeMessage } };
+  const draft = { name, username, slogan, bio, isPrivate, interestIds, ruleKeys, customRule, locality, countryCode: country.code, avatar, covers: [], welcome: { enabled: welcomeEnabled, message: welcomeMessage } };
   const errors = submitted ? newHubErrors(draft) : {};
-
-  const toggle = (list: number[] | string[], value: number | string) =>
-    (list as (number | string)[]).includes(value) ? (list as (number | string)[]).filter((item) => item !== value) : [...list, value];
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -92,11 +87,17 @@ function CreateHubForm() {
     }
     setBusy(true);
     try {
-      await api("/community/create", { method: "POST", body: newHubFormData(draft) });
+      // One photo per slide (the video's first frame on its slide); the video has been uploading.
+      const cover = coverUploadOrder(covers);
+      const coverVideoUploadId = cover.videoUpload ? await cover.videoUpload.catch(() => { throw new Error("Your cover video didn’t upload. Remove it, or choose it again."); }) : undefined;
+      createKey.current ??= randomId();
+      await api("/community/create", { method: "POST", body: newHubFormData({ ...draft, idempotencyKey: createKey.current, covers: cover.photos, coverVideoUploadId, coverVideoPosition: cover.videoPosition }) });
       router.push("/business/hubs?created=1");
     } catch (cause) {
       // Keep everything they entered; only the message changes.
-      setFailure(cause instanceof ApiError ? cause.message : "Your Hub could not be created. Please try again.");
+      // Not a server failure (e.g. a name already taken): the next try is a new create.
+      if (cause instanceof ApiError && cause.status < 500) createKey.current = undefined;
+      setFailure(cause instanceof ApiError || cause instanceof Error ? cause.message : "Your Hub could not be created. Please try again.");
       setBusy(false);
     }
   }
@@ -117,7 +118,6 @@ function CreateHubForm() {
   const step = (n: number) => <span className="create-step-no" aria-hidden="true">{n}</span>;
   const chosen = (interests.data?.interests ?? []).filter((interest) => interestIds.includes(interest.id));
   const avatarUrl = useObjectUrl(avatar);
-  const bannerUrl = useObjectUrl(banner);
 
   return (
     <div className="shop-editor-page business-create-page create-hub">
@@ -139,12 +139,22 @@ function CreateHubForm() {
 
       <form className="create-shell hub-form" onSubmit={submit} noValidate aria-labelledby="create-hub-title">
         <div className="create-main">
-          <section id="hub-step-look" className="shop-step create-section">
+          <section id="hub-step-look" className="shop-step create-section shop-brand-step">
             <h2>{step(1)}Photos</h2>
-            <div className="hub-photo-row">
-              <ImagePicker id="hub-avatar" label="Hub photo" hint="Square works best. JPG, PNG or WebP." file={avatar} onChange={setAvatar} error={errors.avatar} />
-              <ImagePicker id="hub-banner" label="Cover image (optional)" hint="Shown at the top of your Hub. Wide images work best." file={banner} onChange={setBanner} />
+            <CoverSlidesField id="hub-banner" purpose="hub-cover" slides={covers} onChange={setCovers} onBusy={setReadingVideo}>
+            <div className="shop-brand-row">
+              <div className={`shop-brand-logo hub-brand-photo${errors.avatar ? " is-invalid" : ""}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- local preview of a picked file */}
+                {avatarUrl ? <img src={avatarUrl} alt="Your Hub photo" /> : <span aria-hidden="true">{name.trim().charAt(0).toUpperCase() || "+"}</span>}
+                <PhotoPick id="hub-avatar" kind="logo" label="Hub photo" has={!!avatar} onPick={setAvatar} describedBy={errors.avatar ? "hub-avatar-error" : "hub-look-hint"} invalid={!!errors.avatar} />
+              </div>
+              <div className="shop-brand-remove">
+                {avatar ? <button type="button" className="shop-link-button" onClick={() => setAvatar(null)}>Remove photo</button> : null}
+              </div>
             </div>
+            </CoverSlidesField>
+            {errors.avatar ? <p className="hub-field-error hub-look-error" id="hub-avatar-error">{errors.avatar}</p> : null}
+            <p className="shop-hint" id="hub-look-hint">A Hub photo is required. The cover is optional: up to 4 photos, or 3 and a short video (15 seconds, reviewed before it shows). No cover? Your Hub gets one of Tivorah’s colours.</p>
           </section>
 
           <section id="hub-step-basics" className="shop-step create-section">
@@ -198,9 +208,7 @@ function CreateHubForm() {
             <h2>{step(6)}Hub rules</h2>
             <p className="hub-field-hint">Every Hub follows Tivorah’s basics. Add any of these, or write your own.</p>
             {catalogue.data?.baseRules?.length ? <ul className="hub-base-rules">{catalogue.data.baseRules.map((rule) => <li key={rule.key}>{rule.text}</li>)}</ul> : null}
-            <div className="hub-rule-options">{(catalogue.data?.presets ?? []).map((rule) => (
-              <label key={rule.key}><input type="checkbox" checked={ruleKeys.includes(rule.key)} onChange={() => setRuleKeys(toggle(ruleKeys, rule.key) as string[])} /> <span>{rule.text}</span></label>
-            ))}</div>
+            <RuleChooser presets={catalogue.data?.presets ?? []} value={ruleKeys} onChange={setRuleKeys} max={MAX_HUB_RULES - (customRule.trim() ? 1 : 0)} />
             <label className="hub-custom-rule" htmlFor="hub-custom-rule">Your own rule <span className="hub-optional">(optional)</span></label>
             <input id="hub-custom-rule" value={customRule} maxLength={200} onChange={(event) => setCustomRule(event.currentTarget.value)} />
           </section>
@@ -231,7 +239,7 @@ function CreateHubForm() {
           <div className="create-preview hub-summary-preview">
             <div className="create-preview-media">
               {/* eslint-disable-next-line @next/next/no-img-element -- local preview of a picked file */}
-              {bannerUrl ? <img src={bannerUrl} alt="" /> : <span aria-hidden="true">👥</span>}
+              {covers[0] ? <img src={covers[0].kind === "photo" ? covers[0].preview : covers[0].framePreview} alt="" /> : <span aria-hidden="true">👥</span>}
             </div>
             <div className="create-preview-body">
               <span className="create-preview-kind">{isPrivate ? "Private Hub" : "Public Hub"}{locality ? ` · ${[locality.suburb, locality.state].filter(Boolean).join(", ")}` : ""}</span>
@@ -259,14 +267,14 @@ function CreateHubForm() {
             </ul>
           </div>
           {failure ? <p className="hub-admin-error-text" role="alert">{failure}</p> : null}
-          <button type="submit" className="product-primary press-fx create-submit hub-submit" disabled={busy} aria-busy={busy || undefined}>
+          <button type="submit" className="product-primary press-fx create-submit hub-submit" disabled={busy || readingVideo} aria-busy={busy || undefined}>
             {busy ? <><span className="button-progress" aria-hidden="true" />Creating your Hub…</> : "Create Hub"}
           </button>
         </aside>
         {/* Below desktop: the summary's button is hidden, so this bar carries progress and Create Hub. */}
         <div className="create-mobile-bar" data-sticky-save="">
           <span className="create-mobile-progress"><strong>{doneCount}/{checklist.length}</strong> done</span>
-          <button type="submit" className="product-primary press-fx" disabled={busy} aria-busy={busy || undefined}>{busy ? "Creating…" : "Create Hub"}</button>
+          <button type="submit" className="product-primary press-fx" disabled={busy || readingVideo} aria-busy={busy || undefined}>{busy ? "Creating…" : "Create Hub"}</button>
         </div>
       </form>
     </div>

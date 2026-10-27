@@ -24,7 +24,7 @@ test("business tabs reuse session data and refresh mutations without replacing c
   expect(eventReads).toBe(2);
   await page.getByRole("link", { name: /Your account/ }).last().click();
   await expect(page.getByRole("heading", { name: "Hello, Member." })).toBeVisible();
-  await page.getByRole("link", { name: /Manage your business/ }).click();
+  await page.getByRole("link", { name: /Manage your business/ }).first().click();
   await expect(page.getByRole("heading", { name: "Your listings" })).toBeVisible();
   expect(accountReads).toBe(1);
 });

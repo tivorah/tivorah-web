@@ -1,5 +1,6 @@
 "use client";
 import { AccountSurfaceLoading } from "../../account/surface-loading";
+import { firstFrame } from "../../../lib/video-frame";
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useCallback, useState, type CSSProperties } from "react";
@@ -215,6 +216,7 @@ function Editor({ record, media, username, eligibility }: { record: ShopRecord |
 
   const header = <header className="shop-editor-head">
     <Link className="shop-editor-back" href="/business"><span aria-hidden="true">‹</span> Your business</Link>
+    <p className="product-eyebrow">YOUR SHOP</p>
     <div className="shop-editor-title">
       <h1>Your shop</h1>
       <span className={`shop-status${published ? " is-live" : offline ? " is-offline" : ""}`}>{published ? "Live" : offline ? "Offline" : "Draft"}</span>
@@ -241,7 +243,7 @@ function Editor({ record, media, username, eligibility }: { record: ShopRecord |
 
   if (!eligibility.eligible) return <>
     {header}
-    <section className="shop-locked">
+    <section className="product-empty shop-locked">
       <h2>Add something to unlock your shop</h2>
       <p>Your shop shows what you offer, so it opens once you have at least one item, service or event on Tivorah.</p>
       <div><Link className="product-primary" href="/business/create?type=item">Sell an item</Link><Link className="product-secondary" href="/business/create?type=service">Offer a service</Link><Link className="product-secondary" href="/business/create?type=event">Create an event</Link></div>
@@ -356,7 +358,7 @@ function Editor({ record, media, username, eligibility }: { record: ShopRecord |
             return <li key={item.id} className="shop-sort-row shop-media-row" {...mediaSort.itemProps(index)}>
               <button type="button" className="shop-sort-handle" {...mediaSort.handleProps(index)}><GripIcon /></button>
               <span className="shop-media-thumb">
-                {video ? (item.url ? <video src={item.url} muted playsInline preload="metadata" aria-hidden="true" /> : <span aria-hidden="true">▶</span>) : item.url ? <Image src={item.url} alt="" width={128} height={128} /> : null}
+                {video ? (item.url ? <video src={firstFrame(item.url)} muted playsInline preload="metadata" aria-hidden="true" /> : <span aria-hidden="true">▶</span>) : item.url ? <Image src={item.url} alt="" width={128} height={128} /> : null}
                 {video ? <span className="shop-editor-media-play" aria-hidden="true">▶</span> : null}
               </span>
               <span className="shop-media-copy">
@@ -412,6 +414,21 @@ function Editor({ record, media, username, eligibility }: { record: ShopRecord |
         </ol>
         <p className="shop-sr" aria-live="polite">{sectionSort.announcement}</p>
         </details>
+        {/* Which tab people land on. A hidden or empty choice falls back to Overview on the shop. */}
+        <fieldset className="shop-open-tab">
+          <legend>Shop opens on</legend>
+          <div className="shop-open-tab-options">
+            {(["overview", ...sectionOrder.filter((key) => !(content.hiddenSections ?? []).includes(key))] as const).map((key) => {
+              const chosen = (content.openTab && (content.openTab === "overview" || !(content.hiddenSections ?? []).includes(content.openTab)) ? content.openTab : "overview") === key;
+              const label = key === "overview" ? "Overview" : content.sectionTitles?.[key]?.trim() || sectionLabels[key];
+              return <label key={key} className={`shop-open-tab-option${chosen ? " is-chosen" : ""}`}>
+                <input type="radio" name="shop-open-tab" value={key} checked={chosen} onChange={() => set({ openTab: key })} />
+                <span>{label}</span>
+              </label>;
+            })}
+          </div>
+          <p className="shop-hint">People see this tab first on your shop, on the web and in the app.</p>
+        </fieldset>
       </section>
 
       <section id="shop-details" className="shop-step create-section shop-details-step">
@@ -424,7 +441,7 @@ function Editor({ record, media, username, eligibility }: { record: ShopRecord |
         <div className="shop-video">
           <strong>Introduction video</strong>
           <p className="shop-hint">Up to 3 minutes and {mb(MAX_VIDEO_BYTES)}. Shown once Tivorah has reviewed it.</p>
-          {content.videoId && asset(content.videoId)?.url ? <video className="shop-intro-preview" src={asset(content.videoId)!.url!} controls preload="metadata" aria-label="Introduction video preview" /> : null}
+          {content.videoId && asset(content.videoId)?.url ? <video className="shop-intro-preview" src={firstFrame(asset(content.videoId)!.url!)} controls preload="metadata" aria-label="Introduction video preview" /> : null}
           {content.videoId ? <p className="shop-hint">Video #{content.videoId} · {asset(content.videoId)?.status === "approved" ? "approved" : asset(content.videoId)?.status === "rejected" ? "not approved — upload a revised video" : "in review"} <button type="button" className="shop-link" onClick={() => set({ videoId: null })}>Remove</button></p> : null}
           {!content.videoId && videos.length ? <p className="shop-hint">Earlier uploads: {videos.map((video) => <button key={video.id} type="button" className="shop-link" onClick={() => set({ videoId: video.id })}>Use video #{video.id} ({video.status})</button>)}</p> : null}
           <label className="product-secondary shop-video-upload">Upload a video<input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={(e) => { void addVideo(e.target.files?.[0]); e.target.value = ""; }} disabled={!!uploading || busy} /></label>

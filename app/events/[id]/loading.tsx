@@ -29,5 +29,7 @@ export default function Loading() {
         <span className="event-loading-check tivorah-shimmer" /><span className="event-loading-button tivorah-shimmer" />
       </div></div>
     </div>
+    {/* The phone ticket bar (event-booking.tsx), so the page doesn't change shape when it loads. */}
+    <div className="event-ticket-dock event-loading-dock" aria-hidden="true"><span className="tivorah-shimmer" /><span className="tivorah-shimmer" /></div>
   </article>;
 }

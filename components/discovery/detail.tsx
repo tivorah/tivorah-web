@@ -27,6 +27,8 @@ import { JsonLd, absoluteUrl, summary } from "../../lib/seo";
 import { ItemGlance, ItemOrderRequest } from "./item-highlights";
 import { conditionLabel } from "../../lib/condition-label";
 import { asksCondition } from "../business/listing-kinds";
+import { hubCoverBackground } from "../../lib/hub-cover-color";
+import { HubCoverSlides } from "./hub-cover-slides";
 
 type DetailKind = Exclude<DiscoveryKind, "events">;
 // Shared by generateMetadata and the page so the item is fetched once per request.
@@ -76,20 +78,23 @@ export async function DiscoveryDetail({
   const href = itemPath(kind, item.id);
   const photos = eventPhotos(item.image, item.images);
   const structured = <JsonLd data={itemJsonLd(kind, item)} />;
-  if (kind === "hubs") return <div className="product-page page-shell">
+  if (kind === "hubs") return <div className="product-page page-shell hub-page">
     {structured}
-    <BackLink className="product-secondary" fallback="/hubs" />
-    <OwnerManage ownerUsername={item.creatorUsername} appPath={`hubs/invite/${id}`} label="Manage Hub in the app" />
     <article className="hub-detail">
       <div className="hub-detail-hero">
-        <div className="hub-detail-cover">{item.coverImage ? <Image src={item.coverImage} alt="" fill sizes="(max-width: 760px) 100vw, 1280px" priority /> : null}
-          {/* An approved cover video plays over the photo, silently and on a loop, like in the app. */}
-          {item.coverVideoUrl ? <video className="hub-detail-cover-video" src={item.coverVideoUrl} poster={item.coverImage ?? undefined} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1} /> : null}</div>
+        <div className="hub-detail-cover" style={item.coverImage ? undefined : { background: hubCoverBackground(item.id, item.coverColor) }}>
+          {/* The cover slides, swiped like the app's; an approved video plays on its own slide. */}
+          {item.coverImage ? <HubCoverSlides photos={item.coverImages?.length ? item.coverImages : [item.coverImage]} videoUrl={item.coverVideoUrl} videoPosition={item.coverVideoPosition} />
+            : item.coverVideoUrl ? <video className="hub-detail-cover-video" src={item.coverVideoUrl} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1} /> : null}
+          {/* Like the app's Hub page: a shade for the name over the cover, and Back on the cover. */}
+          <span className="hub-detail-cover-shade" aria-hidden="true" />
+          <BackLink className="hub-detail-back" fallback="/hubs" /></div>
         <div className="hub-detail-identity">
           <div className="hub-detail-avatar">{item.image ? <Image src={item.image} alt="" fill sizes="(max-width: 760px) 76px, 108px" /> : <span aria-hidden="true">◎</span>}</div>
           <div className="hub-detail-identity-copy"><p className="product-eyebrow">TIVORAH HUB</p><h1>{item.title}</h1><p className="hub-detail-location">{[item.locality, item.state].filter(Boolean).join(", ") || "Australia"}</p><div className="hub-detail-stats">{item.creatorUsername ? <span>Created by <strong>@{item.creatorUsername}</strong></span> : null}{item.memberCount != null ? <span><strong>{item.memberCount}</strong> {item.memberCount === 1 ? "person" : "people"}</span> : null}</div></div>
         </div>
       </div>
+      <OwnerManage ownerUsername={item.creatorUsername} appPath={`hubs/invite/${id}`} label="Manage Hub in the app" />
       <div className="hub-detail-columns"><div className="hub-detail-main"><h2>About this Hub</h2><p>{item.description || "Meet people who share your interests."}</p>{item.interests?.length ? <section><h2>Interests</h2><div className="hub-interest-list">{item.interests.map((interest) => <span key={interest}>{interest}</span>)}</div></section> : null}{item.guidelines?.length ? <section className="hub-guidelines"><h2>Before you join</h2><ul>{item.guidelines.map((rule, index) => <li key={index}>{rule.text}</li>)}</ul></section> : null}</div><aside className="hub-join-card"><AppHandoff title="Join this Hub in the app" appPath={`hubs/invite/${id}`} webPath={href} /><Link href={`/contact?${new URLSearchParams({ subject: `Report hubs ${id}` })}`}>Report a concern</Link></aside></div>
     </article>
   </div>;

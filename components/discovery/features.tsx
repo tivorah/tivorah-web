@@ -10,7 +10,7 @@ import Link from "next/link";
 import { api } from "../../lib/api/client";
 import { DiscoveryKind, sections } from "../../lib/api/discovery";
 
-export type FeatureConfig = { features: Record<string, { enabled: boolean }> };
+export type FeatureConfig = { features: Record<string, { enabled: boolean; config?: { hideFromNav?: boolean } }> };
 type Config = FeatureConfig;
 const Features = createContext<{
   config: Config | null;
@@ -66,10 +66,15 @@ export function DiscoveryFeatures({
       if (document.visibilityState === "visible") void refresh();
     };
     const onOnline = () => void refresh();
+    // A switch turned off in Admin → Features also reaches a tab left open.
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refresh();
+    }, 2 * 60 * 1000);
     document.addEventListener("visibilitychange", onFocus);
     window.addEventListener("online", onOnline);
     return () => {
       controller.abort();
+      window.clearInterval(interval);
       document.removeEventListener("visibilitychange", onFocus);
       window.removeEventListener("online", onOnline);
     };
@@ -106,7 +111,11 @@ export function useDiscoveryFeatures() {
   return {
     ...state,
     enabled: (kind: DiscoveryKind) =>
-      keys[kind].every((key) => state.config?.features[key]?.enabled === true),
+      keys[kind].every((key) => state.config?.features?.[key]?.enabled === true),
+    // Admin → Features → "Show in bottom nav" off: the section still works (links, search), it
+    // just leaves the main navigation, like the app's bottom bar.
+    inNavigation: (kind: DiscoveryKind) =>
+      keys[kind].every((key) => state.config?.features?.[key]?.enabled === true && state.config?.features?.[key]?.config?.hideFromNav !== true),
   };
 }
 
@@ -117,7 +126,7 @@ export function DiscoveryLinks({
   active?: DiscoveryKind;
   onClick?: () => void;
 }) {
-  const { config, loading, enabled } = useDiscoveryFeatures();
+  const { config, loading, inNavigation } = useDiscoveryFeatures();
   const kinds = Object.keys(sections) as DiscoveryKind[];
   // Reserve the links' space while flags load so the header does not jump;
   // hidden features still never receive a usable link.
@@ -134,7 +143,7 @@ export function DiscoveryLinks({
   return (
     <>
       {kinds
-        .filter(enabled)
+        .filter(inNavigation)
         .map((kind) => (
           <Link
             key={kind}
@@ -147,4 +156,49 @@ export function DiscoveryLinks({
         ))}
     </>
   );
+}
+
+/**
+ * One switch from Admin → Features, as the app reads it. While the first load is pending a switch
+ * counts as on, so nothing flickers out; the API refuses anything that is really off.
+ */
+export function useFeature() {
+  const { config } = useContext(Features);
+  return (key: string) => !config || config.features?.[key]?.enabled === true;
+}
+
+// Pages that need a feature, like the app's route guard (tivorah-mobile FeatureRouteGuard).
+// Each rule needs all of its switches; the first matching prefix wins.
+const routeFeatures: [string, string[]][] = [
+  ["/account/tickets", ["events"]],
+  ["/account/bookings", ["services", "service_bookings"]],
+  ["/account/item-orders", ["marketplace"]],
+  ["/account/orders", ["marketplace"]],
+  ["/account/messages", ["chat"]],
+  ["/business/events", ["events"]],
+  ["/business/appointments", ["services", "service_bookings"]],
+  ["/business/orders", ["marketplace"]],
+  ["/business/hubs", ["communities"]],
+  ["/business/shop", ["marketplace"]],
+  ["/event-tickets", ["events"]],
+  ["/event-orders", ["events"]],
+  ["/event-groups", ["events"]],
+  ["/event-refund", ["events"]],
+  ["/event-ticket-transfer", ["events"]],
+  ["/events", ["events"]],
+  ["/shop", ["marketplace"]],
+  ["/services", ["marketplace", "services"]],
+  ["/hubs", ["communities"]],
+];
+
+// Create links say what they create: /business/create?type=event needs Events, and so on.
+const createFeatures: Record<string, string[]> = { event: ["events"], service: ["marketplace", "services"], item: ["marketplace"] };
+
+/** The switches a page (or a link to one, with its query) needs ([] = none). */
+export function featuresForPath(href: string): string[] {
+  const [path, query = ""] = href.split("#")[0].split("?");
+  if (path === "/business/create") return createFeatures[new URLSearchParams(query).get("type") ?? ""] ?? [];
+  if (path === "/business" && new URLSearchParams(query).get("view") === "events") return ["events"];
+  if (path === "/business" && new URLSearchParams(query).get("view") === "listings") return ["marketplace"];
+  return routeFeatures.find(([prefix]) => path === prefix || path.startsWith(`${prefix}/`))?.[1] ?? [];
 }

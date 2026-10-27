@@ -120,7 +120,7 @@ export function EventDetails({
           </label>
         </section>
 
-        <section className="shop-step"><HubShareField kind="event" value={hubIds} onChange={setHubIds} disabled={mutation.busy} /></section>
+        <section className="shop-step"><HubShareField required kind="event" value={hubIds} onChange={setHubIds} disabled={mutation.busy} /></section>
       </fieldset>
       <BookingSetupNotice issues={mutation.setupIssues} />
       {mutation.error ? <p className="product-error" role="alert">{mutation.error}</p> : null}

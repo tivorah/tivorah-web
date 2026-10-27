@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import './checkout-hold-banner.css';
 import { ticketMoney, type ActiveCheckout } from '../../app/events/api';
 import { formatHoldRemaining, holdFractionLeft, holdRemainingMs, verifiedStripeCheckoutUrl } from '../../lib/checkout-hold';
+import { leaveFor } from '../../lib/leave-page';
 
 /**
  * Shown while the buyer's paid tickets are held for them: a live countdown, a draining progress line,
@@ -12,6 +13,7 @@ import { formatHoldRemaining, holdFractionLeft, holdRemainingMs, verifiedStripeC
 export function CheckoutHoldBanner({ checkout, onExpire, onCancel }: { checkout: ActiveCheckout; onExpire: () => void; onCancel: () => Promise<void> }) {
   const [now, setNow] = useState(() => Date.now());
   const [cancelling, setCancelling] = useState(false);
+  const [resuming, setResuming] = useState(false);
   const [error, setError] = useState('');
   const remaining = holdRemainingMs(checkout.expiresAt, now);
   const expireRef = useRef(onExpire);
@@ -32,10 +34,12 @@ export function CheckoutHoldBanner({ checkout, onExpire, onCancel }: { checkout:
     expireRef.current();
   }, [remaining, checkout.expiresAt]);
 
-  function resume() {
+  // Stays "Opening checkout…" until Stripe has loaded (lib/leave-page.ts).
+  async function resume() {
     const url = verifiedStripeCheckoutUrl(checkout.checkoutUrl);
     if (!url) { setError('The payment link could not be verified. Refresh the page and try again.'); return; }
-    window.location.assign(url);
+    setResuming(true);
+    try { await leaveFor(url); } finally { setResuming(false); }
   }
 
   async function release() {
@@ -60,8 +64,8 @@ export function CheckoutHoldBanner({ checkout, onExpire, onCancel }: { checkout:
     </div>
     <div className="checkout-hold-track" aria-hidden="true"><span style={{ width: `${left * 100}%` }} /></div>
     <div className="checkout-hold-actions">
-      <button type="button" className="checkout-hold-release" disabled={cancelling} onClick={() => void release()}>{cancelling ? 'Cancelling…' : 'Cancel hold'}</button>
-      <button type="button" className="checkout-hold-resume" disabled={cancelling || remaining === 0} onClick={resume}>Resume checkout</button>
+      <button type="button" className="checkout-hold-release" disabled={cancelling || resuming} onClick={() => void release()}>{cancelling ? 'Cancelling…' : 'Cancel hold'}</button>
+      <button type="button" className="checkout-hold-resume" disabled={cancelling || resuming || remaining === 0} aria-busy={resuming || undefined} onClick={() => void resume()}>{resuming ? <><span className="button-progress" aria-hidden="true" />Opening checkout…</> : 'Resume checkout'}</button>
     </div>
     {error ? <p role="alert">{error}</p> : null}
   </div>;

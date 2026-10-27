@@ -111,10 +111,10 @@ label > .shop-hint { justify-self: end; }
 .shop-actions { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0 calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, #fbf9f5 30%); }
 .shop-actions > span { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
 .shop-actions .product-primary, .shop-actions .product-secondary { min-height: 48px; }
-.shop-locked { display: grid; max-width: 640px; gap: 12px; padding: 32px; border: 1px solid #e4dce9; border-radius: 24px; background: #fff; }
-.shop-locked h2 { margin: 0; font-size: 20px; }
-.shop-locked p { margin: 0; color: #62546b; line-height: 1.55; }
-.shop-locked > div { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.shop-locked { display: grid; justify-items: center; width: 100%; max-width: none; gap: 10px; padding: 52px 20px; border: 1px dashed #d8cde3; border-radius: 24px; background: transparent; text-align: center; }
+.shop-locked h2 { margin: 0; font-size: 22px; }
+.shop-locked p { max-width: 58ch; margin: 0; color: #62546b; line-height: 1.55; }
+.shop-locked > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
 .shop-preview-back { margin-bottom: 16px; }
 @media (max-width: 700px) {
   .shop-editor-head { flex-direction: column; align-items: flex-start; }
@@ -142,7 +142,8 @@ label > .shop-hint { justify-self: end; }
 .biz-overview-head p:not(.product-eyebrow) { margin: 0; color: #62546b; font-size: 16px; }
 .biz-quick-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .biz-quick-actions a { min-height: 44px; padding-inline: 18px; font-size: 15px; }
-.biz-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+/* As many in a row as fit: the number of stats changes with what's switched on (Admin → Features). */
+.biz-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; }
 .biz-stat { display: grid; align-content: start; gap: 6px; min-height: 108px; padding: 18px; border: 1px solid #e4dce9; border-radius: 20px; background: #fff; color: inherit; text-decoration: none; transition: border-color .15s ease, box-shadow .15s ease; }
 .biz-stat:hover { border-color: #cdbbe3; box-shadow: 0 8px 22px rgba(41, 26, 54, .06); }
 .biz-stat:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
@@ -163,7 +164,6 @@ label > .shop-hint { justify-self: end; }
 .biz-pill.is-live, .biz-pill.is-ready { background: #e7f6ed; color: #14734b; }
 .biz-pill.is-draft, .biz-pill.is-incomplete { background: #fff4dc; color: #7a5200; }
 .biz-pill.is-none, .biz-pill.is-not_started { background: #f4efff; color: #5d329d; }
-@media (max-width: 1100px) { .biz-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 700px) {
   .biz-quick-actions { width: 100%; }
   .biz-quick-actions a { flex: 1 1 auto; justify-content: center; }
@@ -286,3 +286,74 @@ label > .shop-hint { justify-self: end; }
 .shop-view[data-accent] .shop-section-head a,
 .shop-view[data-accent] .shop-hero-locality,
 .shop-view[data-accent] .shop-hero-logo { color: var(--shop-accent); }
+
+/* Overview photos & videos: a swipeable slideshow (components/shop/media-gallery.tsx), like the app. */
+.shop-slideshow { position: relative; border-radius: 20px; overflow: hidden; background: #f1edf4; }
+.shop-slideshow-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.shop-slideshow-strip::-webkit-scrollbar { display: none; }
+.shop-slideshow-slide { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; aspect-ratio: 16 / 10; position: relative; }
+.shop-slideshow-slide .shop-media-tile { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; }
+.shop-slideshow-count { position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(20, 14, 26, .62); color: #ffffff; font-size: 13px; font-weight: 700; pointer-events: none; }
+.shop-slideshow-nav { position: absolute; top: 50%; width: 44px; height: 44px; margin-top: -22px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #211d23; box-shadow: 0 6px 18px rgba(20, 14, 26, .18); cursor: pointer; }
+.shop-slideshow-nav.prev { left: 12px; }
+.shop-slideshow-nav.next { right: 12px; }
+.shop-slideshow .shop-slideshow-nav:disabled { opacity: 0; pointer-events: none; }
+.shop-slideshow-nav:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-slideshow-dots { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
+.shop-slideshow-dots span { width: 7px; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, .6); transition: width .2s ease; }
+.shop-slideshow-dots span.is-current { width: 16px; background: #ffffff; }
+@media (prefers-reduced-motion: reduce) { .shop-slideshow-dots span { transition: none; } }
+/* Phones swipe; the arrows are for mouse and keyboard. */
+@media (hover: none) and (pointer: coarse) { .shop-slideshow-nav { display: none; } }
+/* Wider screens: a row of up to three rounded tiles instead of one giant slide. */
+@media (min-width: 760px) {
+  .shop-slideshow { border-radius: 0; overflow: visible; background: transparent; }
+  .shop-slideshow-strip { gap: 12px; border-radius: 18px; }
+  .shop-slideshow-slide { flex-basis: calc((100% - 24px) / 3); aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: #f1edf4; }
+  .shop-slideshow.slides-2 .shop-slideshow-slide { flex-basis: calc((100% - 12px) / 2); aspect-ratio: 16 / 10; }
+  .shop-slideshow.slides-1 .shop-slideshow-slide { flex-basis: 100%; aspect-ratio: 21 / 9; }
+  .shop-slideshow-dots { display: none; }
+  .shop-slideshow-nav.prev { left: -14px; }
+  .shop-slideshow-nav.next { right: -14px; }
+}
+
+/* Photos & videos strip above the shop tabs (components/shop/media-gallery.tsx), like the app. */
+.shop-media-strip { display: flex; gap: 8px; margin: 20px 0 0; padding: 2px 0 4px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.shop-media-strip::-webkit-scrollbar { display: none; }
+.shop-media-strip > div { flex: none; }
+/* The tabs follow the strip closely. */
+.shop-view .shop-media-strip ~ .shop-tabs { margin-top: 16px; }
+.shop-media-strip .shop-media-tile { position: relative; display: block; width: 120px; height: 88px; padding: 0; border-radius: 12px; overflow: hidden; }
+.shop-media-strip .shop-media-play { width: 32px; height: 32px; }
+.shop-media-strip .shop-media-play svg { width: 16px; height: 16px; }
+@media (max-width: 600px) { .shop-media-strip .shop-media-tile { width: 100px; height: 74px; } }
+
+/* Shop header actions, as in the app: a full-width Message button and a round profile button. */
+.shop-hero-actions { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 420px; margin-top: 12px; }
+.shop-hero-actions .shop-message-button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 18px; border-radius: 999px; font-size: 15px; text-decoration: none; }
+.shop-hero-actions .shop-message-error { flex-basis: 100%; }
+.shop-hero-actions:has(.shop-message-error) { flex-wrap: wrap; }
+.shop-profile-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none; width: 44px; height: 44px; border: 1px solid #ded6e6; border-radius: 999px; background: #ffffff; color: #211d23; text-decoration: none; font-size: 14px; font-weight: 650; }
+.shop-profile-button:hover { background: #f5f0f7; }
+.shop-profile-button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-profile-label { display: none; }
+/* Without a Message button (the owner, or messaging unavailable) the profile button says what it does. */
+.shop-hero-actions:not(:has(.shop-message-button, .shop-message-placeholder)) .shop-profile-button { width: auto; padding: 0 16px; }
+.shop-hero-actions:not(:has(.shop-message-button, .shop-message-placeholder)) .shop-profile-label { display: inline; }
+.shop-hero-actions .shop-message-placeholder { flex: 1; width: auto; height: 44px; border-radius: 999px; }
+/* The app's primary fill (constants/theme.ts button): dark on light; the dark theme makes it brand purple. */
+.shop-hero-actions .shop-message-button { background: #211d23; border-color: transparent; }
+.shop-hero-actions .shop-message-button:hover { background: #2d2830; }
+html[data-theme="dark"] .shop-hero-actions .shop-message-button:hover { background: #5a3596; }
+
+/* Wider screens: the shop header uses its width. Name and introduction on the left, Message and
+   profile on the right (no stretched button under the text, no empty half), and the thumbnail strip
+   is left to phones: on desktop the Overview gallery row and the Gallery tab show the photos. */
+@media (min-width: 900px) {
+  .shop-hero .shop-hero-copy { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 32px; align-items: end; }
+  .shop-hero .shop-hero-copy > * { grid-column: 1; }
+  .shop-hero .shop-hero-copy > .shop-hero-actions { grid-column: 2; grid-row: 1 / span 4; align-self: end; width: auto; max-width: none; margin: 0; }
+  .shop-hero .shop-hero-actions .shop-message-button,
+  .shop-hero .shop-hero-actions .shop-message-placeholder { flex: none; width: auto; min-width: 180px; }
+  .shop-media-strip { display: none; }
+}

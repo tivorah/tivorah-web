@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { AccountGate } from "../../account/gate";
 import { usePrivateResource } from "../../../hooks/use-private-resource";
 import { api, ApiError } from "../../../lib/api/client";
-import { canManage, mediaUrl, personName, roleLabel, SETTING_COPY, type HubMember, type HubRule, type HubSettings, type JoinRequest, type ManagedHub } from "./shared";
+import { RuleChooser } from "./rule-chooser";
+import { canManage, MAX_HUB_RULES, mediaUrl, personName, roleLabel, SETTING_COPY, type HubMember, type HubRule, type HubSettings, type JoinRequest, type ManagedHub } from "./shared";
 import "./hubs.css";
 
 type Tab = "details" | "members" | "requests" | "settings";
@@ -115,9 +116,7 @@ function DetailsTab({ hub, isOwner, onSaved }: { hub: ManagedHub; isOwner: boole
         </fieldset>
         <fieldset className="hub-field">
           <legend>Hub rules</legend>
-          <div className="hub-rule-options">{(catalogue.data?.presets ?? []).map((rule) => (
-            <label key={rule.key}><input type="checkbox" checked={ruleKeys.includes(rule.key)} onChange={() => setRuleKeys(ruleKeys.includes(rule.key) ? ruleKeys.filter((key) => key !== rule.key) : [...ruleKeys, rule.key])} /> <span>{rule.text}</span></label>
-          ))}</div>
+          <RuleChooser presets={catalogue.data?.presets ?? []} value={ruleKeys} onChange={setRuleKeys} max={Math.max(ruleKeys.length, MAX_HUB_RULES - customRules.split("\n").filter((line) => line.trim()).length)} />
           <label className="hub-custom-rule" htmlFor="edit-custom-rules">Your own rules, one per line</label>
           <textarea id="edit-custom-rules" rows={3} value={customRules} onChange={(event) => setCustomRules(event.currentTarget.value)} />
         </fieldset>
@@ -355,7 +354,9 @@ function SettingsTab({ hub }: { hub: ManagedHub }) {
 function ManageHubContent({ id, viewerId }: { id: number; viewerId: number }) {
   const hubs = usePrivateResource<{ allCommunity: ManagedHub[] }>("/community/fetch/user/communities?take=100");
   const requests = usePrivateResource<{ communityRequestsList: JoinRequest[] }>(`/community/request-list?communityId=${id}`);
-  const [tab, setTab] = useState<Tab>("details");
+  // ?tab=members / ?tab=requests opens that tab (links from Your Hubs).
+  const linkedTab = useSearchParams().get("tab");
+  const [tab, setTab] = useState<Tab>(linkedTab === "members" || linkedTab === "requests" || linkedTab === "settings" ? linkedTab : "details");
   const hub = hubs.data?.allCommunity.find((item) => item.id === id) ?? null;
 
   if (hubs.loading && !hubs.data) return <section className="hub-admin"><p role="status">Loading your Hub…</p></section>;

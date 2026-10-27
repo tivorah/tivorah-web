@@ -223,7 +223,8 @@ export function packagePriceLabel(draft: Pick<PackageDraft, "kind" | "groupSize"
 
 // Compact ticket list for the create screen: one calm row per package. Adding and
 // editing happen in a side sheet so the page itself stays short and scannable.
-export function TicketPackageList({ value, onChange }: { value: PackageDraft[]; onChange: (value: PackageDraft[]) => void }) {
+/** `paidAllowed` false (Admin → Features → Paid tickets off): only free ticket types can be saved, as in the app. */
+export function TicketPackageList({ value, onChange, paidAllowed = true }: { value: PackageDraft[]; onChange: (value: PackageDraft[]) => void; paidAllowed?: boolean }) {
   const [editing, setEditing] = useState<{ draft: PackageDraft; isNew: boolean } | null>(null);
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState("");
@@ -238,6 +239,7 @@ export function TicketPackageList({ value, onChange }: { value: PackageDraft[]; 
     const others = value.filter((item) => item.key !== editing.draft.key);
     try {
       packagesPayload([editing.draft]);
+      if (!paidAllowed && (parseMoneyToCents(editing.draft.price || "0") ?? 0) > 0) throw new Error("Paid entry is currently unavailable on Tivorah. Set the price to $0 for a free ticket.");
       if (others.some((item) => item.name.trim().toLowerCase() === editing.draft.name.trim().toLowerCase())) throw new Error(`Another ticket type is already called “${editing.draft.name.trim()}”.`);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Check this ticket type."); return; }
     onChange(editing.isNew ? [...value, editing.draft] : value.map((item) => item.key === editing.draft.key ? editing.draft : item));

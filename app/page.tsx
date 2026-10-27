@@ -6,7 +6,7 @@ import Image from "next/image";
 import { AppPreview } from "./app-preview";
 import { JourneyRail, type JourneyStep } from "./journey-rail";
 
-const appDescription = "Tivorah is a community app based in Adelaide, Australia. Join Hubs, find or offer services, create or book events, and buy or sell new and used local items.";
+const appDescription = "Tivorah is a community app based in Adelaide, Australia. Join Hubs, create or book events, and find or offer local services and items through your Hubs.";
 
 export const metadata: Metadata = {
   title: { absolute: "Tivorah | Australian Community App" },
@@ -52,16 +52,10 @@ const featureRail: JourneyStep[] = [
     shot: "/app-screens/2026-09-22/jobs.png",
   },
   {
-    step: "",
-    title: "Find something useful nearby",
-    body: "Buy or sell new and used local items, find a service provider or offer your own services. Message directly to arrange the details.",
-    shot: "/app-screens/2026-10-15/shop.jpg",
-  },
-  {
     step: "Start here",
     title: "Find your Hub",
     body: "A community built around your background, your interests, or the city you landed in. You see its rules before you are in.",
-    shot: "/app-screens/2026-10-15/hubs.jpg",
+    shot: "/app-screens/2026-10-28/hubs.jpg",
   },
   {
     step: "",
@@ -92,7 +86,7 @@ export default async function Home() {
           <div className="opening-copy">
             <span className="opening-origin">Local roots. Australian connections.</span>
             <h1 id="home-title">A new place.<br />Your kind of<br /><em>people.</em></h1>
-            <p className="opening-intro">Meet people through Hubs, find or offer services, create or book events, and buy or sell new and used local items on Tivorah.</p>
+            <p className="opening-intro">Meet people through Hubs, create or book events, and find or offer local services and items through your Hubs on Tivorah.</p>
             <div className="opening-actions">
               <Link className="button opening-primary press-fx" href="/events">Explore Tivorah <span aria-hidden="true">→</span></Link>
               <a className="opening-tour-link" href="#preview">Take a look inside <span aria-hidden="true">↓</span></a>
@@ -116,12 +110,12 @@ export default async function Home() {
           <div className="belonging-heading">
             <span className="eyebrow">Your life, a little more connected</span>
             <h2 id="belonging-title">People first.<br />Possibilities follow.</h2>
-            <p>Tivorah is an Australian community app that brings people, services, events and a local marketplace together.</p>
+            <p>Tivorah is an Australian community app that brings people, Hubs, events and local services together.</p>
           </div>
           <div className="belonging-moments">
             <article><span className="moment-number">01 / Connect</span><h3>Find your circle.</h3><p>Join Hubs around your interests, culture or city. Meet people nearby and keep the conversation going.</p></article>
             <article><span className="moment-number">02 / Take part</span><h3>Put something in the diary.</h3><p>Create an event, offer tickets or book your place at something happening nearby.</p></article>
-            <article><span className="moment-number">03 / Discover</span><h3>Make local life easier.</h3><p>Buy or sell new and used local items. Find a service provider or offer your own services.</p></article>
+            <article><span className="moment-number">03 / Discover</span><h3>Make local life easier.</h3><p>Find a service provider or offer your own services, and buy or sell local items, right in your Hubs.</p></article>
           </div>
         </div>
       </section>
@@ -138,7 +132,7 @@ export default async function Home() {
             events and opportunities connected to it all have a place here.
           </p>
         </div>
-        <JourneyRail steps={featureRail} initialIndex={3} />
+        <JourneyRail steps={featureRail} initialIndex={2} />
       </section>
       <section className="people-interlude" id="new-here" aria-labelledby="people-title">
         <div className="page-shell people-interlude-layout">

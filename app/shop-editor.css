@@ -5,6 +5,7 @@
 .shop-editor-head { display: grid; gap: 4px; margin: 0 0 14px; }
 .shop-editor-back { gap: 4px; justify-self: start; color: #563580; font-size: 15px; }
 .shop-editor-back span { font-size: 22px; line-height: 1; }
+.shop-editor-head > .product-eyebrow { margin: 10px 0 0; }
 .shop-editor-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .shop-editor-head h1 { margin: 0; font-size: 24px; letter-spacing: -.02em; }
 .shop-editor-head p { font-size: 15px; }
@@ -120,7 +121,7 @@
   .shop-more-body { padding: 2px 14px 14px; }
   /* One "‹ Your account" link is enough on phones; the bottom bar covers the rest. */
   .shop-editor-back { display: none; }
-  .shop-actions { bottom: calc(var(--app-bottom-bar-offset) - 1px); margin: 0 -16px; padding: 8px 16px calc(8px + var(--app-bottom-safe)); border-top: 1px solid #ece5f1; }
+  .shop-actions { bottom: 0; margin: 0 -16px; padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #ece5f1; }
   .shop-actions > span { flex: 1; flex-wrap: nowrap; gap: 8px; }
   .shop-actions .product-primary { flex: 1; justify-content: center; }
 }
@@ -199,9 +200,19 @@
 .create-shop .shop-actions { position: sticky; bottom: 0; z-index: 5; flex-direction: row; align-items: center; margin: 0 -4px; padding: 10px 4px calc(10px + env(safe-area-inset-bottom)); border-top: 0; background: rgba(251, 249, 245, .94); }
 .create-shop .shop-actions > span { width: auto; }
 @media (max-width: 760px) {
-  .create-shop .shop-actions { bottom: calc(var(--app-bottom-bar-offset) - 1px); margin: 0 -16px; padding: 8px 16px calc(8px + var(--app-bottom-safe)); border-top: 1px solid #ece5f1; }
+  .create-shop .shop-actions { bottom: 0; margin: 0 -16px; padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #ece5f1; }
   .create-shop .shop-actions > span { flex: 1; flex-wrap: nowrap; gap: 8px; }
   .create-shop .shop-actions .product-primary { flex: 1; width: auto; justify-content: center; }
 }
 /* No room needed for the create pages' bottom bar: the shop editor uses its own save bar. */
 .create-shop .create-shell { padding-bottom: 0; }
+
+/* "Shop opens on": one choice, shown as chips like the app (components/business/shop/editor.tsx). */
+.shop-open-tab { margin: 18px 0 0; padding: 0; border: 0; min-width: 0; }
+.shop-open-tab legend { padding: 0; margin-bottom: 10px; font-size: 15px; font-weight: 750; color: #211d23; }
+.shop-open-tab-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.shop-open-tab-option { position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; background: #f1ebf8; color: #4f2f86; font-size: 14px; font-weight: 700; cursor: pointer; }
+.shop-open-tab-option.is-chosen { background: #6840ad; color: #ffffff; }
+.shop-open-tab-option input { position: absolute; inset: 0; width: 100% !important; height: 100% !important; margin: 0; opacity: 0; cursor: pointer; }
+.shop-open-tab-option:has(input:focus-visible) { outline: 3px solid #c8a7f5; outline-offset: 2px; }
+.shop-open-tab .shop-hint { margin: 10px 0 0; }

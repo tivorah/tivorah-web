@@ -5,7 +5,7 @@ import { canManage, mediaUrl, newHubErrors, newHubFormData, suggestHubUsername, 
 const hub = (overrides: Partial<NewHub> = {}): NewHub => ({
   name: 'Adelaide Makers', username: 'adelaide-makers', slogan: ' Make things ', bio: ' We build. ', isPrivate: false,
   interestIds: [3, 3, 5], ruleKeys: ['preset:no_spam'], customRule: ' Be kind ', locality: { suburb: 'Adelaide', state: 'SA', postcode: '5000' },
-  avatar: new Blob(['a'], { type: 'image/png' }), banner: null, ...overrides,
+  avatar: new Blob(['a'], { type: 'image/png' }), covers: [], ...overrides,
 });
 
 test('builds the same multipart fields the mobile app sends', () => {
@@ -18,6 +18,19 @@ test('builds the same multipart fields the mobile app sends', () => {
   assert.equal(form.get('postcode'), '5000');
   assert.ok(form.get('avatar') instanceof Blob);
   assert.equal(form.get('banner'), null);
+});
+
+test('sends every cover slide, and the cover video with its slide', () => {
+  const form = newHubFormData(hub({ covers: [new Blob(['1']), new Blob(['frame']), new Blob(['2'])], coverVideoUploadId: 'upload-1', coverVideoPosition: 1 }));
+  assert.equal(form.getAll('banner').length, 3);
+  assert.equal(form.get('coverVideoUploadId'), 'upload-1');
+  assert.equal(form.get('coverVideoPosition'), '1');
+  assert.equal(newHubFormData(hub()).get('coverVideoUploadId'), null);
+});
+
+test('sends the create attempt key so a retry returns the same Hub', () => {
+  assert.equal(newHubFormData(hub({ idempotencyKey: 'create-key-1234567890' })).get('idempotencyKey'), 'create-key-1234567890');
+  assert.equal(newHubFormData(hub()).get('idempotencyKey'), null);
 });
 
 test('sends the welcome post choice like the app', () => {

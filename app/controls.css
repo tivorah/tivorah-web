@@ -42,3 +42,14 @@ html[data-theme="dark"] .brand-logo-dark { display: inline-flex; }
 .brand .brand-logo-dark img, .footer-logo.brand-logo-dark img { width: auto !important; max-width: none; height: 30px; }
 /* Groups of toggles (e.g. "How buyers get it") sit close together, one row each. */
 fieldset:has(> label.product-checkbox) { display: grid; gap: 2px; }
+
+/* Category icons (components/ui/category-icon.tsx): the app's icon and colour in a soft round tile. */
+.category-icon { display: inline-grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%; background: #f2eff4; color: var(--tone-light); }
+html[data-theme="dark"] .category-icon { background: #2d2831; color: var(--tone-dark); }
+
+/* The brand shimmer (app/refine.css) in dark mode: the same lavender → pink → peach hint, on dark
+   surfaces. Set here because the generator reads "--shimmer-brand" as a text colour and keeps it light. */
+:root[data-theme="dark"] { --shimmer-brand: linear-gradient(120deg, #26202b, #2b2129 55%, #2c2621); }
+
+/* Multi-select lists (e.g. Hub rules) use the app's check circle; it keeps the brand purple in dark. */
+:root[data-theme="dark"] button.hub-rule-row.is-on .hub-rule-check { border-color: #8f5fed; background-color: #8f5fed; }

@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 26 October 2026
+        <strong>Last updated:</strong> 28 October 2026
       </p>
 
       <div className="legal-callout">
@@ -91,7 +91,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       </p>
       <p>
         <strong>Cover videos.</strong> A Hub can have a short cover video of up
-        to 30 seconds. It plays silently on a loop on the Hub. Tivorah reviews
+        to 15 seconds. It plays silently on a loop on the Hub. Tivorah reviews
         it before it appears publicly; until then, and if it isn’t approved,
         the Hub shows its cover photo. Cover videos must follow these Terms and
         our Community Guidelines like any other content.
@@ -186,6 +186,13 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         delivery, pickup, performance, cancellation and resolution of their
         transaction. A shared Hub or profile provides context but is not a
         guarantee, background check or endorsement.
+      </p>
+      <p>
+        When you create an item, service or event, you choose at least one Hub
+        (up to three) to share it with, and it appears to the members of those
+        Hubs. You must be a member of each Hub you choose and follow its rules.
+        A listing or event can also appear on your shop page, in search and on
+        its own page, which anyone with the link can view.
       </p>
       <p>
         Tivorah is not normally the seller, employer, event organiser or service

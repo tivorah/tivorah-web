@@ -9,8 +9,13 @@ export type DiscoveryItem = {
   description: string | null;
   image: string | null;
   coverImage?: string | null;
-  /** A Hub's approved short cover video (muted, looping). */
+  /** Hubs: the cover colour key, shown when there is no photo (lib/hub-cover-color.ts). */
+  coverColor?: string | null;
+  /** A Hub's approved short cover video (muted, looping), and the cover slide it plays on. */
   coverVideoUrl?: string | null;
+  coverVideoPosition?: number | null;
+  /** A Hub's cover slides (photos; the video's first frame is the one on its slide). */
+  coverImages?: string[];
   images?: string[];
   category?: string | null;
   locality: string | null;

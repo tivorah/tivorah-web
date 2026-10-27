@@ -8,3 +8,39 @@
 .profile-shop-icon { display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: 22px; background: #f4f0f7; color: #6941b4; font-size: 18px; }
 .profile-shop strong { display: block; font-size: 15px; }
 .profile-shop small { display: block; color: #62546b; font-size: 14px; }
+
+/* The main action uses the app's primary fill: dark on light, brand purple on dark. */
+.profile-open-button { background: #211d23; }
+.profile-open-button:hover { background: #2d2830; }
+html[data-theme="dark"] .profile-open-button:hover { background: #5a3596; }
+
+/* Laid out like the app's profile screen (page.tsx): left-aligned, photo beside the name. */
+.profile-page-app { padding: 28px 18px 48px; background: #fbf9f5; }
+.profile-page-app .profile-shell { width: min(100%, 560px); margin: 0 auto; }
+.profile-page-app .public-profile-card { display: block; padding: 24px; text-align: left; border-radius: 24px; }
+.profile-identity { display: flex; align-items: center; gap: 16px; }
+.profile-identity-copy { min-width: 0; }
+.profile-page-app .profile-avatar { flex: none; width: 88px; height: 88px; margin: 0; border-width: 0; box-shadow: none; }
+.profile-page-app .profile-avatar img { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; }
+.profile-page-app h1 { margin: 0; font-size: 24px; line-height: 1.25; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.profile-page-app .profile-identity-copy strong { display: block; margin-top: 4px; color: #6c6473; font-size: 14px; font-weight: 500; }
+.profile-page-app .profile-bio { margin: 16px 0 0; color: #4a424f; font-size: 15px; line-height: 1.5; text-align: left; }
+.profile-page-app .profile-actions { display: grid; gap: 12px; justify-items: stretch; margin-top: 18px; }
+.profile-page-app .profile-open-button { width: 100%; min-height: 44px; padding: 10px 18px; font-size: 15px; font-weight: 700; }
+.profile-page-app .profile-store-links { display: flex; justify-content: flex-start; text-align: left; }
+.profile-details { margin-top: 22px; padding-top: 18px; border-top: 1px solid #ece8ef; }
+.profile-details h2 { margin: 0 0 4px; font-size: 16px; line-height: 1.3; font-weight: 700; letter-spacing: 0; }
+.profile-details ul { margin: 0; padding: 0; list-style: none; }
+.profile-detail { display: flex; align-items: center; gap: 12px; min-height: 44px; color: #2b2530; font-size: 14px; font-weight: 500; text-decoration: none; }
+.profile-detail-icon { flex: none; color: #8b8490; }
+.profile-detail.is-link, .profile-detail.is-link .profile-detail-icon:first-child { color: #6840ad; }
+.profile-detail-copy { display: grid; flex: 1; min-width: 0; }
+.profile-detail-copy small { color: #8b8490; font-size: 13px; font-weight: 400; }
+.profile-detail.is-link:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 2px; border-radius: 8px; }
+.profile-page-app .profile-privacy { margin-top: 16px; }
+/* Phones: a plain sheet like the app (no card around it). */
+@media (max-width: 600px) {
+  .profile-page-app { padding: 16px 18px 40px; }
+  .profile-page-app .public-profile-card { padding: 0; border: 0; background: transparent; box-shadow: none; }
+  html[data-theme="dark"] .profile-page-app .public-profile-card { background: transparent; }
+}

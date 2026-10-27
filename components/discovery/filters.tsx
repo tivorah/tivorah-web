@@ -1,6 +1,7 @@
 "use client";
 import { FormEvent, useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { CategoryIcon } from "../ui/category-icon";
 import { FilterSelect } from "../ui/filter-select";
 import { selectedCategories, toggleCategory } from "../../lib/category-filter";
 import { FilterDialog } from "../ui/filter-dialog";
@@ -208,13 +209,15 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
         }
       : null,
   ].filter((item): item is NonNullable<typeof item> => !!item);
+  // ?theme= (from the app, lib/theme.ts) is the page's look, not a filter.
+  const filterParamCount = [...params.keys()].filter((key) => key !== "theme").length;
   const reset = () => {
     window.history.replaceState(null, "", path);
     setOpen(false);
   };
-  return (
-    <section className="discovery-filters" aria-label="Filter results">
-      <div className="discovery-filter-toolbar">
+  // Category, country (and date for events): chips beside the filter button on larger screens; on
+  // phones only the filter button shows and these sit at the top of its sheet.
+  const quickFilters = <>
         <FilterSelect
           label={kind === "hubs" ? "Hub interest" : "Category"}
           options={[
@@ -233,6 +236,7 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
           onChange={(value) => update({ category: value })}
           searchable
           multiple
+          optionIcon={(option) => <CategoryIcon kind={kind} label={option.value} />}
         />
         <FilterSelect
           label="Country"
@@ -249,6 +253,11 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
             onChange={dates}
           />
         )}
+  </>;
+  return (
+    <section className="discovery-filters" aria-label="Filter results">
+      <div className="discovery-filter-toolbar">
+        {quickFilters}
         <button
           type="button"
           className="filter-more"
@@ -285,12 +294,13 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
             <circle cx="9" cy="7" r="3" fill="currentColor" stroke="none" />
             <circle cx="15" cy="17" r="3" fill="currentColor" stroke="none" />
           </svg>
-          More filters
+          {/* On phones only the icon shows; the words stay for screen readers. */}
+          <span className="filter-more-label">More filters</span>
           {active.length > 0 && (
             <span className="filter-count">{active.length}</span>
           )}
         </button>
-        {params.size > 0 && (
+        {filterParamCount > 0 && (
           <button className="filter-reset" type="button" onClick={reset}>
             Reset all
           </button>
@@ -324,6 +334,10 @@ export function DiscoveryFilters({ kind }: { kind: DiscoveryKind }) {
       <FilterDialog open={open} onClose={() => setOpen(false)}>
         <form onSubmit={apply} className="filter-dialog-form">
           <div className="filter-dialog-body">
+            <fieldset className="filter-dialog-quick">
+              <legend>Show</legend>
+              <div className="filter-dialog-quick-row">{quickFilters}</div>
+            </fieldset>
             {abroad ? <fieldset>
               <legend>Location</legend>
               <p>Showing {kind === "hubs" ? "Hubs" : kind === "events" ? "events" : kind === "services" ? "services" : "items"} across {countryName}. Suburb, distance and postcode filters are for Australia.</p>

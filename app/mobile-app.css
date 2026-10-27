@@ -37,24 +37,114 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
   .shop-link-button, .shop-chip, .shop-row-action { min-height: 44px; }
   .shop-brand-pick.is-logo { width: 44px; height: 44px; right: -12px; bottom: -12px; }
 
-  /* Shop, Services, Events and Hubs: a two-column grid of compact cards, like the app (loading
-     placeholders follow the same grid). */
-  .discover-grid, .product-loading-cards .product-loading-shapes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .discover-card { border-radius: 16px; }
-  .discover-card-image { aspect-ratio: 1; }
-  .discover-category { bottom: 8px; left: 8px; max-width: calc(100% - 16px); padding: 3px 8px; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .discover-image-fallback { font-size: 26px; }
-  .discover-card-copy { padding: 10px 11px 12px; }
-  .discover-card-copy h2 { font-size: 14px; line-height: 1.3; min-height: calc(2em * 1.3); margin-bottom: 2px; }
-  .discover-card-copy p { font-size: 12px; margin: 1px 0; }
-  .discover-card-copy .discover-date { font-size: 11px; margin-bottom: 4px; }
+  /* Shop, Services, Events and Hubs: the top of the page reads like the app's screen: a short title,
+     one rounded search box (keywords, then suburb), and a single tidy row of filter chips. */
+  .discovery-page .discover-hero { padding: 12px 0 4px; gap: 12px; }
+  .discovery-page .discover-hero .product-eyebrow { display: none; }
+  .discovery-page .discover-hero h1 { font-size: 24px; line-height: 1.15; letter-spacing: -.02em; margin: 0 0 4px; }
+  .discovery-page .discover-hero p:not(.product-eyebrow) { font-size: 14px; line-height: 1.45; margin: 0; }
+  /* "Create on Tivorah" becomes a round + button in the bottom corner, like the app's create action. */
+  .discovery-page .discover-hero > .create-promo-trigger { position: fixed; z-index: 60; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); display: grid; place-items: center; width: 56px; height: 56px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 50%; background: #211d23; color: #ffffff; box-shadow: 0 8px 22px rgba(33, 29, 35, .28); }
+  .discovery-page .discover-hero > .create-promo-trigger .create-promo-label { display: none; }
+  .discovery-page .discover-hero > .create-promo-trigger .create-promo-plus { display: block; }
+  .discovery-page .discover-hero > .create-promo-skeleton { display: none; }
+
+  /* Buttons fit a phone: 44px tall (the touch minimum), smaller type and padding. */
+  .product-primary, .product-secondary { min-height: 44px; padding: 10px 18px; gap: 8px; font-size: 15px; }
+  .event-page .event-primary, .event-page .event-secondary { min-height: 44px; padding: 10px 18px; font-size: 15px; }
+  .discover-search { gap: 0; margin-top: 14px; border-radius: 999px; background: #f0edf3; }
+  /* The suburb search lives in the filter sheet on phones (Location & distance), so the page keeps one field. */
+  .discover-search > .discovery-location { display: none; }
+  .discover-search label, .discover-search label + label { border-radius: 22px; background: transparent; }
+  .discover-search input { height: 46px; min-height: 46px; background: transparent; font-size: 16px; }
+  .search-field-icon { top: 13px; }
+  /* A hairline between the two fields, inset past the icon like the app's grouped rows. */
+  .discover-search > .discovery-location { border-top: 1px solid #e2dce7; margin-left: 48px; }
+  .discover-search > .discovery-location .search-field-icon { left: -30px; }
+  .discover-search > .discovery-location input { padding-left: 0; }
+  /* The focus ring sits inside the shared box instead of spilling past it. */
+  .discover-search label:has(input:focus-visible) { outline-offset: -2px; }
+  .discovery-filters { margin: 10px 0 14px; }
+  /* Filters: one round filter button beside the search box; category, country and date live in its
+     sheet with the other filters (components/discovery/filters.tsx). */
+  .discovery-page { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; }
+  .discovery-page > * { grid-column: 1 / -1; min-width: 0; }
+  .discovery-page > .discover-search { grid-column: 1; }
+  .discovery-page > .discovery-filters { display: contents; }
+  .discovery-filter-toolbar { grid-column: 2; align-self: start; flex-wrap: nowrap; gap: 6px; margin: 14px 0 0; padding: 0; }
+  .discovery-filter-toolbar > .filter-select, .discovery-filter-toolbar > .filter-reset { display: none; }
+  .discovery-filter-toolbar .filter-more { width: 46px; height: 46px; min-width: 46px; min-height: 46px; padding: 0; border-radius: 50%; position: relative; }
+  .discovery-filter-toolbar .filter-more .filter-count { position: absolute; top: -4px; right: -4px; }
+  .filter-active-list { grid-column: 1 / -1; margin-top: 10px; }
+  .discover-results-heading { margin-top: 14px; }
+  /* Each choice opens as a bottom sheet (components/ui/filter-select.tsx puts it at the end of the
+     page); the wide shadow dims the page, and tapping it closes the sheet. */
+  .filter-select-popover.is-sheet { position: fixed; z-index: 95; top: auto; right: 0; bottom: 0; left: 0; width: auto; max-width: none; padding: 8px 12px calc(12px + env(safe-area-inset-bottom)); border-width: 1px 0 0; border-radius: 22px 22px 0 0; box-shadow: 0 0 0 100vmax rgba(20, 14, 26, .34); }
+  .filter-select-popover.is-sheet .filter-select-options { max-height: 55dvh; }
+  .filter-select-trigger, .filter-more { gap: 6px; padding: 8px 14px; font-size: 14px; }
+  /* More filters becomes a round icon button (its count badge stays). */
+  .filter-more { min-width: 44px; padding: 8px 12px; }
+  .filter-more-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .filter-reset { min-height: 44px; padding: 8px 6px; font-size: 14px; }
+
+  /* Shop, Services, Events and Hubs: one full-width card per row, so nothing is squeezed (loading
+     placeholders follow the same layout). */
+  .discover-grid, .product-loading-cards .product-loading-shapes { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .discover-card { border-radius: 18px; }
+  .discover-card-image { aspect-ratio: 16 / 10; }
+  .discover-category { bottom: 10px; left: 10px; max-width: calc(100% - 20px); padding: 4px 10px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .discover-image-fallback { font-size: 32px; }
+  .discover-card-copy { padding: 14px 16px 16px; }
+  /* One per row: no need to reserve two title lines to keep a row of cards even. */
+  .discover-card-copy h2 { font-size: 17px; line-height: 1.3; margin-bottom: 4px; min-height: 0; }
+  .discover-card-copy p { font-size: 14px; margin: 2px 0; }
+  .discover-card-copy .discover-date { font-size: 12px; margin-bottom: 4px; }
   .discover-card-copy .discover-seller { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .discover-card-bottom { margin-top: auto; padding-top: 8px; font-size: 14px; }
-  .discover-card-bottom > span { display: none; }
-  .hub-card-interests, .hub-card-meta { font-size: 12px; }
+  .discover-card-bottom { margin-top: auto; padding-top: 10px; font-size: 15px; }
+  .hub-card-interests, .hub-card-meta { font-size: 13px; }
+
+  /* A conversation reads like the app's chat screen: one header row (back, avatar, name, live dot),
+     a slim topic line, the reply bar pinned to the bottom, and no bottom navigation. */
+  .message-thread-page, .product-page.page-shell.message-thread-page { padding: 0 0 0; }
+  .message-conversation { min-height: calc(100dvh - 56px); }
+  .message-conversation > .account-ticket-breadcrumb { display: none; }
+  .message-thread-heading { display: grid; grid-template-columns: 44px 36px minmax(0, 1fr); column-gap: 8px; row-gap: 0; align-items: center; margin: 0; padding: 6px 12px 6px 0; border-bottom: 1px solid #ece4f2; }
+  .message-thread-heading > .message-back, .message-thread-heading > .message-avatar { grid-row: 1 / span 2; }
+  .message-thread-heading > div { grid-column: 3; align-self: end; }
+  .message-thread-heading .product-eyebrow { display: none; }
+  .message-thread-heading h1 { font-size: 17px; line-height: 1.25; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .message-thread-heading .message-avatar { width: 36px; height: 36px; font-size: 15px; flex: none; }
+  .message-thread-heading .message-live-label { grid-column: 3; align-self: start; margin: 0; gap: 6px; font-size: 12px; }
+  .message-topic { padding: 8px 16px; gap: 0; font-size: 13px; }
+  .message-topic strong { font-size: 14px; }
+  .message-conversation .message-thread { min-height: 0; }
+  /* Edge to edge in dark too (the dark border shorthand would otherwise bring the sides back). */
+  html[data-theme="dark"] .message-conversation .message-thread { border-left: 0; border-right: 0; }
+  .message-conversation .message-compose { position: sticky; bottom: 0; margin: 0; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #ece4f2; background: #fbf9f5; }
+  .message-conversation .message-compose > label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .message-back { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; color: #3b2d47; }
+  .message-back:focus-visible { outline: 3px solid #c8a7f5; outline-offset: -2px; }
+
+  /* Hub page, like the app's: a full-width cover with the name over it, then a card with the round
+     photo and the numbers, overlapping the cover. */
+  .hub-detail { margin-top: -8px; }
+  .hub-detail-hero { position: relative; display: grid; grid-template-columns: 16px 12px 68px 14px minmax(0, 1fr) 12px 16px; margin-inline: -18px; overflow: visible; border: 0; border-radius: 0; background: transparent; }
+  .hub-detail-cover { grid-row: 1; grid-column: 1 / -1; height: 300px; margin-bottom: -13px; }
+  .hub-detail-identity, .hub-detail-identity-copy { display: contents; }
+  .hub-detail-identity-copy .product-eyebrow { display: none; }
+  .hub-detail-hero h1 { grid-row: 1; grid-column: 2 / 7; align-self: end; position: relative; z-index: 1; margin: 0 0 76px; color: #ffffff; font-size: 28px; line-height: 1.2; font-weight: 850; letter-spacing: -.02em; }
+  .hub-detail-location { grid-row: 1; grid-column: 2 / 7; align-self: end; justify-self: start; position: relative; z-index: 1; margin: 0 0 36px; padding: 5px 11px; border-radius: 10px; background: rgba(255, 255, 255, .2); color: #ffffff; font-size: 12px; font-weight: 700; }
+  .hub-detail-hero::after { content: ""; grid-row: 2; grid-column: 2 / 7; position: relative; z-index: 1; border: 1px solid #ece8ef; border-radius: 23px; background: #ffffff; }
+  .hub-detail-avatar { grid-row: 2; grid-column: 3; align-self: center; position: relative; z-index: 2; width: 68px; height: 68px; margin: 12px 0; border: 0; }
+  .hub-detail-stats { grid-row: 2; grid-column: 5; align-self: center; position: relative; z-index: 2; display: flex; justify-content: space-evenly; gap: 6px 14px; padding: 12px 0; font-size: 13px; text-align: center; }
+  .hub-detail > .owner-manage { margin-top: 14px; }
+  .hub-detail-columns { margin-top: 16px; }
 
   /* Item and service pages: sections sit closer together. */
   .service-glance, .service-testimonials, .service-reviews, .service-policy { margin-top: 20px; }
   .service-glance h2, .service-testimonials h2, .service-reviews h2, .service-policy h2 { margin: 0 0 10px; }
   .event-location h2 { margin-bottom: 8px; }
 }
+
+/* The conversation's back arrow is for phones; larger screens use the breadcrumb. */
+@media (min-width: 601px) { .message-back { display: none; } }

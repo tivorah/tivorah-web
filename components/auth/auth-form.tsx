@@ -19,6 +19,7 @@ import { passwordHint } from "../../lib/password-policy";
 import { Turnstile } from "./turnstile";
 import { UsernameField } from "./username-field";
 import { Sheet } from "../ui/sheet";
+import { leaveFor } from "../../lib/leave-page";
 export type AuthMode =
   "signin" | "signup" | "verify" | "recover" | "two-factor";
 const titles: Record<AuthMode, string> = {
@@ -189,10 +190,10 @@ export function AuthForm({
         }
         const session = await memberAuth.getSession();
         if (session.data?.user && (!session.data.user.adultConfirmed || !session.data.user.dateOfBirth || !session.data.user.termAndCondition || !session.data.user.privacyTerm)) {
-          window.location.assign(`/auth/complete?returnTo=${encodeURIComponent(returnTo)}`);
+          await leaveFor(`/auth/complete?returnTo=${encodeURIComponent(returnTo)}`);
           return;
         }
-        window.location.assign(returnTo);
+        await leaveFor(returnTo);
       } else if (mode === "signup") {
         const result = await memberAuth.signUp.email({
           // Same shape as the mobile app: the API splits this into first and last name.
@@ -239,7 +240,7 @@ export function AuthForm({
           throw new Error(
             result.error.message || "Check your code and try again.",
           );
-        window.location.assign(returnTo);
+        await leaveFor(returnTo);
       } else if (mode === "two-factor") {
         const result =
           form.get("recovery") === "on"
@@ -247,7 +248,7 @@ export function AuthForm({
             : await memberAuth.twoFactor.verifyTotp({ code: otp });
         if (result.error)
           throw new Error("The code could not be verified. Please try again.");
-        window.location.assign(returnTo);
+        await leaveFor(returnTo);
       } else if (!codeSent) {
         const result = await memberAuth.emailOtp.sendVerificationOtp({
           email: email.trim().toLowerCase(),
