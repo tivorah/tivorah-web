@@ -9,6 +9,8 @@ export type Theme = "light" | "dark";
 export const THEME_KEY = "tivorah-theme";
 /** The account dashboard toggle's choice (localStorage). */
 export const SAVED_THEME_KEY = "tivorah-theme-choice";
+/** Set by the handoff for a tab the app opened (lib/app-return.ts OPENED_FROM_APP_KEY). */
+const IN_APP_KEY = "tivorah-opened-from-app";
 /** Browser bar colour per theme (the page background). */
 export const THEME_BAR_COLOURS: Record<Theme, string> = { light: "#fbf9f5", dark: "#151217" };
 
@@ -22,8 +24,14 @@ export function resolveTheme({ query, tab, saved }: { query?: string | null; tab
   return asTheme(query) ?? asTheme(tab) ?? asTheme(saved) ?? "light";
 }
 
-/** Runs in <head> before the page paints, so a dark page never flashes light. Kept tiny, no imports. */
-export const themeBootScript = `(function(){try{var d=document.documentElement,k="${THEME_KEY}",c="${SAVED_THEME_KEY}",v=function(x){return x==="dark"||x==="light"?x:null},q=v(new URLSearchParams(location.search).get("theme")),t=null,s=null;try{if(q)sessionStorage.setItem(k,q);t=v(sessionStorage.getItem(k))}catch(e){}try{s=v(localStorage.getItem(c))}catch(e){}var m=q||t||s||"light";d.setAttribute("data-theme",m);var b=m==="dark"?"${THEME_BAR_COLOURS.dark}":"${THEME_BAR_COLOURS.light}",u=function(){var n=document.querySelectorAll('meta[name="theme-color"]');for(var i=0;i<n.length;i++)n[i].setAttribute("content",b)};u();document.addEventListener("DOMContentLoaded",u)}catch(e){}})();`;
+/**
+ * Runs in <head> before the page paints, so a dark page never flashes light. Kept tiny, no imports.
+ * In dark it also paints the page colour on <html> itself, so the browser's blank canvas is already
+ * dark before the stylesheets arrive (the in-app browser otherwise shows white for a moment).
+ * Inside the Tivorah app (its WebView adds "TivorahApp" to the user agent, or the handoff marked the
+ * tab) it adds data-in-app, so app/mobile-app.css can size the page like the app.
+ */
+export const themeBootScript = `(function(){try{var d=document.documentElement,k="${THEME_KEY}",c="${SAVED_THEME_KEY}",v=function(x){return x==="dark"||x==="light"?x:null},q=v(new URLSearchParams(location.search).get("theme")),t=null,s=null;try{if(q)sessionStorage.setItem(k,q);t=v(sessionStorage.getItem(k))}catch(e){}try{s=v(localStorage.getItem(c))}catch(e){}var m=q||t||s||"light";d.setAttribute("data-theme",m);var b=m==="dark"?"${THEME_BAR_COLOURS.dark}":"${THEME_BAR_COLOURS.light}";d.style.colorScheme=m;if(m==="dark")d.style.backgroundColor=b;var u=function(){var n=document.querySelectorAll('meta[name="theme-color"]');for(var i=0;i<n.length;i++)n[i].setAttribute("content",b)};u();document.addEventListener("DOMContentLoaded",u)}catch(e){}try{var a=/TivorahApp/.test(navigator.userAgent)||new URLSearchParams(location.search).get("fromApp")==="1";try{a=a||sessionStorage.getItem("${IN_APP_KEY}")==="1"}catch(e){}if(a)document.documentElement.setAttribute("data-in-app","")}catch(e){}})();`;
 
 /** The theme the page is showing now. */
 export function currentTheme(): Theme {
@@ -37,6 +45,9 @@ export function currentTheme(): Theme {
  */
 export function chooseTheme(theme: Theme) {
   document.documentElement.setAttribute("data-theme", theme);
+  // Replace the colour the pre-paint script put on <html>, or the old theme's background would stay.
+  document.documentElement.style.colorScheme = theme;
+  document.documentElement.style.backgroundColor = theme === "dark" ? THEME_BAR_COLOURS.dark : "";
   document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => meta.setAttribute("content", THEME_BAR_COLOURS[theme]));
   try { sessionStorage.removeItem(THEME_KEY); } catch { /* storage blocked: still shown for this page */ }
   try { localStorage.setItem(SAVED_THEME_KEY, theme); } catch { /* storage blocked: still shown for this page */ }

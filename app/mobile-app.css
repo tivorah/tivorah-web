@@ -9,15 +9,26 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
 /* Focus rings are for keyboards: a tap (or a dialog opening) doesn't draw one. */
 :where(a, button, [role="button"], [role="tab"], summary, [tabindex]):focus:not(:focus-visible) { outline: none; }
 
-@media (max-width: 600px) {
-  /* A compact app header. */
-  .nav { height: 56px; }
-  .nav .brand img { width: 108px; }
+@media (max-width: 850px) {
+  /* The slide-out menu reads like the app's lists: 14px rows, not website-sized links. */
+  .site-nav a, .site-nav a:not(.site-nav-primary) { min-height: 44px; font-size: 14px; font-weight: 650; }
+  .site-nav .section-nav-menu { gap: 2px; }
+  .site-nav .section-nav-menu a { min-height: 44px; font-size: 14px; }
+  .site-nav .section-nav-group > p { font-size: 11px; }
+}
 
-  /* "Back to the Tivorah app": a slim bar, not a second header. */
-  .app-return-bar { padding: 0 4px 0 12px; }
-  .app-return-link { min-height: 40px; font-size: 14px; }
-  .app-return-dismiss { width: 40px; height: 40px; font-size: 20px; }
+@media (max-width: 600px) {
+  /* A compact app header: a smaller logo and a 40px menu button (the web touch minimum). */
+  .nav { height: 56px; }
+  .nav .brand img { width: 92px; }
+  .brand .brand-logo-dark img { height: 24px; }
+  .brand .brand-logo-dark { font-size: 13px; }
+  .nav-menu-button { width: 40px; height: 40px; flex-basis: 40px; }
+  .nav-menu-button span { width: 16px; }
+  .nav-menu-button span:first-child { transform: translateY(-5px); }
+  .nav-menu-button span:last-child { transform: translateY(5px); }
+  .nav-menu-button[aria-expanded="true"] span:first-child { transform: rotate(45deg); }
+  .nav-menu-button[aria-expanded="true"] span:last-child { transform: rotate(-45deg); }
 
   /* Content starts just under the header, like an app screen. */
   .product-page, .product-page.page-shell { padding-top: 8px; }
@@ -29,13 +40,19 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
   /* Pages never slide sideways under a thumb. */
   html, body { overflow-x: clip; }
 
+  /* Create and edit forms (shop, listings, events) stay inside the screen: their cards may shrink
+     (the one-column grid is minmax(0, 1fr) in refine.css) and long words wrap inside them. A long
+     shop address or a button row otherwise pushed every card and the save bar past the right edge. */
+  .create-main > *, .shop-form > *, .shop-step { min-width: 0; }
+  .shop-step, .create-section { overflow-wrap: anywhere; }
+
   /* Shop editor: the cover fills the card's width (its 16:5 shape plus a minimum height made it
      wider than the card), and the cover and logo actions wrap inside the card. */
   .shop-brand-cover { aspect-ratio: auto; width: 100%; height: 112px; min-height: 0; }
-  .shop-brand-remove { display: flex; flex: 1 1 auto; flex-wrap: nowrap; justify-content: flex-end; gap: 0 14px; min-width: 0; }
+  .shop-brand-remove { display: flex; flex: 1 1 auto; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; min-width: 0; }
   .shop-brand-remove .shop-link-button { font-size: 13px; white-space: nowrap; }
   .shop-link-button, .shop-chip, .shop-row-action { min-height: 44px; }
-  .shop-brand-pick.is-logo { width: 44px; height: 44px; right: -12px; bottom: -12px; }
+  .shop-brand-pick.is-logo { width: 44px; height: 44px; right: -8px; bottom: -8px; }
 
   /* Shop, Services, Events and Hubs: the top of the page reads like the app's screen: a short title,
      one rounded search box (keywords, then suburb), and a single tidy row of filter chips. */
@@ -148,3 +165,22 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
 
 /* The conversation's back arrow is for phones; larger screens use the breadcrumb. */
 @media (min-width: 601px) { .message-back { display: none; } }
+
+/*
+ * Inside the Tivorah app (data-in-app, set before paint by lib/theme.ts): the page is a screen of the
+ * app, so it uses the app's type scale (titles 20px, body 14px, like the app's screens) and drops
+ * the website footer. Form fields keep 16px so iOS never zooms in on them.
+ */
+@media (max-width: 600px) {
+  html[data-in-app] .nav { height: 52px; }
+  html[data-in-app] :is(.product-page, .event-page, .ticket-page, .business-workspace) h1,
+  html[data-in-app] :is(.account-heading, .shop-editor-head, .business-create, .event-manage-header, .biz-overview-head) h1 { font-size: 20px; line-height: 1.25; letter-spacing: -.015em; }
+  html[data-in-app] :is(.product-page, .event-page, .business-workspace) h2, html[data-in-app] .create-section h2 { font-size: 16px; line-height: 1.3; }
+  html[data-in-app] :is(.product-page, .event-page, .business-workspace) h3 { font-size: 15px; }
+  html[data-in-app] :is(.product-page, .event-page, .business-workspace) p,
+  html[data-in-app] :is(.shop-hint, .event-help, .create-shop .shop-editor-intro, .shop-editor-head p) { font-size: 14px; line-height: 1.45; }
+  html[data-in-app] .product-eyebrow { font-size: 11px; margin-bottom: 4px; }
+  html[data-in-app] :is(.product-primary, .product-secondary) { font-size: 14px; }
+  html[data-in-app] footer:has(> .footer-inner) { display: none; }
+}
+

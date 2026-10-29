@@ -1,15 +1,21 @@
 "use client";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { api } from "../../../lib/api/client";
+import { api, ApiError } from "../../../lib/api/client";
+import { usePrivateResource } from "../../../hooks/use-private-resource";
 
 // Door check-in: scan a ticket's QR with this device's camera, type the 6-digit
 // entry code, or use a USB/Bluetooth barcode scanner (it types into the code box
 // and presses Enter). Every result is shown large so door staff can read it fast.
 type Result = { ok: boolean; title: string; detail: string; at: number };
 type CheckInResponse = { ticketTypeName?: string | null; attendeeName?: string | null };
+type AlreadyIn = { checkedInAt?: string | null; attendeeName?: string | null; ticketTypeName?: string | null };
+type CheckedInList = { checkIns: { id: string; attendeeName: string | null; ticketTypeName: string | null; checkedInAt: string }[]; total: number; pagination: { isMoreData: boolean } };
+const clock = (value: string | number) => new Date(value).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" });
 type Detector = { detect: (source: CanvasImageSource) => Promise<{ rawValue: string }[]> };
 
 export function EventCheckIn({ id, published }: { id: number; published: boolean }) {
+  // Everyone checked in so far (from any device), newest first. The app's "View checked-in list" opens this.
+  const checkedIn = usePrivateResource<CheckedInList>(`/events/${id}/check-ins?take=100`);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
@@ -37,15 +43,20 @@ export function EventCheckIn({ id, published }: { id: number; published: boolean
       next = { ok: true, title: "Checked in", detail: [data?.ticketTypeName, data?.attendeeName].filter(Boolean).join(" · ") || "The guest can enter.", at: Date.now() };
       navigator.vibrate?.(60);
     } catch (cause) {
-      next = { ok: false, title: "Not admitted", detail: cause instanceof Error ? cause.message : "This ticket could not be checked in.", at: Date.now() };
+      // A ticket is admitted once: a repeat scan says when it was used.
+      const already = cause instanceof ApiError && cause.code === "ALREADY_CHECKED_IN" ? (cause.data ?? {}) as AlreadyIn : null;
+      next = already
+        ? { ok: false, title: "Already checked in", detail: [already.checkedInAt ? `At ${clock(already.checkedInAt)}` : null, already.ticketTypeName, already.attendeeName].filter(Boolean).join(" · ") || "This ticket has already been used.", at: Date.now() }
+        : { ok: false, title: "Not admitted", detail: cause instanceof Error ? cause.message : "This ticket could not be checked in.", at: Date.now() };
       navigator.vibrate?.([80, 60, 80]);
     }
     setResult(next);
     setRecent((items) => [next, ...items].slice(0, 8));
+    if (next.ok) checkedIn.retry();
     setCode("");
     busyRef.current = false; setBusy(false);
     input.current?.focus();
-  }, [id]);
+  }, [id, checkedIn]);
 
   const stopCamera = useCallback(() => {
     if (loop.current) cancelAnimationFrame(loop.current);
@@ -151,6 +162,15 @@ export function EventCheckIn({ id, published }: { id: number; published: boolean
         <button className="product-primary press-fx" disabled={busy || !code.trim()}>{busy ? "Checking…" : "Check in guest"}</button>
         <p className="shop-hint">Using a barcode scanner? Focus this field and scan. A scanner that sends Enter submits automatically.</p>
       </form>
+    </div>
+
+    <div className="checkin-recent checkin-list" id="checked-in">
+      <h3>Checked in{checkedIn.data ? ` · ${checkedIn.data.total}` : ""}</h3>
+      {checkedIn.loading && !checkedIn.data ? <p className="shop-hint" role="status">Loading who’s checked in…</p>
+        : checkedIn.error && !checkedIn.data ? <p className="shop-hint" role="alert">The checked-in list couldn’t load. <button type="button" className="biz-text-link" onClick={checkedIn.retry}>Try again</button></p>
+        : checkedIn.data?.checkIns.length ? <ul aria-label="Checked-in guests">{checkedIn.data.checkIns.map((item) => <li key={item.id} className="is-ok"><span aria-hidden="true">✓</span><strong>{item.attendeeName || "Guest"}</strong><span>{item.ticketTypeName ?? ""}</span><time dateTime={item.checkedInAt}>{clock(item.checkedInAt)}</time></li>)}</ul>
+        : <p className="shop-hint">No one has been checked in yet.</p>}
+      {checkedIn.data?.pagination.isMoreData ? <p className="shop-hint">Showing the latest 100. Orders &amp; attendees has everyone.</p> : null}
     </div>
 
     {recent.length ? <div className="checkin-recent">

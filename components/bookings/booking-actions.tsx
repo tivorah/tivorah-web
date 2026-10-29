@@ -53,7 +53,7 @@ export const when = (value: string, timezone: string, options: Intl.DateTimeForm
 export const isLiveBooking = (booking: ActionBooking) => LIVE.includes(booking.status) && new Date(booking.endsAt) > new Date();
 export const addressLine = (address: ServiceAddress) => `${address.line1}, ${address.suburb} ${address.state} ${address.postcode}`;
 
-type Panel = null | "cancel" | "reschedule" | "approve" | "decline" | "review";
+type Panel = null | "cancel" | "reschedule" | "approve" | "decline" | "review" | "complete";
 
 export function BookingActions({ booking, role, onChanged, autoOpen }: { booking: ActionBooking; role: Role; onChanged: (message: string) => void; autoOpen?: "review" | "pay" | null }) {
   const [panel, setPanel] = useState<Panel>(autoOpen === "review" ? "review" : null);
@@ -70,6 +70,9 @@ export function BookingActions({ booking, role, onChanged, autoOpen }: { booking
   // The API decides for customers (policy window, reschedule limit); providers can move any live booking.
   const canReschedule = live && (role === "provider" || !!booking.canReschedule);
   const paid = !!booking.stripePaymentIntentId && booking.totalCents > 0;
+  // Once a confirmed appointment has started, the provider can mark it done (it also completes on its own when it ends).
+  const canComplete = role === "provider" && booking.status === "confirmed" && !future;
+  const other = role === "provider" ? "the customer" : "the provider";
 
   useEffect(() => { if (autoOpen === "pay") payButton.current?.focus(); }, [autoOpen]);
 
@@ -114,6 +117,7 @@ export function BookingActions({ booking, role, onChanged, autoOpen }: { booking
         ? <p>The provider is finishing payment setup. We’ll let you know when you can pay.</p>
         : <button ref={payButton} type="button" className="product-primary" disabled={busy} onClick={() => void pay()}>{busy && panel === null ? "Opening payment…" : `Pay ${money(booking.totalCents, booking.currency || "AUD")}`}</button>) : null}
       {role === "customer" && booking.status === "completed" && !booking.reviewed ? <button type="button" className="product-primary" onClick={() => open("review")}>Leave a review</button> : null}
+      {canComplete ? <button type="button" className="product-primary" disabled={busy} onClick={() => open("complete")}>Mark complete</button> : null}
       {canReschedule ? <button type="button" className="product-secondary" disabled={busy} onClick={() => open("reschedule")}>{role === "provider" ? "Move appointment" : "Reschedule"}</button> : null}
       {live ? <button type="button" className="booking-actions-danger" disabled={busy} onClick={() => open("cancel")}>{booking.status === "requested" && role === "customer" ? "Withdraw request" : "Cancel appointment"}</button> : null}
       {paid ? <a className="booking-actions-link" href={`${adminApiBase()}/api/v1/market/bookings/${booking.id}/receipt`} download>Download receipt (PDF)</a> : null}
@@ -130,18 +134,27 @@ export function BookingActions({ booking, role, onChanged, autoOpen }: { booking
       <div><button className="booking-actions-danger solid" disabled={busy}>{busy ? "Declining…" : "Decline request"}</button><button type="button" className="product-secondary" onClick={() => setPanel(null)}>Back</button></div>
     </form> : null}
 
-    {panel === "cancel" ? <form className="booking-actions-panel" onSubmit={(event) => submit(event, () => void run(`/market/bookings/${booking.id}/cancel`, { reason: text.trim() || undefined }, outcome?.refund ? `Cancelled. A refund of ${money(outcome.refundCents, booking.currency || "AUD")} has been submitted.` : "Cancelled. The other person has been told."))}>
+    {panel === "cancel" ? <form className="booking-actions-panel" onSubmit={(event) => submit(event, () => void run(`/market/bookings/${booking.id}/cancel`, { reason: text.trim() }, outcome?.refund ? `Cancelled. A refund of ${money(outcome.refundCents, booking.currency || "AUD")} has been submitted.` : "Cancelled. The other person has been told."))}>
       <p role="status"><strong>{outcome ? outcome.summary : "Checking what happens to the payment…"}</strong></p>
       {role === "provider" ? <p>Cancelling as the provider always refunds the customer in full.</p> : null}
-      <label htmlFor={`cancel-${booking.id}`}>Reason {role === "provider" ? "(shared with the customer)" : "(optional)"}<textarea id={`cancel-${booking.id}`} rows={2} maxLength={500} value={text} onChange={(event) => setText(event.target.value)} /></label>
-      <div><button className="booking-actions-danger solid" disabled={busy || !outcome}>{busy ? "Cancelling…" : "Confirm cancellation"}</button><button type="button" className="product-secondary" onClick={() => setPanel(null)}>Keep appointment</button></div>
+      {/* Same as the app: a message is required; it's emailed to both people and pushed to the other. */}
+      <label htmlFor={`cancel-${booking.id}`}>Message to {other}<textarea id={`cancel-${booking.id}`} rows={2} maxLength={500} required value={text} onChange={(event) => setText(event.target.value)} placeholder="e.g. Sorry, something came up and I can’t make it" /></label>
+      <p className="booking-actions-note">Emailed to you both, and sent to {other} as a notification.</p>
+      <div><button className="booking-actions-danger solid" disabled={busy || !outcome || !text.trim()}>{busy ? "Cancelling…" : "Confirm cancellation"}</button><button type="button" className="product-secondary" onClick={() => setPanel(null)}>Keep appointment</button></div>
     </form> : null}
 
-    {panel === "reschedule" ? <form className="booking-actions-panel" onSubmit={(event) => submit(event, () => void run(`/market/bookings/${booking.id}/reschedule`, { startsAt: slot }, "Appointment moved. The other person has been told."))}>
+    {panel === "reschedule" ? <form className="booking-actions-panel" onSubmit={(event) => submit(event, () => void run(`/market/bookings/${booking.id}/reschedule`, { startsAt: slot, message: text.trim() }, "Appointment moved. You’ve both been emailed."))}>
       <p>Choose a new time. {role === "customer" ? "You can reschedule inside the cancellation window, up to 3 times." : "The customer is told straight away."}</p>
       <SlotPicker productId={booking.productId} excludeBookingId={booking.id} lengthMinutes={lengthMinutes} selected={slot} onSelect={setSlot} disabled={busy} />
       {slot ? <p role="status">New time: <strong>{when(slot, booking.timezone, { dateStyle: "full", timeStyle: "short" })}</strong></p> : null}
-      <div><button className="product-primary" disabled={busy || !slot}>{busy ? "Moving…" : "Confirm new time"}</button><button type="button" className="product-secondary" onClick={() => setPanel(null)}>Back</button></div>
+      <label htmlFor={`reschedule-${booking.id}`}>Message to {other}<textarea id={`reschedule-${booking.id}`} rows={2} maxLength={500} required value={text} onChange={(event) => setText(event.target.value)} placeholder="e.g. Could we move this to later in the week?" /></label>
+      <p className="booking-actions-note">Emailed to you both with the new time, and sent to {other} as a notification.</p>
+      <div><button className="product-primary" disabled={busy || !slot || !text.trim()}>{busy ? "Moving…" : "Confirm new time"}</button><button type="button" className="product-secondary" onClick={() => setPanel(null)}>Back</button></div>
+    </form> : null}
+
+    {panel === "complete" ? <form className="booking-actions-panel" onSubmit={(event) => submit(event, () => void run(`/market/bookings/${booking.id}/complete`, {}, "Marked complete. We’ve asked the customer for a review."))}>
+      <p>{booking.totalCents > 0 && booking.paymentTiming === "after_service" ? "We’ll ask the customer to pay now, and to leave a review." : "We’ll ask the customer to leave a review."}{paid ? " Your payout follows 24 hours after completion unless they report a problem." : ""}</p>
+      <div><button className="product-primary" disabled={busy}>{busy ? "Completing…" : "Mark complete"}</button><button type="button" className="product-secondary" onClick={() => setPanel(null)}>Back</button></div>
     </form> : null}
 
     {panel === "review" ? <form className="booking-actions-panel" onSubmit={(event) => submit(event, () => void run(`/market/bookings/${booking.id}/review`, { rating, comment: text.trim() || undefined }, "Thanks! Your review is on the service page."))}>

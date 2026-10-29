@@ -86,6 +86,7 @@ source documents.
 
 - The marketing site currently uses a light visual direction. Preserve it unless the
   user explicitly requests a theme change.
+- Headlines (`h1`/`h2`) use Bricolage Grotesque 800 via `next/font` in `app/layout.tsx` (`--font-headline`, applied in `app/brand.css`), matching the app's headline font.
 - Preserve the established logo, typography, spacing, centered content widths, and
   mobile navigation patterns in shared styles/components.
 - Public content defaults to a centered 1280px maximum-width shell. The homepage

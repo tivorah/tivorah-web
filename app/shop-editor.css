@@ -39,9 +39,10 @@
 .shop-brand-pick:focus-within { outline: 3px solid #c8a7f5; outline-offset: 2px; }
 .shop-brand-pick.is-cover { right: 12px; bottom: 12px; min-height: 40px; padding: 0 14px; border-radius: 999px; background: rgba(23, 16, 30, .62); color: #fff; font-size: 13px !important; font-weight: 750 !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .shop-brand-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 0 20px; margin-top: -40px; }
-.shop-brand-logo { position: relative; display: grid; width: 92px; height: 92px; flex: none; place-items: center; border: 4px solid #fff; border-radius: 26px; background: #f4efff; color: #5d329d; font-size: 34px; font-weight: 800; box-shadow: 0 8px 20px rgba(41, 26, 54, .12); }
-.shop-brand-logo img { border-radius: 22px; object-fit: cover; }
-.shop-brand-pick.is-logo { right: -10px; bottom: -10px; width: 36px; height: 36px; border: 3px solid #fff; border-radius: 50%; background: #65409f; color: #fff; }
+/* The logo is round, like the shop page and the app (the cover stays a rounded banner). */
+.shop-brand-logo { position: relative; display: grid; width: 92px; height: 92px; flex: none; place-items: center; border: 4px solid #fff; border-radius: 50%; background: #f4efff; color: #5d329d; font-size: 34px; font-weight: 800; box-shadow: 0 8px 20px rgba(41, 26, 54, .12); }
+.shop-brand-logo img { border-radius: 50%; object-fit: cover; }
+.shop-brand-pick.is-logo { right: -4px; bottom: -4px; width: 36px; height: 36px; border: 3px solid #fff; border-radius: 50%; background: #65409f; color: #fff; }
 .shop-brand-remove { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; padding-bottom: 4px; }
 .shop-brand-step > .shop-hint { padding: 14px 20px 18px; }
 

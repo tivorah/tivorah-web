@@ -4037,16 +4037,6 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
 :root[data-theme="dark"] .service-pay-choice label:has(input:focus-visible) {
   outline: 3px solid #56416c;
 }
-:root[data-theme="dark"] .app-return-bar {
-  background: #6840ad;
-}
-:root[data-theme="dark"] .app-return-link {
-  color: #ffffff;
-}
-:root[data-theme="dark"] .app-return-link:focus-visible,
-:root[data-theme="dark"] .app-return-dismiss:focus-visible {
-  outline: 3px solid #51416c;
-}
 :root[data-theme="dark"] .handoff-loader > p {
   color: #c2b8c5;
 }

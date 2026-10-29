@@ -1,4 +1,5 @@
 "use client";
+import { useSearchParams } from "next/navigation";
 import { BookingSetupNotice } from "../booking-setup-notice";
 import { AccountSurfaceLoading } from "../../account/surface-loading";
 import Link from "next/link";
@@ -75,7 +76,9 @@ function Workspace({ id, accountId }: { id: string; accountId: number }) {
   const { data, loading, error, retry } = usePrivateResource<ManagedEvent>(
     `/events/${id}`,
   );
-  const [tab, setTab] = useState<(typeof tabs)[number]>("Details");
+  // ?tab=check-in (e.g. the app's "View checked-in list") opens that tab.
+  const linked = useSearchParams().get("tab");
+  const [tab, setTab] = useState<(typeof tabs)[number]>(linked === "check-in" ? "Check-in" : linked === "orders" ? "Orders & attendees" : "Details");
   const [version, setVersion] = useState(0);
   const [cancelOpen, setCancelOpen] = useState(false);
   const requests = useSellerRequests({ eventId: Number(id) });

@@ -42,7 +42,10 @@ export default function AccountDeletion() {
         Deleting your account also removes your shop page. If you have upcoming events with
         bookings, or upcoming appointments (as a provider or a customer), cancel them or let them
         finish first, so anyone who paid is refunded under the refund policy and the Australian
-        Consumer Law. You&apos;ll be reminded if you try to delete before then. Records we must keep
+        Consumer Law. Orders for your items that are still in progress need to be completed,
+        declined or cancelled first. Orders you&apos;re buying don&apos;t hold you up: they&apos;re
+        cancelled when you delete, and the seller is told. You&apos;ll be reminded if you try to
+        delete before then. Records we must keep
         for refunds, tax and disputes are kept as explained below.
       </p>
 

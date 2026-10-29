@@ -214,3 +214,28 @@ test("choosing a Hub comes first and is required to publish", async ({ page }) =
   await expect(page.locator(".hub-share-error")).toHaveCount(0);
   await expect(page.getByRole("list", { name: "Selected hubs" })).toContainText("Adelaide Igbo Network");
 });
+
+test("check-in opens from a link, admits a ticket once and lists who is in", async ({ page }) => {
+  const list = [{ id: "t-1", attendeeName: "Amara Okafor", ticketTypeName: "General admission", checkedInAt: "2026-11-08T09:12:00Z" }];
+  let scans = 0;
+  await page.route("**/api/v1/events/39", route => route.fulfill({ json: { data: { id: 39, organizerId: 1, title: "Sunset Rooftop Social Adelaide", status: "published", startsAt: "2030-11-08T08:30:00Z", endsAt: "2030-11-08T11:30:00Z", category: "Social", locationType: "venue", images: [], ticketTypes: [] } } }));
+  await page.route("**/api/v1/events/39/check-ins**", route => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { data: { checkIns: list, total: list.length, pagination: { isMoreData: false } } } });
+    scans += 1;
+    return scans === 1
+      ? route.fulfill({ json: { data: { ticketTypeName: "General admission", attendeeName: "Kwame Mensah" } } })
+      : route.fulfill({ status: 409, json: { status: false, errorCode: "ALREADY_CHECKED_IN", message: "Already checked in", data: { checkedInAt: "2026-11-08T09:20:00Z", attendeeName: "Kwame Mensah", ticketTypeName: "General admission" } } });
+  });
+  // The app's "View checked-in list" opens this tab.
+  await page.goto("/business/events/39?tab=check-in");
+  const listed = page.getByRole("list", { name: "Checked-in guests" });
+  await expect(listed).toContainText("Amara Okafor");
+  await page.getByLabel("Ticket code").fill("482913");
+  await page.getByRole("button", { name: "Check in guest" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Checked in" }).first()).toContainText("Kwame Mensah");
+  // The same ticket again: refused, with when it was used.
+  await page.getByLabel("Ticket code").fill("482913");
+  await page.getByRole("button", { name: "Check in guest" }).click();
+  await expect(page.locator(".checkin-result")).toContainText("Already checked in");
+  await expect(page.locator(".checkin-result")).toContainText(/At \d{1,2}:\d{2}/);
+});

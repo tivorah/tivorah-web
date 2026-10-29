@@ -34,7 +34,7 @@ export function SessionHandoff() {
     started.current = true;
     const token = params.get("token") ?? "";
     const account = accountHint(params.get("account"));
-    // Opened from the app: remember it for this tab so every page offers a way back (AppReturnBar).
+    // Opened from the app: remember it for this tab (the failure message below offers a way back).
     if (params.get("fromApp") === "1") rememberOpenedFromApp();
     setFromApp(openedFromApp());
     // Drop the token from the address bar and history straight away (a reload keeps the account).
@@ -63,6 +63,8 @@ export function SessionHandoff() {
         if (response.ok && continuesWithSession(await response.json(), account)) return go();
       } catch { /* fall through to the message */ }
       setFailed(true);
+      // Inside the app's own browser screen: tell it, so it lifts its preloader and shows this message.
+      (window as Window & { ReactNativeWebView?: { postMessage: (message: string) => void } }).ReactNativeWebView?.postMessage("handoff-failed");
     })();
   }, [params, returnTo]);
 

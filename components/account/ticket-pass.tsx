@@ -34,6 +34,8 @@ export function TicketPass({ ticket, refresh, disabled, past = false }: { ticket
   const [draftEmail, setDraftEmail] = useState("");
   const mutation = useMutation(refresh);
   const valid = !past && ticket.status === "valid" && !ticket.checkedInAt && !!ticket.qrPayload;
+  // A checked-in ticket still shows its code and downloads: scanning it again only says it was used.
+  const showCode = !past && ticket.status === "valid" && !!ticket.qrPayload;
   const entryCode = /^\d{6}$/.test(ticket.shortCode || "") ? ticket.shortCode : null;
   const status = ticket.checkedInAt ? past ? "Attended" : "Checked in" : past ? "Event ended" : valid ? "Ready for entry" : "Not valid for entry";
   const date = new Date(ticket.event.startsAt).toLocaleString("en-AU", { dateStyle: "full", timeStyle: "short" });
@@ -63,12 +65,12 @@ export function TicketPass({ ticket, refresh, disabled, past = false }: { ticket
     <p className="ticket-admission">{ticket.ticketType.name}{ticket.attendeeName ? ` · ${ticket.attendeeName}` : ""}</p>
     <div className="ticket-entry">
       <p className="event-status-label">{status}</p>
-      {valid ? <><BrandedQrCode value={ticket.qrPayload!} ariaLabel={`Entry code for ${ticket.event.title}`} size={240} /><p className="event-help">Show this code at the entrance</p></> : <p>{past && ticket.checkedInAt ? "You checked in and attended this event. Your booking stays here briefly for your records." : past ? "This event has ended. Your booking stays here for your records." : "This ticket cannot be used for entry."}</p>}
+      {showCode ? <><BrandedQrCode value={ticket.qrPayload!} ariaLabel={`Entry code for ${ticket.event.title}`} size={240} /><p className="event-help">{ticket.checkedInAt ? "You’re checked in. Scanning this again shows it’s already been used." : "Show this code at the entrance"}</p></> : <p>{past && ticket.checkedInAt ? "You checked in and attended this event. Your booking stays here briefly for your records." : past ? "This event has ended. Your booking stays here for your records." : "This ticket cannot be used for entry."}</p>}
       <p className="ticket-code-label">Entry code</p><div className="ticket-code"><code>{entryCode || "Unavailable"}</code>{entryCode ? <button type="button" aria-label="Copy entry code" title="Copy entry code" onClick={() => void navigator.clipboard.writeText(entryCode).then(() => setCopyState("Copied")).catch(() => setCopyState("Could not copy. Select the code to copy it."))}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></svg></button> : null}</div><span className="ticket-copy-feedback" role="status">{copyState}</span>
     </div>
     <div className="ticket-pass-bottom"><p>{date}</p><p>{ticket.event.location}</p><span>Booking reference #{ticket.orderId}</span></div>
     <div className="ticket-individual-actions">
-      <button className="event-primary" disabled={disabled || saving || !valid || !entryCode} onClick={() => void download()}>{saving ? "Preparing…" : "Download ticket"}</button>
+      <button className="event-primary" disabled={disabled || saving || !showCode || !entryCode} onClick={() => void download()}>{saving ? "Preparing…" : "Download ticket"}</button>
       {ticket.canManage && !past && <>
         <button className="event-secondary" disabled={disabled || mutation.busy} aria-expanded={action === "name"} onClick={() => setAction(action === "name" ? null : "name")}>Name on ticket</button>
         <button className="event-secondary" disabled={disabled || mutation.busy} aria-expanded={action === "invite"} onClick={() => { setConfirmEmail(null); setAction(action === "invite" ? null : "invite"); }}>{ticket.pendingTransfer ? "Change transfer" : "Send to a friend"}</button>

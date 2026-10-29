@@ -8,6 +8,7 @@ function boot({ search = "", tab, saved }: { search?: string; tab?: string; save
   const session = new Map<string, string>(tab ? [[THEME_KEY, tab]] : []);
   const local = new Map<string, string>(saved ? [[SAVED_THEME_KEY, saved]] : []);
   const attributes = new Map<string, string>();
+  const style: { colorScheme?: string; backgroundColor?: string } = {};
   const bar = { content: "", setAttribute: (_name: string, value: string) => { bar.content = value; } };
   const storage = (map: Map<string, string>) => ({ getItem: (key: string) => map.get(key) ?? null, setItem: (key: string, value: string) => { map.set(key, value); } });
   runInNewContext(themeBootScript, {
@@ -16,22 +17,23 @@ function boot({ search = "", tab, saved }: { search?: string; tab?: string; save
     sessionStorage: storage(session),
     localStorage: storage(local),
     document: {
-      documentElement: { setAttribute: (name: string, value: string) => attributes.set(name, value) },
+      documentElement: { setAttribute: (name: string, value: string) => attributes.set(name, value), style },
       querySelectorAll: () => [bar],
       addEventListener: () => undefined,
     },
   });
-  return { theme: attributes.get("data-theme"), tab: session.get(THEME_KEY), bar: bar.content };
+  return { theme: attributes.get("data-theme"), tab: session.get(THEME_KEY), bar: bar.content, canvas: style.backgroundColor, scheme: style.colorScheme };
 }
 
 test("the site is light unless someone chooses otherwise (not the phone's setting)", () => {
   assert.equal(resolveTheme({}), "light");
-  assert.deepEqual(boot({}), { theme: "light", tab: undefined, bar: "#fbf9f5" });
+  assert.deepEqual(boot({}), { theme: "light", tab: undefined, bar: "#fbf9f5", canvas: undefined, scheme: "light" });
 });
 
 test("opened from the app, the page matches the app's theme for that tab", () => {
   assert.equal(resolveTheme({ query: "dark", saved: "light" }), "dark");
-  assert.deepEqual(boot({ search: "?theme=dark", saved: "light" }), { theme: "dark", tab: "dark", bar: "#151217" });
+  // Dark also paints <html> itself, so the in-app browser never shows a white canvas first.
+  assert.deepEqual(boot({ search: "?theme=dark", saved: "light" }), { theme: "dark", tab: "dark", bar: "#151217", canvas: "#151217", scheme: "dark" });
   // Later pages in the same tab no longer carry ?theme= but keep the app's theme.
   assert.equal(boot({ tab: "dark", saved: "light" }).theme, "dark");
   assert.equal(boot({ search: "?theme=light", saved: "dark" }).theme, "light");

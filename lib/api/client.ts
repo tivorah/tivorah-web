@@ -11,6 +11,8 @@ export class ApiError extends Error {
     public setupIssues: BookingSetupIssue[] = [],
     /** The API's machine-readable errorCode (e.g. ORDER_CLOSED), when it sent one. */
     public code?: string,
+    /** The error's `data` (e.g. when an already-used ticket was checked in). */
+    public data?: unknown,
   ) {
     super(message);
   }
@@ -69,6 +71,7 @@ export async function api<T>(path: string, init: RequestInit & { timeoutMs?: num
       })(),
       Array.isArray(body?.setupIssues) ? body.setupIssues : [],
       typeof body?.errorCode === "string" ? body.errorCode : undefined,
+      body?.data,
     );
   }
   if (typeof window !== "undefined" && !/^\/chat\/.*\/read$/.test(path) && init.method && !["GET", "HEAD"].includes(init.method.toUpperCase())) {

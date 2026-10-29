@@ -1,4 +1,3 @@
-import { AppReturnBar } from "../components/app-return-bar";
 import "./product.css";
 import { Analytics } from "../components/analytics/analytics";
 import { SiteFooter } from "../components/site-footer";
@@ -7,6 +6,7 @@ import "./discovery-filters.css";
 import { DiscoveryFeatures } from "../components/discovery/features";
 import { FeatureRouteGate } from "../components/discovery/feature-route-gate";
 import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque } from "next/font/google";
 import { indexingDisabled, siteOrigin, socialImage } from "../lib/site";
 import "./styles.css";
 import "./brand.css";
@@ -62,13 +62,17 @@ export const metadata: Metadata = {
   },
 };
 
+// Headline font, the same as the app's (tivorah-mobile constants/fonts.ts): self-hosted by Next at
+// build time, used for h1/h2 through --font-headline (app/brand.css). Body text stays Inter/system.
+const headlineFont = Bricolage_Grotesque({ subsets: ["latin"], weight: "800", display: "swap", variable: "--font-headline" });
+
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const initialFeatures = await loadInitialFeatures();
   return (
     // The pre-paint script may add data-signed-in before React hydrates.
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={headlineFont.variable} suppressHydrationWarning>
       <head>
         {/* Light or dark before the first paint (lib/theme.ts). */}
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
@@ -86,7 +90,6 @@ export default async function RootLayout({
           <Suspense fallback={null}><NavigationTracker /></Suspense>
           <PressEffect />
           <Suspense fallback={null}><NavProgress /></Suspense>
-          <AppReturnBar />
           <SiteHeader />
           <main id="main-content" tabIndex={-1}>
             <FeatureRouteGate>{children}</FeatureRouteGate>
