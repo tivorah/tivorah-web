@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useRef } from "react";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { api } from "../../lib/api/client";
 import { LoadingState } from "../ui/loading-state";
@@ -27,24 +27,35 @@ export function TimeOffPanel({ onClashes }: { onClashes?: () => void }) {
   const endDate = allDay ? new Date(`${end.slice(0, 10)}T23:59:59`) : new Date(end);
   const valid = !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime()) && endDate > startDate && endDate > new Date();
 
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const addLock = useRef(false);
   async function add(event: FormEvent) {
     event.preventDefault();
-    if (!valid || busy) return;
-    setBusy(true); setNotice(""); setProblem("");
+    if (addLock.current) return;
+    addLock.current = true;
     try {
-      const result = await api<{ clashingBookingIds: number[] }>("/market/provider/time-off", { method: "POST", body: JSON.stringify({ startsAt: startDate.toISOString(), endsAt: endDate.toISOString(), reason: reason.trim() || undefined }) });
-      const clashes = result.clashingBookingIds.length;
-      setReason("");
-      setNotice(clashes ? `Time off added. ${clashes} existing booking${clashes === 1 ? " is" : "s are"} in this time. Move or cancel ${clashes === 1 ? "it" : "them"} from your schedule.` : "Time off added. No new bookings can be made in this time.");
-      if (clashes) onClashes?.();
-      retry();
-    } catch (cause) { setProblem(cause instanceof Error ? cause.message : "Could not add time off."); }
-    finally { setBusy(false); }
+      if (!valid || busy) return;
+      setBusy(true); setNotice(""); setProblem("");
+      try {
+        const result = await api<{ clashingBookingIds: number[] }>("/market/provider/time-off", { method: "POST", body: JSON.stringify({ startsAt: startDate.toISOString(), endsAt: endDate.toISOString(), reason: reason.trim() || undefined }) });
+        const clashes = result.clashingBookingIds.length;
+        setReason("");
+        setNotice(clashes ? `Time off added. ${clashes} existing booking${clashes === 1 ? " is" : "s are"} in this time. Move or cancel ${clashes === 1 ? "it" : "them"} from your schedule.` : "Time off added. No new bookings can be made in this time.");
+        if (clashes) onClashes?.();
+        retry();
+      } catch (cause) { setProblem(cause instanceof Error ? cause.message : "Could not add time off."); }
+      finally { setBusy(false); }
+    } finally { addLock.current = false; }
   }
+  const removeLock = useRef(false);
   async function remove(id: number) {
-    setProblem("");
-    try { await api(`/market/provider/time-off/${id}`, { method: "DELETE" }); setNotice("Time off removed. Those times are bookable again."); retry(); }
-    catch (cause) { setProblem(cause instanceof Error ? cause.message : "Could not remove time off."); }
+    if (removeLock.current) return;
+    removeLock.current = true;
+    try {
+      setProblem("");
+      try { await api(`/market/provider/time-off/${id}`, { method: "DELETE" }); setNotice("Time off removed. Those times are bookable again."); retry(); }
+      catch (cause) { setProblem(cause instanceof Error ? cause.message : "Could not remove time off."); }
+    } finally { removeLock.current = false; }
   }
 
   return <section className="provider-panel" aria-label="Time off">
@@ -86,13 +97,18 @@ export function ReviewsPanel() {
   const pageRows = rows.slice(currentPage * REVIEWS_PER_PAGE, (currentPage + 1) * REVIEWS_PER_PAGE);
   const goTo = (next: number) => { setPage(next); setReplying(null); document.getElementById("provider-reviews-top")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const average = rows.length ? rows.reduce((sum, row) => sum + row.review.rating, 0) / rows.length : 0;
+  const replyLock = useRef(false);
   async function reply(event: FormEvent, id: number) {
     event.preventDefault();
-    if (!text.trim() || busy) return;
-    setBusy(true); setProblem("");
-    try { await api(`/market/reviews/${id}/reply`, { method: "POST", body: JSON.stringify({ reply: text.trim() }) }); setReplying(null); setText(""); retry(); }
-    catch (cause) { setProblem(cause instanceof Error ? cause.message : "Could not post your reply."); }
-    finally { setBusy(false); }
+    if (replyLock.current) return;
+    replyLock.current = true;
+    try {
+      if (!text.trim() || busy) return;
+      setBusy(true); setProblem("");
+      try { await api(`/market/reviews/${id}/reply`, { method: "POST", body: JSON.stringify({ reply: text.trim() }) }); setReplying(null); setText(""); retry(); }
+      catch (cause) { setProblem(cause instanceof Error ? cause.message : "Could not post your reply."); }
+      finally { setBusy(false); }
+    } finally { replyLock.current = false; }
   }
   if (loading && !data) return <LoadingState label="Loading reviews…" variant="compact" />;
   if (error) return <p role="alert">{error} <button type="button" className="product-secondary" onClick={retry}>Try again</button></p>;

@@ -1,10 +1,10 @@
 "use client";
-import { randomId } from "../../lib/random-id";
+import { createActionKey } from "../../lib/action-key";
 import { FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import type { DiscoveryItem } from "../../lib/api/discovery";
 import { useAccount } from "../../hooks/use-account";
-import { api } from "../../lib/api/client";
+import { api, ApiError } from "../../lib/api/client";
 import { LoadingState } from "../ui/loading-state";
 import { Sheet } from "../ui/sheet";
 import { existingItemOrder, existingOrderMessage } from "../orders/existing-order";
@@ -49,8 +49,11 @@ export function ItemOrderRequest({ item }: { item: DiscoveryItem }) {
   const [sent, setSent] = useState(false);
   // The buyer's order for this item that's still going: let them know before they order again.
   const [existing, setExisting] = useState<string | null>(null);
-  // One key per order attempt: a double click or a network retry can't create two orders.
-  const key = useRef(randomId());
+  // One key per order (kept while the same order is resent): a double click, a network retry or a
+  // resend after a lost answer can't create two orders. Changing the order starts a new key.
+  const key = useRef(createActionKey()).current;
+  // Held from the click until the order is answered (busy is reset between the check and the send).
+  const lock = useRef(false);
   if (item.orderMode !== "request") return null;
   const unit = item.priceCents ?? 0;
   const fee = fulfilment === "delivery" ? item.deliveryFeeCents ?? 0 : 0;
@@ -58,25 +61,37 @@ export function ItemOrderRequest({ item }: { item: DiscoveryItem }) {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || lock.current) return;
+    lock.current = true;
     setBusy(true); setError("");
     try {
-      const { orders } = await api<{ orders: { id: number; productId: number | null; status: string }[] }>("/market/item-orders?role=buyer");
-      const found = existingItemOrder(orders, Number(item.id));
-      if (found) { setExisting(found.order.status); return; }
-    } catch { /* Couldn't check earlier orders; send this one anyway. */ }
-    finally { setBusy(false); }
-    await send();
+      try {
+        const { orders } = await api<{ orders: { id: number; productId: number | null; status: string }[] }>("/market/item-orders?role=buyer");
+        const found = existingItemOrder(orders, Number(item.id));
+        if (found) { setExisting(found.order.status); setBusy(false); return; }
+      } catch { /* Couldn't check earlier orders; send this one anyway. */ }
+      await placeOrder();
+    } finally { lock.current = false; }
   }
 
   async function send() {
+    if (lock.current) return;
+    lock.current = true;
+    try { await placeOrder(); } finally { lock.current = false; }
+  }
+
+  async function placeOrder() {
     setExisting(null);
     setBusy(true); setError("");
     try {
-      await api(`/market/products/${item.id}/orders`, { method: "POST", headers: { "Idempotency-Key": key.current }, body: JSON.stringify({ quantity, fulfilment, deliveryAddress: fulfilment === "delivery" ? address : undefined, note: note.trim() || undefined }) });
+      const input = { quantity, fulfilment, deliveryAddress: fulfilment === "delivery" ? address : undefined, note: note.trim() || undefined };
+      const idempotencyKey = key.for(JSON.stringify(input));
+      await api(`/market/products/${item.id}/orders`, { method: "POST", headers: { "Idempotency-Key": idempotencyKey }, body: JSON.stringify({ ...input, idempotencyKey }) });
       setSent(true);
-      key.current = randomId();
+      key.done();
     } catch (cause) {
+      // Refused (4xx): the next try is a new order. A lost answer or a server error keeps the key.
+      if (cause instanceof ApiError && cause.status >= 400 && cause.status < 500) key.done();
       setError(cause instanceof Error ? cause.message : "Your order couldn’t be sent. Please try again.");
     } finally { setBusy(false); }
   }

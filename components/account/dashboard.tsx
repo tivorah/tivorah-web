@@ -101,7 +101,7 @@ export function AccountDashboard() {
             </section> : null}
             {reach("/account/messages") ? <section className="account-panel">
               <h2>Messages</h2>
-              <p>Continue conversations with sellers, providers and event organisers.</p>
+              <p>Chat with other members and continue conversations with sellers, providers and event organisers.</p>
               <Link className="product-secondary" href="/account/messages">View messages</Link>
             </section> : null}
             <section className="account-panel">

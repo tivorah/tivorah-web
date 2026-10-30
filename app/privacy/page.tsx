@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 28 October 2026
+        <strong>Last updated:</strong> 29 October 2026
       </p>
 
       <p>
@@ -43,8 +43,8 @@ export default function Privacy() {
       <ul>
         <li>
           <strong>Account and verification information:</strong> name,
-          username, email address, phone number, country code, encrypted
-          password credential, verification and two-factor status, linked
+          username, email address, phone number, country code, your password
+          (stored only as a one-way hash, never in readable form), verification and two-factor status, linked
           sign-in provider, session and device information, account role and
           acceptance of our legal terms. We collect date of birth and 18+
           confirmation to enforce Tivorah&apos;s adults-only eligibility rule. If you use Sign in with Apple or Google, that
@@ -74,11 +74,11 @@ export default function Privacy() {
           comments, reactions, polls and reports.
         </li>
         <li>
-          <strong>Messages and calls:</strong> conversation content where the
-          conversation is not end-to-end encrypted; encrypted message
-          envelopes and attachments for eligible one-to-one private chats;
-          reports that a participant chooses to submit; and delivery, device,
-          key-management and technical call or signalling records. To connect a
+          <strong>Messages and calls:</strong> the content of your private
+          chats, group conversations and enquiries, including text, photos,
+          voice messages and other attachments; who you message and when;
+          delivery and read status; reports that a participant chooses to
+          submit; and device and technical call or signalling records. To connect a
           voice or video call, your device and the other person&apos;s exchange
           network addresses (IP addresses) through a connection service, which
           may be provided by Google or relay the call through our own server.
@@ -235,13 +235,11 @@ export default function Privacy() {
       <p>
         <strong>Checking posts before they go live.</strong> When you post or
         send something people can read (for example Banter, replies, listings,
-        events, Hub details, enquiries, group messages or your bio), Tivorah
+        events, Hub details, enquiries, private and group messages or your bio), Tivorah
         checks the words automatically, on our own servers, for slurs, threats
         and hurtful language, and may ask you to reconsider or stop it being
         posted. This check doesn&apos;t send your words to another company,
-        and we keep only a count of what was flagged, not the words. Private
-        one-to-one messages are end-to-end encrypted, so they are never
-        checked.
+        and we keep only a count of what was flagged, not the words.
       </p>
 
       <h2>What other people can see</h2>
@@ -302,66 +300,87 @@ export default function Privacy() {
         amount. <strong>Sellers</strong> receive the enquiries you send about
         their items or services.
       </p>
-      <h2>Messages and end-to-end encryption</h2>
+      <h2>Messages and how we protect them</h2>
       <p>
-        Tivorah distinguishes personal one-to-one private chats from community
-        and transactional conversations. An eligible one-to-one chat is
-        end-to-end encrypted only when the conversation screen expressly shows
-        that protection. This includes text messages, voice recordings, photos,
-        videos and files sent in the chat. In such a chat, content and attachments are
-        encrypted on the sender&apos;s device and can ordinarily be decrypted only
-        by the participating devices. Tivorah stores encrypted messages, key
-        envelopes and encrypted attachments to support delivery and chat history,
-        but does not hold the private device keys needed
-        to read that content.
+        Private one-to-one chats, group conversations and enquiries about a
+        listing, service, event or job are stored by Tivorah so that they can
+        be delivered, shown on your phone and on the website, kept safe and
+        reviewed when someone reports them. Tivorah private chats are{" "}
+        <strong>not</strong> end-to-end encrypted. This is how we protect them:
+      </p>
+      <ul>
+        <li>
+          <strong>In transit:</strong> messages, photos and other attachments
+          travel between your device and Tivorah only over encrypted
+          connections (HTTPS and secure WebSockets).
+        </li>
+        <li>
+          <strong>At rest:</strong> the text of every chat message is encrypted
+          by our application with AES-256 before it is saved, using keys kept
+          only in our server environment, and our database and storage
+          providers also encrypt the data they hold. Chat photos and files are
+          kept in private storage and can be opened only through short-lived
+          links issued to the people in that chat.
+        </li>
+        <li>
+          <strong>Who can read them:</strong> only the people in a
+          conversation can read it, and we check this on every request.
+          Tivorah staff do not browse chats. Authorised safety staff can see a
+          message only when it has been reported to us, and a small number of
+          authorised staff can access messages when Australian law requires us
+          to (see below). Staff sign in with multi-factor authentication, and
+          every time staff view a message it is recorded in our audit log.
+        </li>
+        <li>
+          <strong>Safety screening:</strong> before a message is sent, its
+          words are checked automatically on our own servers for threats,
+          slurs and other harmful language (see &ldquo;Automated
+          decisions&rdquo;). Photos sent in chats are checked automatically
+          against known child sexual abuse material. Scams, threats and other
+          problems can also be reported from any message.
+        </li>
+        <li>
+          <strong>Reports:</strong> when you report a message, we keep a copy
+          of the reported message and the messages around it with the report,
+          so our safety team can understand what happened, even if a message is
+          later deleted. Reports are used only to review the problem, enforce
+          our rules and meet our legal obligations.
+        </li>
+        <li>
+          <strong>View once photos:</strong> a photo sent as &ldquo;view
+          once&rdquo; is delivered by Tivorah to the recipient a single time
+          and then deleted from our storage. View once photos can be opened
+          only in the Tivorah app. The recipient can still photograph their
+          screen, so only send what you are comfortable sharing.
+        </li>
+      </ul>
+      <p>
+        We use the content of messages only to deliver them, show your chat
+        history, keep people safe, act on reports, provide support and comply
+        with law. We never use it for advertising.
       </p>
       <p>
-        Photos, videos, voice messages and files sent in an end-to-end encrypted
-        chat are encrypted on the sender&apos;s device, each with its own key,
-        before they are uploaded. Tivorah stores only the encrypted file and
-        cannot open it, see what kind of file it is or what it is called. The
-        key travels inside the encrypted message, so only the devices in that
-        chat can download, check and decrypt the file. Because Tivorah cannot
-        see these files, it cannot automatically screen them; reporting works
-        as described below. A decrypted copy is kept in the app&apos;s private
-        storage on your device so it opens quickly, and is removed if you
-        uninstall the app or the system clears that storage.
+        <strong>Requests from police and government agencies.</strong> We
+        disclose the content of private messages to law enforcement or other
+        agencies only in response to valid legal process under Australian law,
+        such as a warrant or a preservation notice. We check each request,
+        only a small number of authorised staff can act on it, and every
+        disclosure is recorded in our audit log.
       </p>
       <p>
-        Banter, posts, threads, Hub messages, announcements, group conversations
-        and conversations connected to a listing, marketplace item, service,
-        event, ticket, job or other transaction, including customer and seller
-        enquiries, are not end-to-end encrypted.
-        Tivorah and relevant service providers store and process that content as
-        reasonably necessary to deliver the feature, maintain transaction
-        records, provide support, investigate reports, moderate content, prevent
-        fraud and comply with law. Audience controls or private-Hub membership
-        restrict who should receive content but do not make it end-to-end
-        encrypted.
+        <strong>End-to-end encryption was removed on 29 October 2026.</strong>{" "}
+        Before that date, some one-to-one private chats used end-to-end
+        encryption. Because Tivorah could not read those messages, they were
+        deleted on 29 October 2026, together with their encrypted files and
+        device keys. Your chats themselves, and messages that were not end-to-end
+        encrypted (such as enquiries and group conversations), were kept.
       </p>
       <p>
-        End-to-end encryption does not hide all communication metadata and does
-        not prevent a recipient from copying, forwarding, photographing or
-        reporting content. Tivorah may process participant and device
-        identifiers, key records containing public keys, delivery and read
-        status, dates and times, encrypted-envelope size, IP address, abuse and
-        security signals, and device or application information. Read-receipt
-        sharing can be controlled in the app&apos;s Privacy settings; disabling it
-        does not stop Tivorah from maintaining your own unread counts or
-        processing delivery information. If a participant supplies readable
-        copies of messages or attachments with a report or support request,
-        those supplied copies can be reviewed by authorised safety personnel
-        and service providers for that purpose. Reporting does not give Tivorah
-        access to the private keys or the rest of the encrypted conversation.
-      </p>
-      <p>
-        Do not assume a conversation is end-to-end encrypted unless Tivorah
-        displays an end-to-end encryption notice in that conversation. Feature
-        availability may depend on application version, device support and
-        successful security setup. Tivorah will not silently downgrade a chat
-        that is marked as end-to-end encrypted; if secure messaging is not ready,
-        sending will be unavailable or the app will clearly disclose the
-        different protection before a message is sent.
+        No messaging service can stop a recipient from copying, forwarding,
+        photographing or reporting what you send. Read-receipt sharing can be
+        controlled in the app&apos;s Privacy settings; turning it off does not
+        stop Tivorah from keeping your own unread counts or processing delivery
+        information.
       </p>
 
       <h2>Device permissions</h2>
@@ -441,12 +460,13 @@ export default function Privacy() {
         (such as an in-progress checkout or a dismissed message) to make
         features work, and event pages may show an embedded Google map that is
         provided by Google under its own privacy terms. The mobile app uses
-        local and secure device storage for sessions, settings, encryption keys
-        and feature state. To open quickly and work on a weak connection, the
-        app also keeps a temporary copy of recently viewed content (such as
-        Hubs, posts and listings) on your device for up to a few days. Private
-        end-to-end encrypted chats are kept on your device only in their
-        encrypted form until opened. This copy is deleted when you sign out. See our <Link href="/cookies">Cookie Notice</Link>.
+        local and secure device storage for sessions, settings and feature
+        state. To open quickly and work on a weak connection, the app also
+        keeps a temporary copy of recently viewed content (such as Hubs, posts
+        and listings) on your device for up to a few days. Your chats are kept
+        on your phone in encrypted form, using a key for your account that is
+        held in the phone&apos;s secure storage. These copies are deleted when
+        you sign out. See our <Link href="/cookies">Cookie Notice</Link>.
       </p>
 
       <h2>Notifications, news and marketing</h2>
@@ -460,16 +480,15 @@ export default function Privacy() {
         fee that affects you. We record when you acknowledge it.
       </p>
       <p>
-        Push notifications for end-to-end encrypted chats never include the
-        message: they only say who sent you a message, because Tivorah cannot
-        read it. Notifications for enquiries about a listing, service or event,
-        which are not end-to-end encrypted, can include the sender&apos;s name,
-        what the enquiry is about and the start of the message. Depending on
-        your device settings, notification text may appear on your lock screen.
-        While you are using the app, new messages may appear as an in-app
-        banner; for encrypted chats the text in that banner is decrypted on your
-        device. Push notifications are delivered through Expo and Apple or
-        Google notification services.
+        Push notifications for private one-to-one chats never include the
+        message: they only say who sent you a message, so the text does not
+        appear on your lock screen or pass through notification services.
+        Notifications for enquiries about a listing, service or event can
+        include the sender&apos;s name, what the enquiry is about and the start
+        of the message. Depending on your device settings, notification text
+        may appear on your lock screen. While you are using the app, new
+        messages may appear as an in-app banner. Push notifications are
+        delivered through Expo and Apple or Google notification services.
       </p>
       <p>
         You can only join the website waitlist after ticking the consent box.
@@ -550,11 +569,12 @@ export default function Privacy() {
         violence and other unsafe content, and an image that fails screening
         may be blocked from public display. Before something you write is
         posted (for example Banter, replies, listings, events, Hub details,
-        enquiries, group messages or your bio), its words are checked
-        automatically: hurtful language prompts you to reconsider, and slurs,
-        threats, encouragement of self-harm, revealing where someone lives and
-        telling people to &ldquo;go back to their country&rdquo; are blocked.
-        End-to-end encrypted private messages are never checked. Automated
+        enquiries, private and group messages or your bio), its words are
+        checked automatically: hurtful language prompts you to reconsider, and
+        slurs, threats, encouragement of self-harm, revealing where someone
+        lives and telling people to &ldquo;go back to their country&rdquo; are
+        blocked. Photos sent in chats are checked against known child sexual
+        abuse material. Automated
         security and rate-limit checks may temporarily block sign-in attempts,
         sign-ups, messages or checkout requests that look abusive or
         fraudulent. When an image is published we keep a one-way fingerprint
@@ -613,10 +633,10 @@ export default function Privacy() {
           policy. Opting out will not affect your use of Tivorah.
         </li>
         <li>
-          <strong>Private messages stay private.</strong> End-to-end encrypted
-          messages cannot be read by Tivorah and are never used for research,
-          training or AI. We do not use the content of other private messages
-          to train AI models.
+          <strong>Private messages stay private.</strong> We do not use the
+          content of private messages for research, advertising or training AI
+          models. Messages are processed only as described in &ldquo;Messages
+          and how we protect them&rdquo;.
         </li>
         <li>
           <strong>Providers don&apos;t train on your information.</strong> If we
@@ -656,9 +676,15 @@ export default function Privacy() {
       <h2>Storage, security and data breaches</h2>
       <p>
         We use safeguards including access controls, password hashing,
-        encryption in transit, restricted document access, session revocation
-        and operational audit records. Eligible one-to-one private chats also
-        use the end-to-end encryption described above.
+        encryption in transit, application-level AES-256 encryption of chat
+        messages at rest (in addition to our providers&apos; storage
+        encryption), keys held only in our server environment, multi-factor
+        authentication for staff, restricted document access, session
+        revocation and audit records of staff access. We do not include
+        message text in our logs, analytics or push notifications. We take
+        these steps as part of our obligation under the <em>Privacy Act 1988</em>{" "}
+        (Cth) and Australian Privacy Principle 11 to take reasonable steps to
+        protect personal information.
       </p>
       <p>
         <strong>Protecting sign-in.</strong> To stop people guessing passwords,
@@ -672,11 +698,12 @@ export default function Privacy() {
         processes technical information such as your IP address and browser or
         device signals under Cloudflare&apos;s own privacy terms. No online service can
         guarantee absolute security, and encryption cannot protect content on a
-        compromised or unlocked device. If an eligible data breach occurs, we
-        will assess and respond
-        to it in accordance with applicable Australian law, including notifying
-        affected people and the Office of the Australian Information
-        Commissioner where required.
+        compromised or unlocked device. If we suspect a data breach, we assess
+        it promptly, and within 30 days, under the Notifiable Data Breaches
+        scheme in the <em>Privacy Act 1988</em> (Cth). If a breach is likely to
+        cause serious harm, we notify the people affected and the Office of the
+        Australian Information Commissioner, and tell you what steps you can
+        take.
       </p>
 
       <h2>Retention and account deletion</h2>
@@ -703,15 +730,16 @@ export default function Privacy() {
         purposes above.
       </p>
       <p>
-        For eligible end-to-end encrypted chats, encrypted messages, key envelopes
-        and encrypted attachments may remain on our systems to support delivery
-        and chat history, subject to the retention purposes above. A delivered
-        or read status does not by itself delete the stored encrypted content.
-        Decrypted copies are stored on participating devices and may remain on
-        another participant&apos;s device after you delete
-        your account or your own copy. Non-encrypted community and transactional
-        conversations may be retained for moderation, safety, fraud prevention,
-        transaction integrity, legal obligations and dispute resolution.
+        Messages, including private chats, are kept until you delete them or
+        your account is deleted. When you delete a message, we remove it from
+        our systems. A copy of a reported message and the messages around it is
+        kept with the report for as long as needed to review it, enforce our
+        rules, prevent fraud and meet legal obligations. A view once photo is
+        deleted from our storage after it has been opened. Group, community
+        and transactional conversations may also be retained for moderation,
+        safety, fraud prevention, transaction integrity, legal obligations and
+        dispute resolution. Messages sent with end-to-end encryption before
+        29 October 2026 were deleted on that date.
       </p>
       <p>
         You can delete your account in the mobile app under

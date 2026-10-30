@@ -220,6 +220,7 @@ The API contract is `../tivorah-api/docs/api-conventions.md`.
 
 - `lib/api/client.ts` (`api()`) and `app/events/api.ts` (`eventApi()`) go through `fetchWithRetry` in `lib/api/retry-policy.ts`. Every change gets an `Idempotency-Key`, reused on retry; only temporary failures are retried; uploads never retry.
 - Keep `lib/api/retry-policy.ts` identical to mobile's `api/retryPolicy.ts`.
+- The header key is new for every call, so it doesn't stop a double click. Guard write handlers with a ref lock checked before the first await: `hooks/use-mutation.ts`, `hooks/use-single-flight.ts` (`lib/single-flight.ts`), or a local `useRef(false)` lock in form handlers (call `preventDefault()` first). Disabled buttons and busy state alone leave a one-frame gap.
 - A 2xx with `status: false` is treated as an error. Branch on `ApiError.code` (the API's `errorCode`), not on message text.
 
 ## Hosting and legacy Netlify configuration
@@ -348,8 +349,11 @@ For a normal web change:
   `hooks/` own request lifecycles; `stores/discovery-store.ts` holds only filters.
 - Bookable service pages use authenticated availability and canonical market
   booking APIs. Payment retries use the same booking and Stripe idempotency key.
-  Item and service enquiries can continue in web account Messages; private
-  end-to-end encrypted conversations remain in mobile.
+  Web account Messages lists private chats (Chats) and enquiries (Enquiries) like the
+  app (`?tab=enquiries`; helpers in `lib/messages.ts`) and reads/sends both through the same
+  chat endpoints. Private chats are not end-to-end encrypted (server-side encryption at rest,
+  `../docs/private-chat-server-encryption.md`); view-once photos show an "open it in the
+  Tivorah app" placeholder on the web. Never claim end-to-end encryption in web copy.
 - `components/motion/` contains lazy React Three Fiber artwork. It renders on
   demand, skips phones and reduced-motion users, and has a static fallback.
 - Preserve the existing homepage hero, content and visual design. The shared
@@ -505,6 +509,9 @@ CI runs on pull requests and main/develop pushes; it never deploys or runs migra
   same rules as the app: up to four slides, at most one video (first frame read in the browser,
   uploaded straight to storage). Send `coverUploadOrder()` photos plus `coverVideoPosition`.
   Hub and event pages play the approved video on its own slide (`lib/cover-slides.ts`).
+  `components/discovery/cover-video.tsx`: detail pages and the create field get play/pause + sound
+  (starts muted; swiping away resets); event cards play it silently with no controls only when it
+  opens the cover (`cardCoverVideo()`), while in view. Reduced motion keeps the still photo on public pages.
 
 ## Feature switches on the web
 

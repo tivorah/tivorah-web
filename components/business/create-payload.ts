@@ -11,6 +11,9 @@ export function creationPayload(
   tickets?: { name: string; priceCents: number; quantity: number; maxTicketsPerBuyer: number }[],
   /** Where Tivorah ticketing isn't available: how people get tickets instead (no Tivorah tickets). */
   outsideTicketing?: { contact: "link" | "message" | "both" },
+  /** Events: the "Limit capacity" total (omitted: no event capacity) and a searched venue's map pin.
+   * Without it, the capacity is the total of every ticket type (older callers). */
+  eventExtras?: { capacity?: number; latitude?: number; longitude?: number },
 ) {
   const text = (name: string) => String(form.get(name) || "").trim();
   const online = text("mode") === "online";
@@ -42,8 +45,9 @@ export function creationPayload(
     if (contact && contact !== "message" && !/^https:\/\/\S+\.\S+/.test(ticketUrl))
       throw new Error("Add the link where people can get tickets (starting with https://).");
     if (!contact && !tickets?.length) throw new Error("Add at least one ticket package.");
-    // Capacity is the total of every package.
-    const quantity = contact ? undefined : tickets!.reduce((sum, ticket) => sum + ticket.quantity, 0);
+    // Capacity: the organiser's total, or (older callers) the total of every package.
+    const quantity = contact ? undefined : eventExtras ? eventExtras.capacity : tickets!.reduce((sum, ticket) => sum + ticket.quantity, 0);
+    const pin = !online && eventExtras?.latitude != null && eventExtras.longitude != null ? { latitude: eventExtras.latitude, longitude: eventExtras.longitude } : {};
     return {
       ...common,
       information: { ...information, ...(contact ? { ticketContact: contact } : {}) },
@@ -55,6 +59,7 @@ export function creationPayload(
       locationType: online ? "online" : "venue",
       venueName: text("venueName"),
       address: text("address"),
+      ...pin,
       ...(online && text("onlineUrl") ? { onlineUrl: text("onlineUrl") } : {}),
       status: "draft",
       ...(quantity === undefined ? {} : { capacity: quantity }),

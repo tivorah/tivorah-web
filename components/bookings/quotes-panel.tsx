@@ -55,15 +55,21 @@ function QuoteCard({ quote, perspective, focused, onChanged }: { quote: ServiceQ
   const minutes = Number(duration);
   const quoteReady = Number.isFinite(cents) && cents >= 50 && minutes >= 15 && minutes <= 720 && Number(validDays) >= 1 && Number(validDays) <= 30;
 
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const postLock = useRef(false);
   async function post(path: string, body: unknown, done: string, onResult?: (result: any) => boolean | Promise<boolean>) {
-    if (busy) return;
-    setBusy(true); setError("");
+    if (postLock.current) return;
+    postLock.current = true;
     try {
-      const result = await api<any>(path, { method: "POST", body: JSON.stringify(body) });
-      if (await onResult?.(result)) return;
-      setPanel(null); onChanged(done);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "That didn’t work. Please try again."); }
-    finally { setBusy(false); }
+      if (busy) return;
+      setBusy(true); setError("");
+      try {
+        const result = await api<any>(path, { method: "POST", body: JSON.stringify(body) });
+        if (await onResult?.(result)) return;
+        setPanel(null); onChanged(done);
+      } catch (cause) { setError(cause instanceof Error ? cause.message : "That didn’t work. Please try again."); }
+      finally { setBusy(false); }
+    } finally { postLock.current = false; }
   }
   const accept = (event: FormEvent) => { event.preventDefault(); if (!slot) return; void post(`/market/quotes/${quote.id}/accept`, { startsAt: slot, checkoutPlatform: "web" }, "Booked! Your appointment is confirmed.", async (result: { checkoutUrl: string | null }) => {
     if (!result.checkoutUrl) return false;

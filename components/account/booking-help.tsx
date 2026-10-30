@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useRef } from "react";
 import "./booking-help.css";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { api } from "../../lib/api/client";
@@ -48,15 +48,21 @@ function RequestForm({ kind, options, subjectType, id, onCancel, onSent }: {
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const submitLock = useRef(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const values = new FormData(event.currentTarget);
-    setBusy(true); setError("");
+    if (submitLock.current) return;
+    submitLock.current = true;
     try {
-      await api("/booking-requests", { method: "POST", body: JSON.stringify({ kind, subjectType, id, reason: values.get("reason"), message: values.get("message") }) });
-      onSent(kind === "refund" ? "Refund request sent. The seller will reply here and by email." : "Thanks — the seller has been told and will reply here.");
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn’t send. Try again."); }
-    finally { setBusy(false); }
+      const values = new FormData(event.currentTarget);
+      setBusy(true); setError("");
+      try {
+        await api("/booking-requests", { method: "POST", body: JSON.stringify({ kind, subjectType, id, reason: values.get("reason"), message: values.get("message") }) });
+        onSent(kind === "refund" ? "Refund request sent. The seller will reply here and by email." : "Thanks — the seller has been told and will reply here.");
+      } catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn’t send. Try again."); }
+      finally { setBusy(false); }
+    } finally { submitLock.current = false; }
   }
   return (
     <form className="booking-help-form" onSubmit={submit}>
@@ -76,11 +82,16 @@ function RequestCard({ request, onChange }: { request: BookingRequest; onChange:
   const [escalating, setEscalating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const actLock = useRef(false);
   async function act(path: string, body: unknown, message: string) {
-    setBusy(true); setError("");
-    try { await api(`/booking-requests/${request.id}/${path}`, { method: "POST", body: JSON.stringify(body) }); onChange(message); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn’t update. Try again."); }
-    finally { setBusy(false); }
+    if (actLock.current) return;
+    actLock.current = true;
+    try {
+      setBusy(true); setError("");
+      try { await api(`/booking-requests/${request.id}/${path}`, { method: "POST", body: JSON.stringify(body) }); onChange(message); }
+      catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn’t update. Try again."); }
+      finally { setBusy(false); }
+    } finally { actLock.current = false; }
   }
   return (
     <article className={`booking-help-request is-${request.status}`}>

@@ -91,14 +91,20 @@ function OrderCard({ order, role, onChanged, highlighted = false }: { order: Ite
   const [note, setNote] = useState(() => defaultSellerNote(order.counterparty.firstName));
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const actLock = useRef(false);
   async function act(action: Action) {
-    if (busy) return;
-    if ((action === "cancel" || action === "decline") && !window.confirm(action === "decline" ? "Decline this order?" : "Cancel this order?")) return;
-    setBusy(action); setProblem("");
-    const sent = action === "accept" || action === "decline" ? sellerNoteFor(action, note, order.counterparty.firstName) : undefined;
-    try { await api(`/market/item-orders/${order.id}/${action}`, { method: "POST", body: JSON.stringify(sent ? { note: sent } : {}) }); setNote(""); onChanged(); }
-    catch (cause) { setProblem(cause instanceof Error ? cause.message : "That didn’t work. Please try again."); }
-    finally { setBusy(null); }
+    if (actLock.current) return;
+    actLock.current = true;
+    try {
+      if (busy) return;
+      if ((action === "cancel" || action === "decline") && !window.confirm(action === "decline" ? "Decline this order?" : "Cancel this order?")) return;
+      setBusy(action); setProblem("");
+      const sent = action === "accept" || action === "decline" ? sellerNoteFor(action, note, order.counterparty.firstName) : undefined;
+      try { await api(`/market/item-orders/${order.id}/${action}`, { method: "POST", body: JSON.stringify(sent ? { note: sent } : {}) }); setNote(""); onChanged(); }
+      catch (cause) { setProblem(cause instanceof Error ? cause.message : "That didn’t work. Please try again."); }
+      finally { setBusy(null); }
+    } finally { actLock.current = false; }
   }
   async function review(event: FormEvent) {
     event.preventDefault();

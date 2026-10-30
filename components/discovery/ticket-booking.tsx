@@ -428,18 +428,24 @@ function GroupRequest({ eventId, packages }: { eventId: number; packages: Public
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const sendLock = useRef(false);
   async function send(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    setState("sending"); setError("");
+    if (sendLock.current) return;
+    sendLock.current = true;
     try {
-      await eventApi(`/${eventId}/group-requests`, { method: "POST", body: JSON.stringify({
-        name: String(form.get("name") || "").trim(), email: String(form.get("email") || "").trim(),
-        organisation: String(form.get("organisation") || "").trim() || undefined, quantity: Number(form.get("quantity")),
-        ticketTypeId: Number(form.get("ticket")) || undefined, message: String(form.get("message") || "").trim() || undefined,
-      }) });
-      setState("sent");
-    } catch (cause) { setState("idle"); setError(cause instanceof Error ? cause.message : "Your request couldn’t be sent."); }
+      const form = new FormData(e.currentTarget);
+      setState("sending"); setError("");
+      try {
+        await eventApi(`/${eventId}/group-requests`, { method: "POST", body: JSON.stringify({
+          name: String(form.get("name") || "").trim(), email: String(form.get("email") || "").trim(),
+          organisation: String(form.get("organisation") || "").trim() || undefined, quantity: Number(form.get("quantity")),
+          ticketTypeId: Number(form.get("ticket")) || undefined, message: String(form.get("message") || "").trim() || undefined,
+        }) });
+        setState("sent");
+      } catch (cause) { setState("idle"); setError(cause instanceof Error ? cause.message : "Your request couldn’t be sent."); }
+    } finally { sendLock.current = false; }
   }
   if (state === "sent") return <div className="group-request-sent" role="status"><strong>Request sent</strong><p>The organiser will email you a private link to pay for your group’s tickets.</p></div>;
   return <div className="group-request-box">

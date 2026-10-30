@@ -68,10 +68,23 @@ export function groupSummary(draft: Pick<PackageDraft, "kind" | "groupSize" | "p
   return `Group of ${size} · ${each ? `${dollars(each * size, draft.currency)} total (${dollars(each, draft.currency)} each)` : "Free"}${saving ? ` · save ${saving}%` : ""}`;
 }
 
+/** Options for the create form (as in the app): one event-level currency, Free tickets, and ticket
+ * types whose quantity is left empty ("no limit", sent as `unlimited`). Without options the drafts
+ * are read exactly as they are (the event workspace). */
+export type PackagesPayloadOptions = {
+  /** The event's ticket currency, used for every ticket type. */
+  currency?: string;
+  /** False for free events (or while paid tickets are off): every price is $0. */
+  paidAllowed?: boolean;
+  /** The quantity of a ticket type left empty: the event's capacity, or a large number. */
+  unlimited?: number;
+};
+
 /** Turns the drafts into the API's `tickets` array, or throws a friendly message. */
-export function packagesPayload(drafts: PackageDraft[]) {
+export function packagesPayload(drafts: PackageDraft[], options: PackagesPayloadOptions = {}) {
   if (!drafts.length) throw new Error("Add at least one ticket package.");
-  if (new Set(drafts.map(draft => draft.currency || "AUD")).size > 1) throw new Error("Use one currency for all ticket packages in this event.");
+  const currencyOf = (draft: PackageDraft) => options.currency || draft.currency || "AUD";
+  if (new Set(drafts.map(currencyOf)).size > 1) throw new Error("Use one currency for all ticket packages in this event.");
   const names = new Set<string>();
   return drafts.map((draft, index) => {
     const label = draft.name.trim() || `Package ${index + 1}`;
@@ -82,14 +95,14 @@ export function packagesPayload(drafts: PackageDraft[]) {
     const group = draft.kind === "group";
     const groupSize = group ? Number(draft.groupSize) : 1;
     if (group && (!Number.isInteger(groupSize) || groupSize < 2 || groupSize > 50)) throw new Error(`Set between 2 and 50 people per group for ${label}.`);
-    const each = parseMoneyToCents(draft.price || "0");
+    const each = options.paidAllowed === false ? 0 : parseMoneyToCents(draft.price || "0");
     if (each === null || each < 0) throw new Error(`Enter a valid price for ${label}.`);
     const priceCents = each * groupSize;
     if (priceCents > 0 && priceCents < 50) throw new Error(`Paid tickets must cost at least $0.50 (${label}).`);
     const regularText = draft.regularPrice.trim();
     const regular = regularText ? parseMoneyToCents(regularText) : null;
     if (regularText && (regular === null || regular < 0)) throw new Error(`Enter a valid usual price for ${label}.`);
-    const quantity = Number(draft.quantity);
+    const quantity = !draft.quantity.trim() && options.unlimited ? options.unlimited : Number(draft.quantity);
     if (!Number.isInteger(quantity) || quantity < 1) throw new Error(`Enter how many ${label} ${group ? "groups" : "tickets"} are available.`);
     const maxTicketsPerBuyer = Number(draft.maxPerBuyer);
     if (!Number.isInteger(maxTicketsPerBuyer) || maxTicketsPerBuyer < 1 || maxTicketsPerBuyer > 20) throw new Error(`Set a per-booking limit between 1 and 20 for ${label}.`);
@@ -100,7 +113,7 @@ export function packagesPayload(drafts: PackageDraft[]) {
     if (draft.hidden && code && !/^[A-Za-z0-9-]{3,40}$/.test(code)) throw new Error(`The access code for ${label} must be 3–40 letters, numbers or dashes.`);
     const releaseIndex = draft.releaseAfter.startsWith("key:") ? drafts.findIndex((item) => `key:${item.key}` === draft.releaseAfter) : -1;
     return {
-      name, priceCents, currency: draft.currency || "AUD", quantity, maxTicketsPerBuyer,
+      name, priceCents, currency: currencyOf(draft), quantity, maxTicketsPerBuyer,
       kind: draft.kind, groupSize,
       regularPriceCents: group ? regular : null,
       description: draft.description.trim() || undefined,
@@ -114,59 +127,70 @@ export function packagesPayload(drafts: PackageDraft[]) {
   });
 }
 
-export function PackageFields({ draft, onChange, index, onRemove, lockPrice = false, releaseOptions = [], codeSaved = false }: {
+export function PackageFields({ draft, onChange, index, onRemove, lockPrice = false, releaseOptions = [], codeSaved = false, currency, free = false, allowGroups = true, quantityOptional = false }: {
   draft: PackageDraft; onChange: (draft: PackageDraft) => void; index: number; onRemove?: () => void; lockPrice?: boolean;
   /** Other packages this one can follow ("goes on sale when … sells out"). */
   releaseOptions?: { value: string; label: string }[];
   /** Editing a hidden package whose code is already set (leave blank to keep it). */
   codeSaved?: boolean;
+  /** The create form sets one currency for the whole event: no currency choice per ticket type. */
+  currency?: string;
+  /** Free tickets: no prices. */
+  free?: boolean;
+  /** "Allow group bookings" off: a ticket type can't be a Group ticket. */
+  allowGroups?: boolean;
+  /** An empty quantity means no limit of its own (the create form, as in the app). */
+  quantityOptional?: boolean;
 }) {
   const id = useId();
   const set = (patch: Partial<PackageDraft>) => onChange({ ...draft, ...patch });
   const group = draft.kind === "group";
-  const each = Number(draft.price || 0);
-  const summary = groupSummary(draft);
+  const shown = currency ? { ...draft, currency } : draft;
+  const each = free ? 0 : Number(draft.price || 0);
+  const summary = free ? null : groupSummary(shown);
+  const quantityField = (label: string, className?: string) => <label className={className}>{label}<input type="number" min={1} max={1000000} value={draft.quantity} onChange={(event) => set({ quantity: event.target.value })} required={!quantityOptional} placeholder={quantityOptional ? "No limit" : undefined} /></label>;
   return <fieldset className="package-card">
     <legend className="sr-only">Ticket package {index + 1}</legend>
     <div className="package-card-head">
       <span className="package-card-index">{index + 1}</span>
       <strong>{draft.name.trim() || "New package"}</strong>
       {draft.hidden ? <span className="package-tag">Code only</span> : null}
-      <span className={`package-card-price${each === 0 ? " is-free" : ""}`}>{each === 0 ? "Free" : group ? `${dollars(each, draft.currency)} each` : dollars(each, draft.currency)}</span>
+      <span className={`package-card-price${each === 0 ? " is-free" : ""}`}>{each === 0 ? "Free" : group ? `${dollars(each, shown.currency)} each` : dollars(each, shown.currency)}</span>
       {onRemove ? <button type="button" className="package-card-remove" onClick={onRemove} aria-label={`Remove ${draft.name.trim() || `package ${index + 1}`}`}>×</button> : null}
     </div>
 
     <div className="shop-row">
-      <label>Package name
-        <input value={draft.name} onChange={(event) => set({ name: event.target.value })} required maxLength={100} placeholder={group ? "e.g. Group of 6" : "e.g. Early bird"} />
+      <label>{currency ? "Ticket type" : "Package name"}
+        <input value={draft.name} onChange={(event) => set({ name: event.target.value })} required maxLength={100} placeholder={group ? "e.g. Group of 6" : currency ? "e.g. General admission" : "e.g. Early bird"} />
       </label>
-      <label>Currency<select value={draft.currency || "AUD"} onChange={(event) => set({ currency: event.target.value })} disabled={lockPrice}>{["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map((currency) => <option key={currency} value={currency}>{currency}</option>)}</select></label>
+      {currency ? null : <label>Currency<select value={draft.currency || "AUD"} onChange={(event) => set({ currency: event.target.value })} disabled={lockPrice}>{["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"].map((currency) => <option key={currency} value={currency}>{currency}</option>)}</select></label>}
       {group ? <label>People per group
         <input type="number" min={2} max={50} value={draft.groupSize} onChange={(event) => set({ groupSize: event.target.value })} required disabled={lockPrice} />
-      </label> : <label>Price per ticket
+      </label> : free ? null : <label>{currency ? `Price (${currency})` : "Price per ticket"}
         <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} aria-describedby={lockPrice ? `${id}-locked` : undefined} />
       </label>}
     </div>
     {group ? <div className="shop-row">
-      <label>Price per person
+      {free ? null : <label>{currency ? `Price per person (${currency})` : "Price per person"}
         <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} />
-      </label>
-      <label>{group ? "Groups available" : "Tickets available"}<input type="number" min={1} max={1000000} value={draft.quantity} onChange={(event) => set({ quantity: event.target.value })} required /></label>
+      </label>}
+      {quantityField("Groups available")}
     </div> : null}
     {summary ? <p className="package-summary">{summary}</p> : null}
     {lockPrice ? <span id={`${id}-locked`} className="shop-hint">Tickets have sold, so the price and group size are fixed.</span> : null}
 
-    {!group ? <label className="package-quantity">Tickets available<input type="number" min={1} max={1000000} value={draft.quantity} onChange={(event) => set({ quantity: event.target.value })} required /></label> : null}
+    {!group ? quantityField("Tickets available", "package-quantity") : null}
+    {quantityOptional ? <span className="shop-hint">Leave empty for no limit of its own{currency ? " (the event’s capacity applies)" : ""}.</span> : null}
 
     <details className="package-card-more" open={draft.hidden || undefined}>
       <summary>More options <span>{draft.description || draft.salesStartAt || draft.salesEndAt || draft.regularPrice || draft.releaseAfter || draft.hidden ? "Options saved" : "Booking limit, dates, access"}</span></summary>
-      <label className="package-kind-select">Admission type
+      {allowGroups ? <label className="package-kind-select">Admission type
         <SelectField label="Admission type" value={draft.kind} onChange={(value) => set({ kind: value as PackageDraft["kind"] })} disabled={lockPrice}
           options={[{ value: "standard", label: "Single ticket · one person" }, { value: "group", label: "Group ticket · one booking for everyone" }]} />
-      </label>
+      </label> : null}
       <div className="shop-row">
         <label>{group ? "Groups per booking" : "Limit per person"}<input type="number" min={1} max={20} value={draft.maxPerBuyer} onChange={(event) => set({ maxPerBuyer: event.target.value })} required /></label>
-        {group ? <label><span className="shop-label">Usual price per person <span className="shop-optional">Optional</span></span>
+        {group && !free ? <label><span className="shop-label">Usual price per person <span className="shop-optional">Optional</span></span>
           <input type="number" min={0} max={1000000} step="0.01" value={draft.regularPrice} onChange={(event) => set({ regularPrice: event.target.value })} placeholder="Shows the saving" />
         </label> : null}
       </div>
@@ -215,31 +239,38 @@ export function PackagesEditor({ value, onChange }: { value: PackageDraft[]; onC
 }
 
 /** "Free", "$25" or "$20 each · group of 6". */
-export function packagePriceLabel(draft: Pick<PackageDraft, "kind" | "groupSize" | "price">) {
-  const each = Number(draft.price || 0);
-  if (!each) return "Free";
-  return draft.kind === "group" ? `${dollars(each)} each · group of ${draft.groupSize}` : dollars(each);
+export function packagePriceLabel(draft: Pick<PackageDraft, "kind" | "groupSize" | "price">, currency = "AUD", free = false) {
+  const each = free ? 0 : Number(draft.price || 0);
+  if (!each) return draft.kind === "group" ? `Free · group of ${draft.groupSize}` : "Free";
+  return draft.kind === "group" ? `${dollars(each, currency)} each · group of ${draft.groupSize}` : dollars(each, currency);
 }
 
-// Compact ticket list for the create screen: one calm row per package. Adding and
-// editing happen in a side sheet so the page itself stays short and scannable.
-/** `paidAllowed` false (Admin → Features → Paid tickets off): only free ticket types can be saved, as in the app. */
-export function TicketPackageList({ value, onChange, paidAllowed = true }: { value: PackageDraft[]; onChange: (value: PackageDraft[]) => void; paidAllowed?: boolean }) {
+// The create screen's ticket types, as in the app (TicketPackagesEditor.tsx): the only ticket list.
+// It starts with General admission, keeps at least one, and holds up to MAX_PACKAGES. One calm row
+// per ticket type; adding and editing happen in a sheet so the page itself stays short.
+/** `paidAllowed` false (Free tickets on, or Admin → Features → Paid tickets off): no prices.
+ * `allowGroups` false ("Allow group bookings" off): no Group tickets. `unlimited` is the quantity
+ * of a ticket type left empty. */
+export function TicketPackageList({ value, onChange, paidAllowed = true, currency = "AUD", allowGroups = true, unlimited = 1000000 }: {
+  value: PackageDraft[]; onChange: (value: PackageDraft[]) => void; paidAllowed?: boolean; currency?: string; allowGroups?: boolean; unlimited?: number;
+}) {
   const [editing, setEditing] = useState<{ draft: PackageDraft; isNew: boolean } | null>(null);
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState("");
   const used = new Set(value.map((draft) => draft.name.trim().toLowerCase()));
+  const presets = PACKAGE_PRESETS.filter((preset) => !used.has(preset.name.toLowerCase()) && (allowGroups || preset.kind !== "group"));
   const close = () => { setEditing(null); setPicking(false); setError(""); };
   const start = (preset?: (typeof PACKAGE_PRESETS)[number]) => {
     setPicking(false); setError("");
-    setEditing({ draft: preset ? presetPackage(preset, value[value.length - 1]?.price ?? "0") : newPackage(), isNew: true });
+    // No quantity yet means no limit of its own; a group starts at 10 groups, as in the app.
+    const draft = preset ? presetPackage(preset, value[value.length - 1]?.price ?? "0") : newPackage();
+    setEditing({ draft: { ...draft, currency, quantity: draft.kind === "group" ? "10" : "" }, isNew: true });
   };
   function save() {
     if (!editing) return;
     const others = value.filter((item) => item.key !== editing.draft.key);
     try {
-      packagesPayload([editing.draft]);
-      if (!paidAllowed && (parseMoneyToCents(editing.draft.price || "0") ?? 0) > 0) throw new Error("Paid entry is currently unavailable on Tivorah. Set the price to $0 for a free ticket.");
+      packagesPayload([editing.draft], { currency, paidAllowed, unlimited });
       if (others.some((item) => item.name.trim().toLowerCase() === editing.draft.name.trim().toLowerCase())) throw new Error(`Another ticket type is already called “${editing.draft.name.trim()}”.`);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Check this ticket type."); return; }
     onChange(editing.isNew ? [...value, editing.draft] : value.map((item) => item.key === editing.draft.key ? editing.draft : item));
@@ -252,27 +283,29 @@ export function TicketPackageList({ value, onChange, paidAllowed = true }: { val
   }
 
   return <div className="ticket-list">
-    {value.length ? <ul className="ticket-list-rows">
+    <ul className="ticket-list-rows">
       {value.map((draft) => {
         const preset = PACKAGE_PRESETS.find((item) => item.name === draft.name);
-        const quantity = Number(draft.quantity) || 0;
+        const group = draft.kind === "group";
+        const quantity = draft.quantity.trim() ? Number(draft.quantity) || 0 : null;
+        const amount = quantity === null ? "No limit" : `${quantity} ${group ? (quantity === 1 ? "group" : "groups") : "available"}`;
         return <li key={draft.key}>
-          <span className="ticket-list-icon" aria-hidden="true">{preset?.icon ?? (draft.kind === "group" ? "👯" : "🎟️")}</span>
+          <span className="ticket-list-icon" aria-hidden="true">{preset?.icon ?? (group ? "👯" : "🎟️")}</span>
           <span className="ticket-list-text">
-            <strong>{draft.name.trim() || "Untitled ticket"}</strong>
-            <small>{packagePriceLabel(draft)} · {quantity} {draft.kind === "group" ? (quantity === 1 ? "group" : "groups") : "available"}{draft.hidden ? " · code only" : ""}{draft.salesEndAt ? " · sale ends" : ""}</small>
+            <strong>{draft.name.trim() || "Untitled ticket type"}</strong>
+            <small>{packagePriceLabel(draft, currency, !paidAllowed)} · {amount} · {draft.maxPerBuyer || "?"} {group ? "per booking" : "per person"}{draft.hidden ? " · code only" : ""}{draft.salesEndAt ? " · sale ends" : ""}</small>
           </span>
-          <button type="button" className="ticket-list-edit" onClick={() => { setError(""); setEditing({ draft: { ...draft }, isNew: false }); }} aria-label={`Edit ${draft.name.trim() || "ticket"}`}>Edit</button>
+          <button type="button" className="ticket-list-edit" onClick={() => { setError(""); setEditing({ draft: { ...draft }, isNew: false }); }} aria-label={`Edit ${draft.name.trim() || "ticket type"}`}>Edit</button>
         </li>;
       })}
-    </ul> : <p className="ticket-list-empty">Add at least one ticket type so people can book.</p>}
+    </ul>
     {value.length < MAX_PACKAGES ? <button type="button" className="ticket-list-add press-fx" onClick={() => { setError(""); setPicking(true); }}>
       <span aria-hidden="true">+</span> Add a ticket type
     </button> : <p className="shop-hint">You can have up to {MAX_PACKAGES} ticket types.</p>}
 
-    <Sheet open={picking} onClose={close} title="Add a ticket type" description="Start from a common type — you can rename and adjust everything.">
+    <Sheet open={picking} onClose={close} title="Add a ticket type" description="Pick one, then set its price and quantity. You can rename and adjust everything.">
       <div className="ticket-presets" role="list">
-        {PACKAGE_PRESETS.filter((preset) => !used.has(preset.name.toLowerCase())).map((preset) => <button key={preset.name} type="button" role="listitem" className="ticket-preset" onClick={() => start(preset)}>
+        {presets.map((preset) => <button key={preset.name} type="button" role="listitem" className="ticket-preset" onClick={() => start(preset)}>
           <span className="ticket-preset-icon" aria-hidden="true">{preset.icon}</span>
           <span><strong>{preset.name}</strong><small>{preset.blurb}</small></span>
         </button>)}
@@ -283,8 +316,9 @@ export function TicketPackageList({ value, onChange, paidAllowed = true }: { val
       </div>
     </Sheet>
 
-    <Sheet open={!!editing} onClose={close} wide title={editing?.isNew ? "New ticket type" : "Edit ticket type"} description="Set the price, how many are available and any extra rules."
+    <Sheet open={!!editing} onClose={close} wide title={editing?.isNew ? "New ticket type" : "Edit ticket type"} description={paidAllowed ? "Set its price, quantity and limit per person." : "Set its quantity and limit per person."}
       footer={<>
+        {/* An event keeps at least one ticket type. */}
         {editing && !editing.isNew && value.length > 1 ? <button type="button" className="tv-sheet-danger" onClick={remove}>Remove</button> : <span />}
         <span className="tv-sheet-foot-actions">
           <button type="button" className="product-secondary" onClick={close}>Cancel</button>
@@ -293,8 +327,8 @@ export function TicketPackageList({ value, onChange, paidAllowed = true }: { val
       </>}>
       {editing ? <>
         <PackageFields draft={editing.draft} index={editing.isNew ? value.length : value.findIndex((item) => item.key === editing.draft.key)}
-          onChange={(draft) => setEditing({ ...editing, draft })}
-          releaseOptions={value.filter((item) => item.key !== editing.draft.key).map((item) => ({ value: `key:${item.key}`, label: item.name.trim() || "Untitled ticket" }))} />
+          onChange={(draft) => setEditing({ ...editing, draft })} currency={currency} free={!paidAllowed} allowGroups={allowGroups} quantityOptional
+          releaseOptions={value.filter((item) => item.key !== editing.draft.key).map((item) => ({ value: `key:${item.key}`, label: item.name.trim() || "Untitled ticket type" }))} />
         {error ? <p className="field-error" role="alert">{error}</p> : null}
       </> : null}
     </Sheet>

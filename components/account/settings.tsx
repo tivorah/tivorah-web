@@ -3,7 +3,7 @@ import { LoadingState } from "../ui/loading-state";
 import { AccountSurfaceLoading } from "./surface-loading";
 import Link from "next/link";
 import { PasswordInput } from "../ui/password-input";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useRef } from "react";
 import { AccountGate } from "./gate";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { useMutation } from "../../hooks/use-mutation";
@@ -33,54 +33,65 @@ function Settings() {
       "Profile saved.",
     );
   }
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const passwordLock = useRef(false);
   async function password(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = e.currentTarget;
-    const f = new FormData(form);
-    setBusy(true);
-    setNotice("");
+    if (passwordLock.current) return;
+    passwordLock.current = true;
     try {
-      const result = await memberAuth.changePassword({
-        currentPassword: String(f.get("current")),
-        newPassword: String(f.get("password")),
-        revokeOtherSessions: true,
-      });
-      if (result.error)
-        throw new Error(
-          result.error.message || "Could not update your password.",
+      const form = e.currentTarget;
+      const f = new FormData(form);
+      setBusy(true);
+      setNotice("");
+      try {
+        const result = await memberAuth.changePassword({
+          currentPassword: String(f.get("current")),
+          newPassword: String(f.get("password")),
+          revokeOtherSessions: true,
+        });
+        if (result.error)
+          throw new Error(
+            result.error.message || "Could not update your password.",
+          );
+        setNotice("Password changed. Your other sessions have been signed out.");
+        form.reset();
+      } catch (cause) {
+        setNotice(
+          cause instanceof Error
+            ? cause.message
+            : "Could not update your password.",
         );
-      setNotice("Password changed. Your other sessions have been signed out.");
-      form.reset();
-    } catch (cause) {
-      setNotice(
-        cause instanceof Error
-          ? cause.message
-          : "Could not update your password.",
-      );
-    } finally {
-      setBusy(false);
-    }
+      } finally {
+        setBusy(false);
+      }
+    } finally { passwordLock.current = false; }
   }
+  const removeLock = useRef(false);
   async function remove(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setBusy(true);
-    setNotice("");
+    if (removeLock.current) return;
+    removeLock.current = true;
     try {
-      await api("/user/me", {
-        method: "DELETE",
-        body: JSON.stringify({
-          password: String(new FormData(e.currentTarget).get("password")),
-        }),
-      });
-      window.location.replace("/account-deletion?deleted=1");
-    } catch (cause) {
-      setNotice(
-        cause instanceof Error
-          ? cause.message
-          : "Could not delete your account.",
-      );
-      setBusy(false);
-    }
+      setBusy(true);
+      setNotice("");
+      try {
+        await api("/user/me", {
+          method: "DELETE",
+          body: JSON.stringify({
+            password: String(new FormData(e.currentTarget).get("password")),
+          }),
+        });
+        window.location.replace("/account-deletion?deleted=1");
+      } catch (cause) {
+        setNotice(
+          cause instanceof Error
+            ? cause.message
+            : "Could not delete your account.",
+        );
+        setBusy(false);
+      }
+    } finally { removeLock.current = false; }
   }
   if (loading && !data) return <AccountSurfaceLoading embedded />;
   return (

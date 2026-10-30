@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "../../lib/api/client";
 import { SelectField } from "../ui/select-field";
 import { browserCountry, countryFlag, usePlaceCountries, usePlaceCountry, usePlaceLocalities, usePlaceRegions, type PlaceCountry } from "../../lib/api/places";
@@ -16,8 +16,11 @@ export function LocalityField({
   onCountryChange,
   defaultCountry,
   required = true,
+  australia,
 }: {
   required?: boolean;
+  /** Replaces the suburb search when Australia is chosen (events: state, then venue search). */
+  australia?: ReactNode;
   onChange: (value: Locality | null) => void;
   /** Called with the chosen country (and on first load), e.g. to show whether Tivorah ticketing works there. */
   onCountryChange?: (country: PlaceCountry) => void;
@@ -52,7 +55,9 @@ export function LocalityField({
         <SelectField label="Country" value={country} onChange={chooseCountry} searchable
           options={(countries ?? [config]).map((item) => ({ value: item.code, label: `${countryFlag(item.code)} ${item.name}` }))} />
       </label>
-      {country === "AU"
+      {country === "AU" && australia !== undefined
+        ? australia
+        : country === "AU"
         ? <AustralianSuburb key="AU" required={required} onChange={onChange} />
         : <PlaceElsewhere key={country} country={config} required={required} onChange={onChange} />}
     </div>

@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 28 October 2026
+        <strong>Last updated:</strong> 30 October 2026
       </p>
 
       <div className="legal-callout">
@@ -90,11 +90,14 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         is not an endorsement of a member&apos;s Hub, event or listing.
       </p>
       <p>
-        <strong>Cover videos.</strong> A Hub can have a short cover video of up
-        to 15 seconds. It plays silently on a loop on the Hub. Tivorah reviews
-        it before it appears publicly; until then, and if it isn’t approved,
-        the Hub shows its cover photo. Cover videos must follow these Terms and
-        our Community Guidelines like any other content.
+        <strong>Cover videos.</strong> A Hub or event can have a short cover
+        video of up to 30 seconds, shown with its cover photos. It starts
+        muted; on the Hub or event page, people can pause it and turn its
+        sound on, so any sound in your video can be heard. On cards in lists
+        it plays muted with no controls. Tivorah reviews it before it appears
+        publicly; until then, and if it isn’t approved, the cover photo shows
+        instead. Cover videos must follow these Terms and our Community
+        Guidelines like any other content, including their sound.
       </p>
       <p>
         <strong>Welcome posts.</strong> When you create a Hub, it can open with
@@ -140,34 +143,36 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         creator chose.
       </p>
 
-      <h2>Messaging and encryption</h2>
+      <h2>Messaging</h2>
       <p>
-        Only an eligible personal one-to-one chat that Tivorah expressly marks
-        as end-to-end encrypted has that protection. This covers text messages,
-        voice recordings, photos, videos and files sent in that chat. Attachments
-        are encrypted on the sender&apos;s device before upload; their decryption
-        keys are shared inside the encrypted message with participating devices.
-        Banter, posts, threads,
-        Hub messages, announcements, group conversations and conversations
-        associated with listings, marketplace items, services, events, tickets,
-        jobs or other transactions (including customer and seller enquiries)
-        are not end-to-end encrypted and may be
-        stored, processed and reviewed as described in our Privacy Policy.
-        Private membership, an audience restriction or the word
-        &quot;private&quot; does not by itself mean that content is end-to-end
-        encrypted. This protection concerns message and attachment content,
-        not all account, device, delivery or read-status information. See the{" "}
-        <Link href="/privacy">Privacy Policy</Link> for metadata, storage,
-        reporting and notification practices.
+        Private one-to-one chats, group conversations and enquiries about
+        listings, services, events, tickets or jobs are stored by Tivorah so
+        they can be delivered and kept safe. They are protected by encryption
+        in transit and at rest and can be read only by the people in the
+        conversation, but they are <strong>not</strong> end-to-end encrypted.
+        See the <Link href="/privacy">Privacy Policy</Link> for how messages
+        are protected, screened, reported, kept and deleted.
       </p>
       <p>
-        End-to-end encryption does not prevent another participant from saving,
-        copying, forwarding, photographing or reporting a message. A participant
-        who reports an encrypted conversation may choose to provide readable
-        copies of selected messages to Tivorah Safety. You must not attempt to
-        bypass encryption notices, compromise another device or misuse Tivorah
-        to conceal unlawful conduct. We may restrict messaging where device
-        keys, membership, security checks or required service data are not ready.
+        You are responsible for what you send. Messages must follow these
+        Terms and our Community Guidelines: do not use messages to harass,
+        threaten, scam or deceive anyone, to send sexual content to someone who
+        has not asked for it, to share content that exploits children, or to
+        arrange anything unlawful. Another participant can save, copy, forward,
+        photograph or report a message, including a view once photo, so only
+        send what you are comfortable sharing.
+      </p>
+      <p>
+        To keep people safe and enforce these Terms, Tivorah checks messages
+        and chat photos automatically and may block a message that breaks our
+        rules. Authorised Tivorah staff may review a message, and the messages
+        around it, when it is reported or flagged, and may remove content or
+        restrict, suspend or close an account as a result. We may also
+        preserve or disclose messages where Australian law requires us to, for
+        example in response to a warrant or a preservation notice, and act on
+        notices from the eSafety Commissioner. You must not attempt to bypass safety checks, access a
+        conversation you are not part of or misuse Tivorah to conceal unlawful
+        conduct.
       </p>
       <p>
         You must have the rights and permissions needed to upload your content.

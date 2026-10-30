@@ -11,7 +11,8 @@
 .cover-slides-slide img, .cover-slides-slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .cover-slides-count { position: absolute; left: 12px; top: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(20, 17, 22, .62); color: #fff; font-size: 12px; font-weight: 800; pointer-events: none; }
 .cover-slides-picks { position: absolute; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-.cover-slides-pick { position: relative; display: inline-flex !important; min-height: 40px; align-items: center; gap: 6px !important; padding: 0 14px; border-radius: 999px; background: rgba(23, 16, 30, .62); color: #fff !important; font-size: 13px !important; font-weight: 750 !important; cursor: pointer; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+/* Soft, frosted pills (light lilac; plum in dark mode), lighter than a dark overlay. */
+.cover-slides-pick { position: relative; display: inline-flex !important; min-height: 44px; align-items: center; gap: 6px !important; padding: 0 14px; border: 1px solid rgba(101, 64, 159, .12); border-radius: 999px; background: rgba(255, 255, 255, .88); color: #4a2c7a !important; font-size: 13px !important; font-weight: 750 !important; cursor: pointer; box-shadow: 0 2px 8px rgba(30, 19, 40, .12); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .cover-slides-pick input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .cover-slides-pick:focus-within { outline: 3px solid #c8a7f5; outline-offset: 2px; }
 .cover-slides-strip { display: flex; gap: 8px; margin: 12px 0 0; padding: 0; overflow-x: auto; list-style: none; scrollbar-width: none; }
@@ -23,4 +24,10 @@
 .cover-slides-tools button { min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 12px; background: none; color: #65409f; font: inherit; font-size: 18px; font-weight: 800; cursor: pointer; }
 .cover-slides-tools button:disabled { opacity: .3; cursor: default; }
 .cover-slides-tools button:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 1px; }
-.cover-slides-pick span, .cover-slides-pick svg { color: #fff !important; }
+/* Any slide but the first: make it the one that opens the cover and shows on cards. */
+.cover-slides-first { min-height: 44px; border: 0; border-radius: 999px; background: #f4efff; color: #65409f; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+.cover-slides-first:focus-visible { outline: 3px solid #c8a7f5; outline-offset: 1px; }
+.cover-slides-pick span, .cover-slides-pick svg { color: #4a2c7a !important; }
+/* Dark mode: plum pills, like the app's cover editor (the generated dark theme would make them near black). */
+:root[data-theme="dark"] .cover-slides-pick { border-color: rgba(220, 200, 250, .18); background: rgba(58, 45, 72, .9); }
+:root[data-theme="dark"] .cover-slides-pick span, :root[data-theme="dark"] .cover-slides-pick svg { color: #ebddff !important; }

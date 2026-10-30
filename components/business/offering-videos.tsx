@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { api } from "../../lib/api/client";
 import { directUpload, directUploadUnavailable } from "../../lib/direct-upload";
 import { usePrivateResource } from "../../hooks/use-private-resource";
@@ -52,13 +52,19 @@ export function OfferingVideosEditor({ kind, id }: { kind: Kind; id: number }) {
     } catch (cause) { setSaveError(cause instanceof Error ? cause.message : "Video upload failed."); }
     finally { setBusy(false); setProgress(null); }
   }
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const saveLock = useRef(false);
   async function save() {
-    setBusy(true); setSaveError(""); setNotice("");
+    if (saveLock.current) return;
+    saveLock.current = true;
     try {
-      await api(path(kind, id), { method: "PUT", body: JSON.stringify({ videos: videos.map(({ assetId, transcript, captions }) => ({ assetId, transcript, captions })) }) });
-      setDraft(null); retry(); setNotice("Videos saved. Approved videos will appear on this page.");
-    } catch (cause) { setSaveError(cause instanceof Error ? cause.message : "Could not save videos."); }
-    finally { setBusy(false); }
+      setBusy(true); setSaveError(""); setNotice("");
+      try {
+        await api(path(kind, id), { method: "PUT", body: JSON.stringify({ videos: videos.map(({ assetId, transcript, captions }) => ({ assetId, transcript, captions })) }) });
+        setDraft(null); retry(); setNotice("Videos saved. Approved videos will appear on this page.");
+      } catch (cause) { setSaveError(cause instanceof Error ? cause.message : "Could not save videos."); }
+      finally { setBusy(false); }
+    } finally { saveLock.current = false; }
   }
   return <section className="shop-step offering-videos-editor">
     <h2>Videos</h2><p className="shop-hint">Pin up to three videos (3 minutes, 200 MB each) on this {kind}’s page. Videos are reviewed before visitors can see them. A transcript and timed WebVTT captions are optional and help more people follow along.</p>

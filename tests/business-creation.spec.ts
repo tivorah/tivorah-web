@@ -19,6 +19,13 @@ test("member can reach each creation form from account and business", async ({ p
   await expect(page).toHaveURL(/\/business\/create\?type=event$/);
   // Tickets are set up per ticket type now (limits live in each type's editor).
   await expect(page.getByRole("button", { name: "Add a ticket type" })).toBeVisible();
+  // As in the app: one date/time picker, then currency and the ticket toggles before the ticket types.
+  await expect(page.getByRole("button", { name: /^Start date/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^End time/ })).toBeVisible();
+  await expect(page.getByRole("switch", { name: /^Allow group bookings/ })).not.toBeChecked();
+  await expect(page.getByRole("switch", { name: /^Free tickets/ })).toBeChecked();
+  await expect(page.getByRole("switch", { name: /^Limit capacity/ })).not.toBeChecked();
+  await expect(page.getByRole("button", { name: "Edit General admission" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Manage business" })).toBeVisible();
   await expect(page.getByLabel("What are you creating?")).toHaveCount(0);
   await page.goto("/business");

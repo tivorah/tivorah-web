@@ -15,10 +15,11 @@ import { Locality, LocalityField } from "./locality-field";
 import type { PlaceCountry } from "../../lib/api/places";
 import { CoverSlidesField } from "./cover-slides-field";
 import { coverUploadOrder, type CoverSlide } from "../../lib/cover-slides";
-import { DateField } from "../ui/date-field";
 import { SelectField } from "../ui/select-field";
 import { HubShareField } from "./hub-share-field";
 import { TicketPackageList, newPackage, packagesPayload, type PackageDraft } from "./events/packages-editor";
+import { EventWhenField } from "./events/event-when-field";
+import { AU_STATE_NAMES, EventVenueField, type Venue } from "./events/event-venue-field";
 import { Sheet } from "../ui/sheet";
 import { conditionOptions, priceTypeOptions } from "./select-options";
 import { asksCondition, createCopy } from "./listing-kinds";
@@ -28,6 +29,9 @@ import { hasMenuItems, menuPayload, type ServiceMenuValue } from "../../lib/serv
 import categories from "../../lib/discovery-categories.json";
 import { ItemOrderingFields } from "./item-ordering-fields";
 import { useFeature } from "../discovery/features";
+const CURRENCIES = ["AUD", "NZD", "USD", "CAD", "GBP", "EUR", "SGD"];
+/** A ticket type with no quantity of its own and no event capacity (as in the app). */
+const NO_LIMIT = 1000000;
 function CreationForm({ kind }: { kind: CreationKind }) {
   // Admin → Features → Paid tickets off: new ticket types are free only, as in the app.
   const paidTicketsOn = useFeature()("paid_tickets");
@@ -46,7 +50,18 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [busy, setBusy] = useState(false);
   const [hubIds, setHubIds] = useState<number[]>([]);
   const [hubsMissing, setHubsMissing] = useState(false);
-  const [packages, setPackages] = useState<PackageDraft[]>(() => [newPackage({ name: "General admission" })]);
+  // Tickets, in the app's order: currency, group bookings, free, capacity, then the ticket types
+  // (the only ticket list; it starts with General admission and always keeps one).
+  const [packages, setPackages] = useState<PackageDraft[]>(() => [newPackage({ name: "General admission", quantity: "" })]);
+  const [currency, setCurrency] = useState("AUD");
+  const [allowGroups, setAllowGroups] = useState(false);
+  const [free, setFree] = useState(true);
+  const isFree = free || !paidTicketsOn;
+  const [limitCapacity, setLimitCapacity] = useState(false);
+  const [capacityText, setCapacityText] = useState("");
+  // Australia: the state or territory first, then the venue search inside it.
+  const [auState, setAuState] = useState("");
+  const [venue, setVenue] = useState<Venue | null>(null);
   const [setupIssues, setSetupIssues] = useState<BookingSetupIssue[]>([]);
   const [error, setError] = useState("");
   const [created, setCreated] = useState(false);
@@ -90,6 +105,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
     };
   }, [kind, created]);
   const key = useRef<string | null>(null);
+  // A ref, not busy: a second click before the re-render would upload and create twice.
+  const submitting = useRef(false);
   const {
     data: terms,
     loading: termsLoading,
@@ -102,6 +119,20 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const agreed =
     kind === "item" ||
     terms?.agreements.some((item) => item.kind === agreementKind);
+  /** The ticket types for the API (and the capacity, when limited), or a message to show. */
+  function ticketSetup() {
+    let capacity: number | undefined;
+    if (limitCapacity) {
+      capacity = Number(capacityText);
+      if (!capacityText.trim() || !Number.isInteger(capacity) || capacity < 1 || capacity > NO_LIMIT) throw new Error("Enter the total capacity: how many tickets are available in all.");
+    }
+    // A ticket type without its own quantity is limited by the event's capacity (or not at all).
+    const tickets = packagesPayload(packages, { currency, paidAllowed: !isFree, unlimited: capacity ?? NO_LIMIT });
+    if (!isFree && !tickets.some((ticket) => ticket.priceCents > 0)) throw new Error("Give at least one ticket type a price of $0.50 or more, or switch on Free tickets.");
+    // The capacity is one pool shared by the ticket types (as in the app and API): none can be bigger.
+    if (capacity != null && tickets.some((ticket) => ticket.quantity > capacity!)) throw new Error(`A ticket type can’t have more than ${capacity.toLocaleString("en-AU")} tickets, the event’s capacity.`);
+    return { tickets, capacity };
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || uploading || (!agreed && !accepted)) return;
@@ -111,6 +142,21 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       document.getElementById("create-hubs")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
+    if (kind === "event") {
+      const fail = (message: string, section: string) => {
+        setError(message);
+        document.getElementById(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      if (mode === "venue" && placeCountry?.code === "AU" && !auState) return fail("Choose the state or territory, then search for the venue.", "create-place");
+      if (mode === "venue" && placeCountry?.code === "AU" && !venue) return fail("Search for the venue’s address and choose it, or enter it manually.", "create-place");
+      if (!draft.startsAt) return fail("Choose the start date and time.", "create-when");
+      if (!draft.endsAt) return fail("Choose the end date and time.", "create-when");
+      if (tivorahTicketing) {
+        try { ticketSetup(); } catch (cause) { return fail(cause instanceof Error ? cause.message : "Check your ticket types.", "create-tickets"); }
+      }
+    }
+    if (submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     setError("");
     setSetupIssues([]);
@@ -129,14 +175,16 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       }
       const images = cover.photos.map((file) => uploadedCovers.current.get(file)).filter((url): url is string => !!url);
       const videoUploadId = cover.videoUpload ? await cover.videoUpload.catch(() => { throw new Error("Your cover video didn’t upload. Remove it, or choose it again."); }) : undefined;
+      const tickets = kind === "event" && tivorahTicketing ? ticketSetup() : undefined;
       const payload = creationPayload(
         fields,
         kind,
         locality,
         images,
         key.current,
-        kind === "event" && tivorahTicketing ? packagesPayload(packages) : undefined,
+        tickets?.tickets,
         kind === "event" && !tivorahTicketing ? { contact: ticketContact } : undefined,
+        kind === "event" ? { capacity: tickets?.capacity, latitude: venue?.latitude, longitude: venue?.longitude } : undefined,
       );
       if (!agreed) {
         if (!terms)
@@ -174,6 +222,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           : "Could not save. Please try again.",
       );
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
@@ -193,12 +242,14 @@ function CreationForm({ kind }: { kind: CreationKind }) {
       <div className="shop-actions business-create-done"><span><Link className="product-primary" href="/business">Back to your business</Link></span></div>
     </div>;
   // Live summary: what's filled in so far (drives the preview card and the checklist).
-  const checklist = checklistFor(kind, { ...draft, mode, images: covers.map((slide) => slide.id), locality, packages, ticketContact: tivorahTicketing ? null : ticketContact, menuItems: usesMenu ? menu.filter((item) => item.name.trim() && item.price.trim()).length : null, hubs: hubIds.length });
+  const ticketsReady = kind === "event" && tivorahTicketing ? (() => { try { ticketSetup(); return true; } catch { return false; } })() : false;
+  const checklist = checklistFor(kind, { ...draft, mode, images: covers.map((slide) => slide.id), locality, ticketsReady, ticketContact: tivorahTicketing ? null : ticketContact, menuItems: usesMenu ? menu.filter((item) => item.name.trim() && item.price.trim()).length : null, hubs: hubIds.length });
   const doneCount = checklist.filter((item) => item.done).length;
   const allDone = doneCount === checklist.length;
   const priceLabel = kind === "event"
     ? !tivorahTicketing ? (ticketContact === "message" ? "Message for tickets" : "Tickets via link")
-    : (() => { const prices = packages.map((item) => Number(item.price || 0)); if (!prices.length) return ""; const min = Math.min(...prices); return min ? `From $${min.toFixed(2).replace(/\.00$/, "")}` : prices.every((value) => !value) ? "Free" : "From free"; })()
+    : isFree ? "Free"
+    : (() => { const prices = packages.map((item) => Number(item.price || 0) * (item.kind === "group" ? Number(item.groupSize) || 1 : 1)).filter((value) => Number.isFinite(value) && value > 0); if (!prices.length) return ""; const min = Math.min(...prices); const shown = new Intl.NumberFormat("en-AU", { style: "currency", currency }).format(min).replace(/\.00$/, ""); return packages.length > prices.length ? `From free · ${shown}` : `From ${shown}`; })()
     : usesMenu ? (() => { const prices = menu.map((item) => Number(item.price)).filter((value) => Number.isFinite(value) && value > 0); return prices.length ? `From $${Math.min(...prices).toFixed(2).replace(/\.00$/, "")}` : ""; })()
     : draft.price && Number(draft.price) > 0 ? `$${Number(draft.price).toFixed(2).replace(/\.00$/, "")}` : draft.price === "0" ? "Free" : "";
   const when = draft.startsAt ? new Date(draft.startsAt).toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
@@ -237,7 +288,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               bottom nav), so choosing at least one comes first. The API enforces it too. */}
           <section id="create-hubs" className="shop-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">1</span>Hubs</h2>
-            <HubShareField required invalid={hubsMissing} kind={kind === "event" ? "event" : kind === "service" ? "service" : "listing"} value={hubIds} onChange={(ids) => { setHubIds(ids); if (ids.length) setHubsMissing(false); }} disabled={busy} />
+            <HubShareField required quickPick={kind === "event"} invalid={hubsMissing} kind={kind === "event" ? "event" : kind === "service" ? "service" : "listing"} value={hubIds} onChange={(ids) => { setHubIds(ids); if (ids.length) setHubsMissing(false); }} disabled={busy} />
           </section>
           <section id="create-basics" className="shop-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">2</span>Basics</h2>
@@ -269,7 +320,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
 
           <section id="create-media" className="shop-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">3</span>{kind === "event" ? "Cover" : "Photos"}</h2>
-            <p className="shop-hint">{kind === "event" ? "The first slide is your event cover." : "The first slide is the one customers see first."} Up to 4 photos, or 3 and a video ({kind === "event" ? "15" : "30"} seconds, reviewed before it shows). Photos up to 10 MB each, checked before publishing.</p>
+            <p className="shop-hint">Add up to 4 photos and one video of up to 30 seconds.</p>
             <CoverSlidesField id="create-cover" purpose={kind === "event" ? "event-cover" : "listing"} slides={covers} onChange={setCovers} onBusy={setUploading} compact />
           </section>
 
@@ -285,9 +336,26 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               ).map((option) => <button key={option.value} type="button" role="radio" aria-checked={mode === option.value} className={mode === option.value ? "is-selected" : ""} onClick={() => setMode(option.value)}>{option.label}</button>)}
               <input type="hidden" name="mode" value={mode} />
             </div> : null}
-            {kind === "item" || mode !== "online" ? <LocalityField required onChange={setLocality} onCountryChange={setPlaceCountry} /> : null}
+            {kind === "item" || mode !== "online" ? <LocalityField required onChange={setLocality}
+              onCountryChange={(country) => { setPlaceCountry(country); if (country.code !== "AU") { setAuState(""); setVenue(null); } }}
+              australia={kind === "event" ? <div className="event-place-au">
+                <label>State or territory
+                  <SelectField label="State or territory" value={auState} placeholder="Choose first, then search the venue" disabled={busy}
+                    options={Object.entries(AU_STATE_NAMES).map(([code, name]) => ({ value: code, label: name }))}
+                    onChange={(code) => {
+                      // A venue in another state no longer fits: search again in this one.
+                      if (venue && venue.locality.state !== code) { setVenue(null); setLocality(null); }
+                      setAuState(code);
+                    }} />
+                </label>
+                {auState ? <EventVenueField key={auState} state={auState} value={venue} disabled={busy} onChange={(next) => { setVenue(next); setLocality(next?.locality ?? null); }} />
+                  : <p className="shop-hint">Choose the state or territory first, then search for the venue.</p>}
+              </div> : undefined} /> : null}
             {kind === "service" && (mode === "mobile" || mode === "flexible") ? <label>Travel distance (km)<input name="serviceAreaKm" type="number" min={1} max={500} required placeholder="e.g. 15" /></label> : null}
-            {kind === "event" ? (mode === "venue" ? <div className="shop-row">
+            {kind === "event" ? (mode === "venue" ? placeCountry?.code === "AU" ? <>
+              <label><span className="shop-label">Venue name <span className="shop-optional">Optional</span></span><input name="venueName" maxLength={160} placeholder="e.g. Adelaide Town Hall" /></label>
+              <input type="hidden" name="address" value={venue?.address ?? ""} />
+            </> : <div className="shop-row">
               <label><span className="shop-label">Venue name <span className="shop-optional">Optional</span></span><input name="venueName" maxLength={160} placeholder="e.g. Adelaide Town Hall" /></label>
               <label><span className="shop-label">Street address <span className="shop-optional">Optional</span></span><input name="address" maxLength={300} placeholder="e.g. 128 King William St" /></label>
             </div> : <label>Online joining link<input name="onlineUrl" type="url" placeholder="https://" required /></label>) : null}
@@ -298,18 +366,42 @@ function CreationForm({ kind }: { kind: CreationKind }) {
           {kind === "event" ? <>
             <section id="create-when" className="shop-step create-section">
               <h2><span className="create-step-no" aria-hidden="true">5</span>When</h2>
-              <div className="shop-row">
-                <label>Starts<DateField name="startsAt" label="Starts at" kind="datetime" requiredMessage="Choose when the event starts." required onChange={(value) => setDraft((current) => ({ ...current, startsAt: value }))} /></label>
-                <label>Ends<DateField name="endsAt" label="Ends at" kind="datetime" requiredMessage="Choose when the event ends." required onChange={(value) => setDraft((current) => ({ ...current, endsAt: value }))} /></label>
-              </div>
+              <EventWhenField disabled={busy} onChange={({ startsAt, endsAt }) => setDraft((current) => ({ ...current, startsAt, endsAt }))} />
               <p className="shop-hint">Times are in your local time.</p>
             </section>
             <section id="create-tickets" className="shop-step create-section">
               <h2><span className="create-step-no" aria-hidden="true">6</span>Tickets</h2>
               {tivorahTicketing ? <>
-                {paidTicketsOn ? <p className="shop-hint">Use $0 for free tickets. Paid tickets need <Link href="/business/payouts">payout setup</Link>.</p>
-                  : <p className="shop-hint">Paid entry is currently unavailable, so tickets are free ($0) for now.</p>}
-                <TicketPackageList value={packages} onChange={setPackages} paidAllowed={paidTicketsOn} />
+                {/* First what shapes the ticket types: their currency and whether one can be a group. */}
+                <div className="create-extras-list create-ticket-options">
+                  <div className="create-extra-row">
+                    <span className="create-extra-text"><strong>Currency</strong><small>Used for every ticket type</small></span>
+                    <span className="create-ticket-currency"><SelectField label="Ticket currency" value={currency} onChange={setCurrency} disabled={busy} options={CURRENCIES.map((value) => ({ value, label: value }))} /></span>
+                  </div>
+                  <label className="create-extra-row create-extra-switch">
+                    <span className="create-extra-text"><strong>Allow group bookings</strong><small>{allowGroups ? "Ticket types can be Group tickets" : "Switch on to add Group tickets"}</small></span>
+                    <span className="shop-switch"><input type="checkbox" role="switch" name="allowGroupBookings" checked={allowGroups} disabled={busy}
+                      onChange={(event) => {
+                        setAllowGroups(event.target.checked);
+                        // Off: Group tickets become single tickets again.
+                        if (!event.target.checked) setPackages((current) => current.map((item) => item.kind === "group" ? { ...item, kind: "standard" } : item));
+                      }} /><span className="shop-switch-track" aria-hidden="true" /></span>
+                  </label>
+                  <label className="create-extra-row create-extra-switch">
+                    <span className="create-extra-text"><strong>Free tickets</strong><small>{paidTicketsOn ? "Switch off for paid entry" : "Paid entry is currently unavailable"}</small></span>
+                    <span className="shop-switch"><input type="checkbox" role="switch" checked={isFree} disabled={busy || !paidTicketsOn} onChange={(event) => setFree(event.target.checked)} /><span className="shop-switch-track" aria-hidden="true" /></span>
+                  </label>
+                  <label className="create-extra-row create-extra-switch">
+                    <span className="create-extra-text"><strong>Limit capacity</strong><small>{limitCapacity ? "Bookings stop when full" : "Unlimited by default"}</small></span>
+                    <span className="shop-switch"><input type="checkbox" role="switch" checked={limitCapacity} disabled={busy} onChange={(event) => setLimitCapacity(event.target.checked)} /><span className="shop-switch-track" aria-hidden="true" /></span>
+                  </label>
+                </div>
+                {limitCapacity ? <label>Total capacity<input type="number" inputMode="numeric" min={1} max={NO_LIMIT} step={1} required value={capacityText} placeholder="100" onChange={(event) => setCapacityText(event.target.value)} /></label> : null}
+                <h3 className="create-subheading">Ticket types</h3>
+                <p className="shop-hint">Name each ticket and set its {isFree ? "" : `price (${currency}), `}quantity and limit per person.</p>
+                <TicketPackageList value={packages} onChange={setPackages} paidAllowed={!isFree} currency={currency} allowGroups={allowGroups}
+                  unlimited={limitCapacity && Number.isInteger(Number(capacityText)) && Number(capacityText) > 0 ? Number(capacityText) : NO_LIMIT} />
+                <p className="shop-hint">{isFree ? "Free tickets are issued instantly." : <>Paid tickets need <Link href="/business/payouts">payout setup</Link> before you publish.</>}</p>
               </> : <>
                 <p className="create-ticket-region" role="note">Tivorah tickets aren’t available in your region at the moment.</p>
                 <p className="create-question">How do people get tickets?</p>
@@ -348,11 +440,6 @@ function CreationForm({ kind }: { kind: CreationKind }) {
                 </span>
                 <button type="button" className="create-extra-action" onClick={() => setPromptsOpen(true)}>{promptCount ? "Edit" : "Add"}</button>
               </div>
-              {kind === "event" ? <label className="create-extra-row create-extra-switch">
-                <span className="create-extra-icon" aria-hidden="true">👯</span>
-                <span className="create-extra-text"><strong>Allow group bookings</strong><small>Show “Book as a group” on your event page</small></span>
-                <span className="shop-switch"><input type="checkbox" role="switch" name="allowGroupBookings" /><span className="shop-switch-track" aria-hidden="true" /></span>
-              </label> : null}
             </div>
             {prompts.map((value, index) => <input key={index} type="hidden" name={`prompt${index + 1}`} value={value.trim()} />)}
           </section>
@@ -435,7 +522,7 @@ function PreviewImage({ src }: { src: string }) {
 }
 
 type DraftFields = { title: string; description: string; category: string; price: string; onlineUrl: string; externalTicketUrl: string; startsAt: string; endsAt: string };
-type ChecklistInput = DraftFields & { mode: string; images: string[]; locality: Locality | null; packages: PackageDraft[]; ticketContact: "link" | "message" | "both" | null; menuItems: number | null; hubs: number };
+type ChecklistInput = DraftFields & { mode: string; images: string[]; locality: Locality | null; ticketsReady: boolean; ticketContact: "link" | "message" | "both" | null; menuItems: number | null; hubs: number };
 // What must be done before this listing can be saved, in the order of the form.
 function checklistFor(kind: CreationKind, data: ChecklistInput) {
   const online = kind !== "item" && data.mode === "online";
@@ -449,7 +536,7 @@ function checklistFor(kind: CreationKind, data: ChecklistInput) {
   ];
   if (kind === "event") items.push(
     { id: "date", section: "create-when", label: "Date and time", done: !!data.startsAt && !!data.endsAt && new Date(data.endsAt) > new Date(data.startsAt) },
-    { id: "tickets", section: "create-tickets", label: "Tickets", done: data.ticketContact ? data.ticketContact === "message" || /^https:\/\/\S+\.\S+/.test(data.externalTicketUrl) : data.packages.length > 0 },
+    { id: "tickets", section: "create-tickets", label: "Tickets", done: data.ticketContact ? data.ticketContact === "message" || /^https:\/\/\S+\.\S+/.test(data.externalTicketUrl) : data.ticketsReady },
   );
   else items.push(data.menuItems !== null
     ? { id: "price", section: "create-price", label: "Menu items", done: data.menuItems > 0 }

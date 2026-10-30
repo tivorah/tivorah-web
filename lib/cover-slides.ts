@@ -10,9 +10,17 @@ export function coverVideoSlide(position: number | null | undefined, slideCount:
 
 /** Up to four cover slides, at most one of them a video (the app and API allow the same). */
 export const MAX_COVER_SLIDES = 4;
-/** Hub and event cover videos: 15 seconds; a listing's video: 30. Both up to 100 MB. */
+
+/**
+ * The video a card plays (muted, no controls): cards show only the cover's first photo, so only a
+ * video that opens the cover (its first frame is that photo). Older covers: the first slide.
+ */
+export function cardCoverVideo(item: { coverVideoUrl?: string | null; coverVideoPosition?: number | null }) {
+  return item.coverVideoUrl && coverVideoSlide(item.coverVideoPosition, MAX_COVER_SLIDES) === 0 ? item.coverVideoUrl : null;
+}
+/** Hub, event and listing cover videos: up to 30 seconds and 100 MB. */
 export type CoverVideoPurpose = "hub-cover" | "event-cover" | "listing";
-export const coverVideoMaxSeconds = (purpose: CoverVideoPurpose) => (purpose === "listing" ? 30 : 15);
+export const coverVideoMaxSeconds = (_purpose: CoverVideoPurpose) => 30;
 export const COVER_VIDEO_MAX_BYTES = 100 * 1024 * 1024;
 
 export type CoverSlide =

@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { SelectField } from "../../components/ui/select-field";
 
 type Request = (path: string, init?: RequestInit) => Promise<any>;
@@ -53,14 +53,18 @@ export function NotificationsWorkspace({ request, templates, broadcasts, deliver
     setComposeFeedback({ text: `Filled in from “${template.name}”. Review before sending.`, error: false });
   }
 
+  // One broadcast per click: a ref, since `sending` only blocks after the re-render.
+  const sendLock = useRef(false);
   async function send(event: FormEvent) {
     event.preventDefault();
+    if (sendLock.current) return;
     if (!title.trim() || !body.trim() || deepLinkError) {
       setComposeFeedback({ text: deepLinkError || "Add a title and a message.", error: true });
       return;
     }
     const audience = roles.length ? roles.map(roleLabel).join(", ") : "everyone with an active Tivorah account";
     if (!window.confirm(`Send “${title.trim()}” to ${audience}? This can’t be recalled once delivered.`)) return;
+    sendLock.current = true;
     setSending(true);
     setComposeFeedback({ text: "", error: false });
     try {
@@ -71,6 +75,7 @@ export function NotificationsWorkspace({ request, templates, broadcasts, deliver
     } catch (cause) {
       setComposeFeedback({ text: cause instanceof Error ? cause.message : "The broadcast wasn’t queued. Please try again.", error: true });
     } finally {
+      sendLock.current = false;
       setSending(false);
     }
   }

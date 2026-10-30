@@ -114,37 +114,53 @@ export default function OrderTickets({ orderId }: { orderId: string }) {
     try { await navigator.clipboard.writeText(privateLink()); setCopied(true); }
     catch { setError('Could not copy the link. Save the address from your browser instead.'); }
   }
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const resendConfirmationLock = useRef(false);
   async function resendConfirmation() {
-    if (!token.current || emailBusy) return;
-    setEmailBusy(true); setActionMessage('Sending your booking email…');
+    if (resendConfirmationLock.current) return;
+    resendConfirmationLock.current = true;
     try {
-      await eventApi(`/orders/${encodeURIComponent(orderId)}/resend-confirmation`, { method: 'POST', headers: { Authorization: `Bearer ${token.current}` } });
-      setBooking(current => current ? { ...current, order: { ...current.order, confirmationEmailSent: true } } : current);
-      setActionMessage('Booking email sent. Check your inbox and spam folder.');
-    } catch (cause) { setActionMessage(cause instanceof Error ? cause.message : 'The email could not be sent. Your tickets are still available here.'); }
-    finally { setEmailBusy(false); }
+      if (!token.current || emailBusy) return;
+      setEmailBusy(true); setActionMessage('Sending your booking email…');
+      try {
+        await eventApi(`/orders/${encodeURIComponent(orderId)}/resend-confirmation`, { method: 'POST', headers: { Authorization: `Bearer ${token.current}` } });
+        setBooking(current => current ? { ...current, order: { ...current.order, confirmationEmailSent: true } } : current);
+        setActionMessage('Booking email sent. Check your inbox and spam folder.');
+      } catch (cause) { setActionMessage(cause instanceof Error ? cause.message : 'The email could not be sent. Your tickets are still available here.'); }
+      finally { setEmailBusy(false); }
+    } finally { resendConfirmationLock.current = false; }
   }
+  const inviteFriendLock = useRef(false);
   async function inviteFriend(event: FormEvent, publicId: string) {
     event.preventDefault();
-    if (inviteBusy || !inviteEmail.trim()) return;
-    setInviteBusy(true); setActionMessage('Sending ticket invitation…');
+    if (inviteFriendLock.current) return;
+    inviteFriendLock.current = true;
     try {
-      await eventApi(`/orders/${encodeURIComponent(orderId)}/tickets/${encodeURIComponent(publicId)}/invite`, { method: 'POST', headers: { Authorization: `Bearer ${token.current}` }, body: JSON.stringify({ email: inviteEmail.trim() }) });
-      setActionMessage('Invitation sent. This ticket remains yours until your friend accepts it.');
-      setInviteTicket(''); setInviteEmail('');
-    } catch (cause) { setActionMessage(cause instanceof Error ? cause.message : 'The invitation could not be sent. Try again.'); }
-    finally { setInviteBusy(false); }
+      if (inviteBusy || !inviteEmail.trim()) return;
+      setInviteBusy(true); setActionMessage('Sending ticket invitation…');
+      try {
+        await eventApi(`/orders/${encodeURIComponent(orderId)}/tickets/${encodeURIComponent(publicId)}/invite`, { method: 'POST', headers: { Authorization: `Bearer ${token.current}` }, body: JSON.stringify({ email: inviteEmail.trim() }) });
+        setActionMessage('Invitation sent. This ticket remains yours until your friend accepts it.');
+        setInviteTicket(''); setInviteEmail('');
+      } catch (cause) { setActionMessage(cause instanceof Error ? cause.message : 'The invitation could not be sent. Try again.'); }
+      finally { setInviteBusy(false); }
+    } finally { inviteFriendLock.current = false; }
   }
+  const saveAttendeeNameLock = useRef(false);
   async function saveAttendeeName(event: FormEvent, publicId: string) {
     event.preventDefault();
-    if (nameBusy) return;
-    setNameBusy(true); setActionMessage('Saving the name on this ticket…');
+    if (saveAttendeeNameLock.current) return;
+    saveAttendeeNameLock.current = true;
     try {
-      const result = await eventApi<{ attendeeName: string | null }>(`/orders/${encodeURIComponent(orderId)}/tickets/${encodeURIComponent(publicId)}/attendee`, { method: 'PATCH', headers: { Authorization: `Bearer ${token.current}` }, body: JSON.stringify({ name: attendeeName.trim() || null }) });
-      setBooking(current => current ? { ...current, tickets: current.tickets.map(item => item.publicId === publicId ? { ...item, attendeeName: result.attendeeName } : item) } : current);
-      setActionMessage('Ticket name saved.'); setEditNameTicket('');
-    } catch (cause) { setActionMessage(cause instanceof Error ? cause.message : 'Could not save the ticket name.'); }
-    finally { setNameBusy(false); }
+      if (nameBusy) return;
+      setNameBusy(true); setActionMessage('Saving the name on this ticket…');
+      try {
+        const result = await eventApi<{ attendeeName: string | null }>(`/orders/${encodeURIComponent(orderId)}/tickets/${encodeURIComponent(publicId)}/attendee`, { method: 'PATCH', headers: { Authorization: `Bearer ${token.current}` }, body: JSON.stringify({ name: attendeeName.trim() || null }) });
+        setBooking(current => current ? { ...current, tickets: current.tickets.map(item => item.publicId === publicId ? { ...item, attendeeName: result.attendeeName } : item) } : current);
+        setActionMessage('Ticket name saved.'); setEditNameTicket('');
+      } catch (cause) { setActionMessage(cause instanceof Error ? cause.message : 'Could not save the ticket name.'); }
+      finally { setNameBusy(false); }
+    } finally { saveAttendeeNameLock.current = false; }
   }
   async function downloadAll() {
     if (allBusy || !token.current) return;

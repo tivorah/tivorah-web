@@ -50,6 +50,7 @@ function CreateHubForm() {
   const [covers, setCovers] = useState<CoverSlide[]>([]);
   const [readingVideo, setReadingVideo] = useState(false);
   const createKey = useRef<string | undefined>(undefined);
+  const creating = useRef(false);
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
@@ -85,6 +86,9 @@ function CreateHubForm() {
       document.getElementById(`hub-${first}`)?.focus();
       return;
     }
+    // A ref, not busy: a second click before the re-render would start a second Hub.
+    if (creating.current) return;
+    creating.current = true;
     setBusy(true);
     try {
       // One photo per slide (the video's first frame on its slide); the video has been uploading.
@@ -99,6 +103,7 @@ function CreateHubForm() {
       if (cause instanceof ApiError && cause.status < 500) createKey.current = undefined;
       setFailure(cause instanceof ApiError || cause instanceof Error ? cause.message : "Your Hub could not be created. Please try again.");
       setBusy(false);
+      creating.current = false;
     }
   }
 
@@ -154,7 +159,7 @@ function CreateHubForm() {
             </div>
             </CoverSlidesField>
             {errors.avatar ? <p className="hub-field-error hub-look-error" id="hub-avatar-error">{errors.avatar}</p> : null}
-            <p className="shop-hint" id="hub-look-hint">A Hub photo is required. The cover is optional: up to 4 photos, or 3 and a short video (15 seconds, reviewed before it shows). No cover? Your Hub gets one of Tivorah’s colours.</p>
+            <p className="shop-hint" id="hub-look-hint">A Hub photo is required. The cover is optional: up to 4 photos and a short video (30 seconds, reviewed before it shows). No cover? Your Hub gets one of Tivorah’s colours.</p>
           </section>
 
           <section id="hub-step-basics" className="shop-step create-section">

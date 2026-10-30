@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useRef } from "react";
 import Link from "next/link";
 import "../account/booking-help.css";
 import "./booking-requests.css";
@@ -62,16 +62,22 @@ function RequestRow({ request, showTitle, onDone }: { request: ManagedBookingReq
   const [error, setError] = useState("");
   const open = request.status === "open";
 
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const submitLock = useRef(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const text = String(new FormData(event.currentTarget).get("message") || "").trim();
-    setBusy(true); setError("");
+    if (submitLock.current) return;
+    submitLock.current = true;
     try {
-      if (mode === "escalate") await api(`/booking-requests/${request.id}/escalate`, { method: "POST", body: JSON.stringify({ note: text }) });
-      else await api(`/booking-requests/${request.id}/respond`, { method: "POST", body: JSON.stringify({ action: mode, message: text || undefined }) });
-      setMode(null); onDone();
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn’t update. Try again."); }
-    finally { setBusy(false); }
+      const text = String(new FormData(event.currentTarget).get("message") || "").trim();
+      setBusy(true); setError("");
+      try {
+        if (mode === "escalate") await api(`/booking-requests/${request.id}/escalate`, { method: "POST", body: JSON.stringify({ note: text }) });
+        else await api(`/booking-requests/${request.id}/respond`, { method: "POST", body: JSON.stringify({ action: mode, message: text || undefined }) });
+        setMode(null); onDone();
+      } catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn’t update. Try again."); }
+      finally { setBusy(false); }
+    } finally { submitLock.current = false; }
   }
 
   const formCopy: Record<Exclude<Mode, null>, { label: string; button: string; required: boolean; placeholder: string }> = {

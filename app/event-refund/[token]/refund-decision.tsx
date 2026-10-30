@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { eventApi, ticketMoney } from "../../events/api";
 
@@ -20,11 +20,17 @@ export function RefundDecision({ token }: { token: string }) {
     eventApi<Details>(`/refund-decisions/${encodeURIComponent(token)}`).then(setDetails).catch((cause) => setError(cause instanceof Error ? cause.message : "This link is invalid or has expired."));
   }, [token]);
 
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const decideLock = useRef(false);
   async function decide(decision: "refund" | "waive") {
-    setBusy(decision); setError("");
-    try { setDetails(await eventApi<Details>(`/refund-decisions/${encodeURIComponent(token)}`, { method: "POST", body: JSON.stringify({ decision }) })); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Your choice couldn’t be saved. Please try again."); }
-    finally { setBusy(null); }
+    if (decideLock.current) return;
+    decideLock.current = true;
+    try {
+      setBusy(decision); setError("");
+      try { setDetails(await eventApi<Details>(`/refund-decisions/${encodeURIComponent(token)}`, { method: "POST", body: JSON.stringify({ decision }) })); }
+      catch (cause) { setError(cause instanceof Error ? cause.message : "Your choice couldn’t be saved. Please try again."); }
+      finally { setBusy(null); }
+    } finally { decideLock.current = false; }
   }
 
   if (error && !details) return <section className="refund-card"><h1>This link isn’t working</h1><p>{error}</p><Link className="product-secondary" href="/contact">Contact Tivorah</Link></section>;

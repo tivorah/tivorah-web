@@ -1,10 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { coverVideoSlide } from "../cover-slides";
+import { cardCoverVideo, coverVideoSlide } from "../cover-slides";
 
 test("the cover video plays on its own slide", () => {
   assert.equal(coverVideoSlide(2, 4), 2);
   assert.equal(coverVideoSlide(3, 2), 1);
+});
+
+test("cards play the cover video only when it opens the cover", () => {
+  assert.equal(cardCoverVideo({ coverVideoUrl: "v.mp4", coverVideoPosition: 0 }), "v.mp4");
+  assert.equal(cardCoverVideo({ coverVideoUrl: "v.mp4", coverVideoPosition: null }), "v.mp4");
+  assert.equal(cardCoverVideo({ coverVideoUrl: "v.mp4", coverVideoPosition: 2 }), null);
+  assert.equal(cardCoverVideo({ coverVideoUrl: null, coverVideoPosition: 0 }), null);
 });
 
 test("older covers, and anything unexpected, use the first slide", () => {

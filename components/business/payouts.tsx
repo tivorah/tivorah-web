@@ -5,7 +5,7 @@ import countries from "../../lib/country-codes.json";
 import { EventTaxSettings } from "./event-tax-settings";
 import PayoutStatistics from "./payout-statistics";
 import { PayoutsLayout, PayoutsLoading } from "./payouts-layout";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { AccountGate } from "../account/gate";
 import { usePrivateResource } from "../../hooks/use-private-resource";
 import { api } from "../../lib/api/client";
@@ -49,14 +49,19 @@ function PayoutSettings() {
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [settingsNotice, setSettingsNotice] = useState("");
   useEffect(() => { if (data) setMethods(data.checkoutMethods); }, [data]);
+  const saveMethodsLock = useRef(false);
   async function saveMethods() {
-    if (!data?.connected || settingsBusy) return;
-    setSettingsBusy(true); setSettingsNotice("");
+    if (saveMethodsLock.current) return;
+    saveMethodsLock.current = true;
     try {
-      const saved = await api<{ methods: Payouts["checkoutMethods"] }>("/payments/connect/checkout-methods", { method: "PATCH", body: JSON.stringify({ methods }) });
-      setMethods(saved.methods); setSettingsNotice("Checkout choices saved for new payments."); retry();
-    } catch (cause) { setSettingsNotice(cause instanceof Error ? cause.message : "Could not save. Try again."); }
-    finally { setSettingsBusy(false); }
+      if (!data?.connected || settingsBusy) return;
+      setSettingsBusy(true); setSettingsNotice("");
+      try {
+        const saved = await api<{ methods: Payouts["checkoutMethods"] }>("/payments/connect/checkout-methods", { method: "PATCH", body: JSON.stringify({ methods }) });
+        setMethods(saved.methods); setSettingsNotice("Checkout choices saved for new payments."); retry();
+      } catch (cause) { setSettingsNotice(cause instanceof Error ? cause.message : "Could not save. Try again."); }
+      finally { setSettingsBusy(false); }
+    } finally { saveMethodsLock.current = false; }
   }
   async function uploadLogo(file: File | undefined) {
     if (!file || !data?.connected || settingsBusy) return;
@@ -69,45 +74,51 @@ function PayoutSettings() {
     } catch (cause) { setSettingsNotice(cause instanceof Error ? cause.message : "Could not upload the logo. Try again."); }
     finally { setSettingsBusy(false); }
   }
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const openLock = useRef(false);
   async function open(dashboard: boolean) {
-    if (!data?.connected && !data?.paymentCountries?.includes(country)) return;
-    if (!data || busy || (!dashboard && !agreementCurrent && !accepted)) return;
-    const stripeTab = window.open("about:blank", "_blank");
-    if (!stripeTab) {
-      setNotice("Your browser blocked the new tab. Allow pop-ups for Tivorah and try again.");
-      return;
-    }
-    stripeTab.opener = null;
-    stripeTab.document.title = "Opening Stripe…";
-    stripeTab.document.body.textContent = "Opening Stripe securely…";
-    setBusy(dashboard ? "dashboard" : "onboarding");
-    setNotice("");
+    if (openLock.current) return;
+    openLock.current = true;
     try {
-      const result = await api<{ url: string }>(
-        `/payments/connect/${dashboard ? "dashboard" : "onboarding"}`,
-        {
-          method: "POST",
-          body: JSON.stringify(
-            dashboard
-              ? {}
-              : { agreementVersion: data.currentPartnerAgreementVersion, ...(!data.connected ? { country, checkoutMethods: methods } : {}) },
-          ),
-        },
-      );
-      const url = new URL(result.url);
-      if (
-        url.protocol !== "https:" ||
-        !["connect.stripe.com", "dashboard.stripe.com"].includes(url.hostname)
-      )
-        throw new Error("Could not verify the payout link.");
-      if (stripeTab.closed) throw new Error("The Stripe tab was closed. Try again to reopen it.");
-      stripeTab.location.replace(url.href);
-    } catch (cause) {
-      stripeTab.close();
-      setNotice(cause instanceof Error ? cause.message : "Please try again.");
-    } finally {
-      setBusy(null);
-    }
+      if (!data?.connected && !data?.paymentCountries?.includes(country)) return;
+      if (!data || busy || (!dashboard && !agreementCurrent && !accepted)) return;
+      const stripeTab = window.open("about:blank", "_blank");
+      if (!stripeTab) {
+        setNotice("Your browser blocked the new tab. Allow pop-ups for Tivorah and try again.");
+        return;
+      }
+      stripeTab.opener = null;
+      stripeTab.document.title = "Opening Stripe…";
+      stripeTab.document.body.textContent = "Opening Stripe securely…";
+      setBusy(dashboard ? "dashboard" : "onboarding");
+      setNotice("");
+      try {
+        const result = await api<{ url: string }>(
+          `/payments/connect/${dashboard ? "dashboard" : "onboarding"}`,
+          {
+            method: "POST",
+            body: JSON.stringify(
+              dashboard
+                ? {}
+                : { agreementVersion: data.currentPartnerAgreementVersion, ...(!data.connected ? { country, checkoutMethods: methods } : {}) },
+            ),
+          },
+        );
+        const url = new URL(result.url);
+        if (
+          url.protocol !== "https:" ||
+          !["connect.stripe.com", "dashboard.stripe.com"].includes(url.hostname)
+        )
+          throw new Error("Could not verify the payout link.");
+        if (stripeTab.closed) throw new Error("The Stripe tab was closed. Try again to reopen it.");
+        stripeTab.location.replace(url.href);
+      } catch (cause) {
+        stripeTab.close();
+        setNotice(cause instanceof Error ? cause.message : "Please try again.");
+      } finally {
+        setBusy(null);
+      }
+    } finally { openLock.current = false; }
   }
   if (loading && !data) return <PayoutsLoading />;
   return <PayoutsLayout>

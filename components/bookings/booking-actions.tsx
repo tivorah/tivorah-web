@@ -80,26 +80,37 @@ export function BookingActions({ booking, role, onChanged, autoOpen }: { booking
     setPanel(panel === next ? null : next); setError(""); setText(""); setSlot(""); setRating(0); setOutcome(null);
     if (next === "cancel" && panel !== "cancel") api<Outcome>(`/market/bookings/${booking.id}/cancellation`).then(setOutcome).catch(() => setOutcome(null));
   }
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const runLock = useRef(false);
   async function run(path: string, body: unknown, message: string) {
-    if (busy) return;
-    setBusy(true); setError("");
+    if (runLock.current) return;
+    runLock.current = true;
     try {
-      await api(path, { method: "POST", body: JSON.stringify(body) });
-      setPanel(null); onChanged(message);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "That didn’t work. Please try again."); }
-    finally { setBusy(false); }
+      if (busy) return;
+      setBusy(true); setError("");
+      try {
+        await api(path, { method: "POST", body: JSON.stringify(body) });
+        setPanel(null); onChanged(message);
+      } catch (cause) { setError(cause instanceof Error ? cause.message : "That didn’t work. Please try again."); }
+      finally { setBusy(false); }
+    } finally { runLock.current = false; }
   }
+  const payLock = useRef(false);
   async function pay() {
-    if (busy) return;
-    setBusy(true); setError("");
+    if (payLock.current) return;
+    payLock.current = true;
     try {
-      const result = await api<{ checkoutUrl: string | null }>(`/web/account/bookings/${booking.id}/payment`, { method: "POST" });
-      if (!result.checkoutUrl) { onChanged("Payment status is updating. Refresh shortly."); return; }
-      const target = new URL(result.checkoutUrl);
-      if (target.protocol !== "https:" || target.hostname !== "checkout.stripe.com") throw new Error("The payment link could not be verified.");
-      await leaveFor(target.href);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not open payment. Please try again."); }
-    finally { setBusy(false); }
+      if (busy) return;
+      setBusy(true); setError("");
+      try {
+        const result = await api<{ checkoutUrl: string | null }>(`/web/account/bookings/${booking.id}/payment`, { method: "POST" });
+        if (!result.checkoutUrl) { onChanged("Payment status is updating. Refresh shortly."); return; }
+        const target = new URL(result.checkoutUrl);
+        if (target.protocol !== "https:" || target.hostname !== "checkout.stripe.com") throw new Error("The payment link could not be verified.");
+        await leaveFor(target.href);
+      } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not open payment. Please try again."); }
+      finally { setBusy(false); }
+    } finally { payLock.current = false; }
   }
   const submit = (event: FormEvent, action: () => void) => { event.preventDefault(); action(); };
 

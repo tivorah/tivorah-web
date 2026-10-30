@@ -83,9 +83,8 @@ export async function DiscoveryDetail({
     <article className="hub-detail">
       <div className="hub-detail-hero">
         <div className="hub-detail-cover" style={item.coverImage ? undefined : { background: hubCoverBackground(item.id, item.coverColor) }}>
-          {/* The cover slides, swiped like the app's; an approved video plays on its own slide. */}
-          {item.coverImage ? <HubCoverSlides photos={item.coverImages?.length ? item.coverImages : [item.coverImage]} videoUrl={item.coverVideoUrl} videoPosition={item.coverVideoPosition} />
-            : item.coverVideoUrl ? <video className="hub-detail-cover-video" src={item.coverVideoUrl} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" tabIndex={-1} /> : null}
+          {/* The cover slides, swiped like the app's; an approved video plays on its own slide, with play/pause and sound. */}
+          {item.coverImage || item.coverVideoUrl ? <HubCoverSlides photos={!item.coverImage ? [] : item.coverImages?.length ? item.coverImages : [item.coverImage]} videoUrl={item.coverVideoUrl} videoPosition={item.coverVideoPosition} /> : null}
           {/* Like the app's Hub page: a shade for the name over the cover, and Back on the cover. */}
           <span className="hub-detail-cover-shade" aria-hidden="true" />
           <BackLink className="hub-detail-back" fallback="/hubs" /></div>

@@ -44,14 +44,20 @@ export function CancelEventDialog({ eventId, title, open, onClose, onCancelled }
   const refundTotal = paid.filter((order) => !(order.id in waivers)).reduce((sum, order) => sum + order.totalCents, 0);
   const missingReason = leftOut.some((order) => !waivers[order.id]);
 
+  // A ref lock: state only blocks a second click after the re-render, so both would send.
+  const confirmLock = useRef(false);
   async function confirm() {
-    setBusy(true); setError("");
+    if (confirmLock.current) return;
+    confirmLock.current = true;
     try {
-      await api(`/events/${eventId}/cancel`, { method: "POST", body: JSON.stringify({ waivers: leftOut.map((order) => ({ orderId: order.id, reason: waivers[order.id] })) }) });
-      onCancelled();
-      onClose();
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "The event couldn’t be cancelled."); }
-    finally { setBusy(false); }
+      setBusy(true); setError("");
+      try {
+        await api(`/events/${eventId}/cancel`, { method: "POST", body: JSON.stringify({ waivers: leftOut.map((order) => ({ orderId: order.id, reason: waivers[order.id] })) }) });
+        onCancelled();
+        onClose();
+      } catch (cause) { setError(cause instanceof Error ? cause.message : "The event couldn’t be cancelled."); }
+      finally { setBusy(false); }
+    } finally { confirmLock.current = false; }
   }
 
   return <dialog ref={dialog} className="event-cancel-dialog is-wide" aria-labelledby="cancel-event-title" onCancel={(event) => { event.preventDefault(); onClose(); }}>

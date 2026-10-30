@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { money } from "../../lib/api/discovery";
 import { requestKindLabel, requestStatusLabel, type ManagedBookingRequest } from "../../lib/booking-requests";
 
@@ -24,16 +24,20 @@ export function Escalations({ request }: { request: (path: string, init?: Reques
   }, [request, filter]);
   useEffect(() => { void load(); }, [load]);
 
+  // One decision at a time (a refund moves money): a ref, since `busy` only blocks after the re-render.
+  const lock = useRef(false);
   async function resolve(event: FormEvent<HTMLFormElement>, row: ManagedBookingRequest) {
     event.preventDefault();
+    if (lock.current) return;
     const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
     const action = submitter?.value === "refund" ? "refund" : "close";
     const note = String(new FormData(event.currentTarget).get("note") || "").trim();
     if (action === "refund" && !window.confirm(`Refund ${money(row.refundableCents, row.currency)} to ${row.buyer.name}? This can’t be undone.`)) return;
+    lock.current = true;
     setBusy(row.id); setError("");
     try { await request(`/api/v1/admin/booking-requests/${row.id}/resolve`, { method: "POST", body: JSON.stringify({ action, note }) }); await load(); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Could not update this case."); }
-    finally { setBusy(null); }
+    finally { lock.current = false; setBusy(null); }
   }
 
   return (

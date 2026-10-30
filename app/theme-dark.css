@@ -4078,6 +4078,103 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
 :root[data-theme="dark"] .content-review-mistake {
   color: var(--muted, #c1b7c4);
 }
+:root[data-theme="dark"] .event-when-label {
+  color: #d8d2da;
+}
+:root[data-theme="dark"] .event-when-trigger {
+  border: 1px solid #574b5c;
+  background: #141115;
+  color: #dfdae1;
+}
+:root[data-theme="dark"] .event-when-trigger svg {
+  color: #c2b8c9;
+}
+:root[data-theme="dark"] .event-when-trigger:hover:not(:disabled) {
+  border-color: #57416c;
+}
+:root[data-theme="dark"] .event-when-trigger:focus-visible {
+  outline: 3px solid #53416c;
+  border-color: #51416c;
+}
+:root[data-theme="dark"] .event-when-trigger:disabled {
+  background: #241f25;
+  color: #bfb5c2;
+}
+:root[data-theme="dark"] .event-when-picker {
+  --rdp-selected-border: 2px solid #4f416c;
+  color: #dfdae1;
+}
+:root[data-theme="dark"] .event-when-picker .rdp-weekday {
+  color: #c2b8c5;
+}
+:root[data-theme="dark"] .event-when-picker .rdp-day_button:hover:not(:disabled) {
+  background: #1d191f;
+}
+:root[data-theme="dark"] .event-when-picker .rdp-selected .rdp-day_button {
+  border-color: #4f416c;
+}
+:root[data-theme="dark"] .event-when-picker .rdp-day_button:focus-visible,
+:root[data-theme="dark"] .event-when-picker .rdp-button_previous:focus-visible,
+:root[data-theme="dark"] .event-when-picker .rdp-button_next:focus-visible {
+  outline: 3px solid #53416c;
+}
+:root[data-theme="dark"] .event-when-picker .rdp-button_previous:hover,
+:root[data-theme="dark"] .event-when-picker .rdp-button_next:hover {
+  background: #1d191f;
+}
+:root[data-theme="dark"] .event-when-picker .rdp-chevron {
+  fill: #bba1e1;
+}
+:root[data-theme="dark"] .event-venue-results button {
+  background: #141115;
+  color: #dfdae1;
+}
+:root[data-theme="dark"] .event-venue-results button:hover {
+  background: #1d191f;
+}
+:root[data-theme="dark"] .event-venue-results button:focus-visible {
+  outline: 3px solid #53416c;
+}
+:root[data-theme="dark"] .event-venue-results small {
+  color: #c2b8c5;
+}
+:root[data-theme="dark"] .event-venue-attribution {
+  color: #c2b8c5;
+}
+:root[data-theme="dark"] .event-venue-link {
+  color: #bba1e1;
+}
+:root[data-theme="dark"] .event-venue-link:focus-visible {
+  outline: 3px solid #53416c;
+}
+:root[data-theme="dark"] .event-venue-chosen {
+  background: #141115;
+}
+:root[data-theme="dark"] .event-venue-chosen-text small {
+  color: #c2b8c5;
+}
+:root[data-theme="dark"] .hub-share-count {
+  color: #c8bfcb;
+}
+:root[data-theme="dark"] .hub-share-count.is-active {
+  color: #bba1e1;
+}
+:root[data-theme="dark"] .hub-share-quick-list li + li {
+  border-top: 1px solid #4b404f;
+}
+:root[data-theme="dark"] .hub-share-quick-list label.is-locked {
+  color: #b6abba;
+}
+:root[data-theme="dark"] .hub-share-more {
+  border-top: 1px solid #4b404f;
+  color: #bba1e1;
+}
+:root[data-theme="dark"] .hub-share-more small {
+  color: #c8bfcb;
+}
+:root[data-theme="dark"] .hub-share-more:focus-visible {
+  outline: 3px solid #53416c;
+}
 
 /* app/sheet.css */
 @media (max-width: 760px) {
@@ -6783,6 +6880,16 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
   color: #c5bcc8;
 }
 
+/* app/cover-video.css */
+:root[data-theme="dark"] .cover-video-controls button {
+  background: rgba(8, 6, 10, 0.812);
+}
+@media (hover: hover) {
+:root[data-theme="dark"] .cover-video-controls button:hover {
+  background: #08060a;
+}
+}
+
 /* app/u/[username]/profile.css */
 :root[data-theme="dark"] .profile-page {
   background: radial-gradient(circle at 50% 4%,#1f1a29 0,transparent 36%),#1c181e;
@@ -6910,7 +7017,10 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
   background: rgba(8, 6, 10, 0.868);
 }
 :root[data-theme="dark"] .cover-slides-pick {
-  background: rgba(8, 6, 10, 0.868);
+  border: 1px solid rgba(93, 74, 124, 0.12);
+  background: rgba(20, 17, 21, 0.88);
+  color: #c5b2e3 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.192);
 }
 :root[data-theme="dark"] .cover-slides-pick:focus-within {
   outline: 3px solid #53416c;
@@ -6930,9 +7040,20 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
 :root[data-theme="dark"] .cover-slides-tools button:focus-visible {
   outline: 3px solid #53416c;
 }
+:root[data-theme="dark"] .cover-slides-first {
+  background: #1d191f;
+  color: #b7a2d9;
+}
+:root[data-theme="dark"] .cover-slides-first:focus-visible {
+  outline: 3px solid #53416c;
+}
 :root[data-theme="dark"] .cover-slides-pick span,
 :root[data-theme="dark"] .cover-slides-pick svg {
-  color: #ffffff !important;
+  color: #c5b2e3 !important;
+}
+:root[data-theme="dark"][data-theme="dark"] .cover-slides-pick {
+  border-color: rgba(69, 55, 91, 0.18);
+  background: rgba(52, 44, 61, 0.9);
 }
 
 /* components/business/service-menu-editor.css */

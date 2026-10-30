@@ -3,8 +3,10 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { directUpload } from "../../lib/direct-upload";
 import "./cover-slides.css";
 import { COVER_VIDEO_MAX_BYTES, coverRoom, coverVideoMaxSeconds, hasCoverVideo, moveCoverSlide, type CoverSlide, type CoverVideoPurpose } from "../../lib/cover-slides";
+import { CoverVideo, CoverVideoControls, useCoverVideoPlayback } from "../discovery/cover-video";
 
 const PHOTO_TYPES = "image/jpeg,image/png,image/webp";
+const VIDEO_TYPES = "video/mp4,video/quicktime,video/webm";
 const PHOTO_MAX_BYTES = 10 * 1024 * 1024;
 let nextId = 0;
 const slideId = () => `slide-${++nextId}`;
@@ -57,6 +59,8 @@ export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invali
   const [reading, setReading] = useState(false);
   const [failed, setFailed] = useState<string[]>([]);
   const [shown, setShown] = useState(0);
+  const playback = useCoverVideoPlayback();
+  const current = Math.min(shown, Math.max(0, slides.length - 1));
   const latest = useRef(slides);
   useEffect(() => { latest.current = slides; }, [slides]);
   const room = coverRoom(slides);
@@ -66,37 +70,59 @@ export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invali
   // Free the previews when the form goes away.
   useEffect(() => () => { for (const slide of latest.current) { URL.revokeObjectURL(slide.preview); if (slide.kind === "video") URL.revokeObjectURL(slide.framePreview); } }, []);
 
-  const addPhotos = (files: FileList | null) => {
+  // Picked photos (and a video, if one gets through), added in the order they were picked.
+  const addFiles = async (files: FileList | null) => {
     setError("");
     const picked = Array.from(files ?? []);
     if (!picked.length) return;
-    if (picked.some((file) => !file.type.startsWith("image/") || file.size > PHOTO_MAX_BYTES)) { setError("Choose JPG, PNG or WebP photos under 10 MB each."); return; }
-    if (picked.length > room) setError(room === 1 ? "Only 1 more slide fits, so the first photo was added." : `Only ${room} more slides fit, so the first ${room} photos were added.`);
-    onChange([...slides, ...picked.slice(0, room).map((file) => ({ id: slideId(), kind: "photo" as const, file, preview: URL.createObjectURL(file) }))]);
+    if (picked.some((file) => !file.type.startsWith("image/") && !file.type.startsWith("video/"))) { setError("Choose photos (JPG, PNG or WebP) or a video (MP4 or MOV)."); return; }
+    if (picked.some((file) => file.type.startsWith("image/") && file.size > PHOTO_MAX_BYTES)) { setError("Choose JPG, PNG or WebP photos under 10 MB each."); return; }
+    const videos = picked.filter((file) => file.type.startsWith("video/"));
+    const chosen = picked.filter((file) => !file.type.startsWith("video/") || (!video && file === videos[0])).slice(0, room);
+    const notes: string[] = [];
+    if (videos.length && (video || videos.length > 1)) notes.push(video ? "Your cover has its video already, so only photos were added." : "A cover has one video, so the first one was added.");
+    if (picked.filter((file) => !file.type.startsWith("video/") || (!video && file === videos[0])).length > room) notes.push(`Only ${room} more slide${room === 1 ? "" : "s"} fit${room === 1 ? "s" : ""}, so the first ${room} were added.`);
+    const built: CoverSlide[] = [];
+    for (const file of chosen) {
+      if (file.type.startsWith("image/")) { built.push({ id: slideId(), kind: "photo", file, preview: URL.createObjectURL(file) }); continue; }
+      const slide = await videoSlide(file);
+      if (typeof slide === "string") notes.push(slide);
+      else built.push(slide);
+    }
+    if (notes.length) setError(notes.join(" "));
+    if (built.length) { onChange([...latest.current, ...built]); }
   };
 
-  const addVideo = async (file: File | undefined) => {
-    setError("");
-    if (!file) return;
-    if (!file.type.startsWith("video/")) { setError("Choose a video file (MP4 or MOV)."); return; }
-    if (file.size > COVER_VIDEO_MAX_BYTES) { setError("Choose a video under 100 MB."); return; }
+  // A picked video as a slide (uploading straight away), or why it can't be used.
+  const videoSlide = async (file: File): Promise<CoverSlide | string> => {
+    if (file.size > COVER_VIDEO_MAX_BYTES) return "Choose a video under 100 MB.";
     setReading(true);
     onBusy?.(true);
     try {
       const { seconds: length, frame } = await readVideo(file);
-      // A little leeway: phones round, and a "15 second" clip can be 15.4.
-      if (length > seconds + 1) { setError(`Cover videos can be up to ${seconds} seconds. Trim it first, then choose it again.`); return; }
+      // A little leeway: phones round, and a "30 second" clip can be 30.4.
+      if (length > seconds + 1) return `Cover videos can be up to ${seconds} seconds. Trim it first, then choose it again.`;
       const slide = { id: slideId(), kind: "video" as const, file, preview: URL.createObjectURL(file), frame, framePreview: URL.createObjectURL(frame), seconds: Math.max(1, Math.ceil(length)),
         upload: directUpload(file, { purpose, kind: "video", durationSeconds: length }).then((result) => result.id) };
       slide.upload.catch(() => setFailed((current) => [...current, slide.id]));
-      const at = slides.findIndex((item) => item.kind === "video");
-      onChange(at >= 0 ? slides.map((item, index) => (index === at ? slide : item)) : [...slides, slide]);
+      return slide;
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "This video couldn’t be added.");
+      return cause instanceof Error ? cause.message : "This video couldn’t be added.";
     } finally {
       setReading(false);
       onBusy?.(false);
     }
+  };
+
+  const changeVideo = async (file: File | undefined) => {
+    setError("");
+    if (!file) return;
+    if (!file.type.startsWith("video/")) { setError("Choose a video file (MP4 or MOV)."); return; }
+    const slide = await videoSlide(file);
+    if (typeof slide === "string") { setError(slide); return; }
+    const current = latest.current;
+    const at = current.findIndex((item) => item.kind === "video");
+    onChange(at >= 0 ? current.map((item, index) => (index === at ? slide : item)) : [...current, slide]);
   };
 
   const remove = (index: number) => {
@@ -107,30 +133,41 @@ export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invali
     setShown(0);
   };
 
-  const pick = (kind: "photo" | "video", label: string) => <label className="cover-slides-pick">
-    <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{kind === "photo"
+  const pick = (kind: "media" | "video", label: string) => <label className="cover-slides-pick">
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{kind === "media"
       ? <><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.2" /></>
       : <><rect x="3" y="6" width="13" height="12" rx="2.5" /><path d="m16 10 5-3v10l-5-3z" /></>}</svg>
     <span>{label}</span>
-    {kind === "photo"
-      ? <input id={slides.length ? undefined : id} type="file" multiple accept={PHOTO_TYPES} disabled={reading} aria-label={label} aria-invalid={invalid || undefined} onChange={(event) => { addPhotos(event.currentTarget.files); event.currentTarget.value = ""; }} />
-      : <input type="file" accept="video/mp4,video/quicktime,video/webm" disabled={reading} aria-label={`${label}, up to ${seconds} seconds`} onChange={(event) => { void addVideo(event.currentTarget.files?.[0]); event.currentTarget.value = ""; }} />}
+    {kind === "media"
+      ? <input id={slides.length ? undefined : id} type="file" multiple accept={PHOTO_TYPES} disabled={reading} aria-label={label} aria-invalid={invalid || undefined} onChange={(event) => { void addFiles(event.currentTarget.files); event.currentTarget.value = ""; }} />
+      : <input type="file" accept={VIDEO_TYPES} disabled={reading} aria-label={`${label}, up to ${seconds} seconds`} onChange={(event) => { void changeVideo(event.currentTarget.files?.[0]); event.currentTarget.value = ""; }} />}
   </label>;
 
   return <div className={`cover-slides${invalid ? " is-invalid" : ""}${compact && !video ? " is-compact" : ""}`}>
     <div className="cover-slides-stage">
-      {slides.length ? <div className="cover-slides-track" onScroll={(event) => { const element = event.currentTarget; setShown(Math.round(element.scrollLeft / Math.max(element.clientWidth, 1))); }}>
+      {slides.length ? <div className="cover-slides-track" onScroll={(event) => {
+        const element = event.currentTarget;
+        const next = Math.round(element.scrollLeft / Math.max(element.clientWidth, 1));
+        // Swiped off the video: it starts muted and playing again next time.
+        if (next !== shown) playback.reset();
+        setShown(next);
+      }}>
         {slides.map((slide, index) => <div key={slide.id} className="cover-slides-slide">
           {slide.kind === "photo"
             // eslint-disable-next-line @next/next/no-img-element -- local preview of a picked file
             ? <img src={slide.preview} alt={`Cover slide ${index + 1}`} />
-            : <video src={slide.preview} poster={slide.framePreview} autoPlay muted loop playsInline aria-label={`Cover slide ${index + 1}: video, ${slide.seconds} seconds`} />}
+            : <>
+              <CoverVideo src={slide.preview} poster={slide.framePreview} muted={playback.muted || index !== current} paused={playback.paused} label={`Cover slide ${index + 1}: video, ${slide.seconds} seconds`} />
+              {/* Like the page will allow: it starts muted; pause it or turn sound on to check it. */}
+              {index === current ? <CoverVideoControls className="is-gallery is-editor" muted={playback.muted} paused={playback.paused} onToggleSound={playback.toggleSound} onTogglePlay={playback.togglePlay} /> : null}
+            </>}
         </div>)}
       </div> : null}
       {slides.length > 1 ? <span className="cover-slides-count" aria-hidden="true">{Math.min(shown, slides.length - 1) + 1} / {slides.length}</span> : null}
       <div className="cover-slides-picks">
-        {room ? pick("photo", slides.length ? "Add photos" : "Add cover") : null}
-        {room && !video ? pick("video", "Add video") : null}
+        {/* Photos and a video in any order: photos after a video, or a video after photos. */}
+        {room ? pick("media", slides.length ? "Add photos" : "Add cover") : null}
+        {video ? pick("video", "Change video") : room ? pick("video", "Add video") : null}
       </div>
     </div>
     {children}
@@ -144,6 +181,7 @@ export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invali
           <button type="button" disabled={index === slides.length - 1} onClick={() => onChange(moveCoverSlide(slides, index, index + 1))} aria-label={`Move slide ${index + 1} later`}>›</button>
           <button type="button" onClick={() => remove(index)} aria-label={`Remove slide ${index + 1}`}>✕</button>
         </span>
+        {index > 0 ? <button type="button" className="cover-slides-first" onClick={() => { onChange(moveCoverSlide(slides, index, 0)); setShown(0); }} aria-label={`Make slide ${index + 1} the first`}>Make first</button> : null}
       </li>)}
     </ol> : null}
     {reading ? <p className="shop-hint" role="status">Reading your video…</p> : null}
