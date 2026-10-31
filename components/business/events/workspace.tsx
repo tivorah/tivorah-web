@@ -18,7 +18,7 @@ import { CancelEventDialog, RefundProgress } from "./cancellation";
 import { money } from "../../../lib/api/discovery";
 import { SellerRequests, openCount, useSellerRequests } from "../booking-requests";
 
-type Summary = { ticketsBooked: number; bookings: number; checkedIn?: number; groupBookings?: number; groupTickets?: number; remaining?: number; collectedCents?: number; attendees?: number; newGroupRequests?: number };
+type Summary = { ticketsBooked: number; bookings: number; checkedIn?: number; groupBookings?: number; groupTickets?: number; /** null: no limit. */ remaining?: number | null; collectedCents?: number; attendees?: number; newGroupRequests?: number };
 
 // Key numbers at the top of every tab.
 function EventStats({ id, version }: { id: number; version: number }) {
@@ -26,7 +26,7 @@ function EventStats({ id, version }: { id: number; version: number }) {
   useEffect(() => { if (version) retry(); }, [version]); // eslint-disable-line react-hooks/exhaustive-deps
   const stats: [string, string | number | undefined, string?][] = [
     ["Attendees", data?.attendees, data ? `${data.bookings} ${data.bookings === 1 ? "order" : "orders"}` : undefined],
-    ["Places left", data?.remaining],
+    ["Places left", data ? data.remaining ?? "No limit" : undefined],
     ["Checked in", data?.checkedIn, data?.attendees ? `${Math.round(((data.checkedIn ?? 0) / data.attendees) * 100)}% of attendees` : undefined],
     ["Collected", data ? money(data.collectedCents ?? 0) : undefined, "After refunds"],
     ["Group bookings", data?.groupBookings, data?.newGroupRequests ? `${data.newGroupRequests} new ${data.newGroupRequests === 1 ? "request" : "requests"}` : undefined],

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { newPackage, packagesPayload } from "../events/packages-editor";
+import { newPackage, packagePriceLabel, packagesPayload } from "../events/packages-editor";
 import { AU_STATE_NAMES, venueSearchText, venuesInState } from "../events/event-venue-field";
 import { quickHubs } from "../hub-share-field";
 import { creationPayload } from "../create-payload";
@@ -50,4 +50,16 @@ test("event capacity is only sent when limited, with the venue's map pin", () =>
   assert.ok("capacity" in limited);
   assert.equal(limited.capacity, 100);
   assert.equal("latitude" in limited, false);
+});
+
+test("create form: with paid tickets each price is set on purpose, 0 making one free", () => {
+  assert.throws(() => packagesPayload([newPackage({ name: "General admission", price: "", quantity: "" })], { paidAllowed: true, unlimited: 100 }), /Enter a price for General admission, or 0 to make it free/);
+  const mixed = packagesPayload([
+    newPackage({ name: "Student", price: "0", description: "Student ID required at entry" }),
+    newPackage({ name: "VIP", price: "80" }),
+  ], { paidAllowed: true, unlimited: 100 });
+  assert.deepEqual(mixed.map((ticket) => [ticket.name, ticket.priceCents, ticket.description]), [["Student", 0, "Student ID required at entry"], ["VIP", 8000, undefined]]);
+  assert.equal(packagesPayload([newPackage({ name: "General admission", price: "" })], { paidAllowed: false })[0].priceCents, 0);
+  assert.equal(packagePriceLabel(newPackage({ price: "" })), "Add a price");
+  assert.equal(packagePriceLabel(newPackage({ price: "0" })), "Free");
 });

@@ -52,7 +52,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [hubsMissing, setHubsMissing] = useState(false);
   // Tickets, in the app's order: currency, group bookings, free, capacity, then the ticket types
   // (the only ticket list; it starts with General admission and always keeps one).
-  const [packages, setPackages] = useState<PackageDraft[]>(() => [newPackage({ name: "General admission", quantity: "" })]);
+  const [packages, setPackages] = useState<PackageDraft[]>(() => [newPackage({ name: "General admission", quantity: "", price: "" })]);
   const [currency, setCurrency] = useState("AUD");
   const [allowGroups, setAllowGroups] = useState(false);
   const [free, setFree] = useState(true);

@@ -74,7 +74,8 @@ export function groupSummary(draft: Pick<PackageDraft, "kind" | "groupSize" | "p
 export type PackagesPayloadOptions = {
   /** The event's ticket currency, used for every ticket type. */
   currency?: string;
-  /** False for free events (or while paid tickets are off): every price is $0. */
+  /** False for free events (or while paid tickets are off): every price is $0. True (paid tickets
+   * on the create form): every ticket type needs a price typed in, 0 making it free on purpose. */
   paidAllowed?: boolean;
   /** The quantity of a ticket type left empty: the event's capacity, or a large number. */
   unlimited?: number;
@@ -95,6 +96,7 @@ export function packagesPayload(drafts: PackageDraft[], options: PackagesPayload
     const group = draft.kind === "group";
     const groupSize = group ? Number(draft.groupSize) : 1;
     if (group && (!Number.isInteger(groupSize) || groupSize < 2 || groupSize > 50)) throw new Error(`Set between 2 and 50 people per group for ${label}.`);
+    if (options.paidAllowed === true && !draft.price.trim()) throw new Error(`Enter a price for ${label}, or 0 to make it free.`);
     const each = options.paidAllowed === false ? 0 : parseMoneyToCents(draft.price || "0");
     if (each === null || each < 0) throw new Error(`Enter a valid price for ${label}.`);
     const priceCents = each * groupSize;
@@ -147,7 +149,9 @@ export function PackageFields({ draft, onChange, index, onRemove, lockPrice = fa
   const group = draft.kind === "group";
   const shown = currency ? { ...draft, currency } : draft;
   const each = free ? 0 : Number(draft.price || 0);
-  const summary = free ? null : groupSummary(shown);
+  // The create form (one event currency) asks for a price on purpose; 0 is free.
+  const unpriced = !free && !!currency && !draft.price.trim();
+  const summary = free || unpriced ? null : groupSummary(shown);
   const quantityField = (label: string, className?: string) => <label className={className}>{label}<input type="number" min={1} max={1000000} value={draft.quantity} onChange={(event) => set({ quantity: event.target.value })} required={!quantityOptional} placeholder={quantityOptional ? "No limit" : undefined} /></label>;
   return <fieldset className="package-card">
     <legend className="sr-only">Ticket package {index + 1}</legend>
@@ -155,7 +159,7 @@ export function PackageFields({ draft, onChange, index, onRemove, lockPrice = fa
       <span className="package-card-index">{index + 1}</span>
       <strong>{draft.name.trim() || "New package"}</strong>
       {draft.hidden ? <span className="package-tag">Code only</span> : null}
-      <span className={`package-card-price${each === 0 ? " is-free" : ""}`}>{each === 0 ? "Free" : group ? `${dollars(each, shown.currency)} each` : dollars(each, shown.currency)}</span>
+      <span className={`package-card-price${each === 0 && !unpriced ? " is-free" : ""}`}>{unpriced ? "No price yet" : each === 0 ? "Free" : group ? `${dollars(each, shown.currency)} each` : dollars(each, shown.currency)}</span>
       {onRemove ? <button type="button" className="package-card-remove" onClick={onRemove} aria-label={`Remove ${draft.name.trim() || `package ${index + 1}`}`}>×</button> : null}
     </div>
 
@@ -167,12 +171,13 @@ export function PackageFields({ draft, onChange, index, onRemove, lockPrice = fa
       {group ? <label>People per group
         <input type="number" min={2} max={50} value={draft.groupSize} onChange={(event) => set({ groupSize: event.target.value })} required disabled={lockPrice} />
       </label> : free ? null : <label>{currency ? `Price (${currency})` : "Price per ticket"}
-        <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} aria-describedby={lockPrice ? `${id}-locked` : undefined} />
+        <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} placeholder={currency ? "e.g. 25" : undefined} aria-describedby={lockPrice ? `${id}-locked` : currency ? `${id}-free` : undefined} />
       </label>}
     </div>
+    {currency && !free && !lockPrice ? <span id={`${id}-free`} className="shop-hint">Enter 0 to make this ticket type free.</span> : null}
     {group ? <div className="shop-row">
       {free ? null : <label>{currency ? `Price per person (${currency})` : "Price per person"}
-        <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} />
+        <input type="number" min={0} max={1000000} step="0.01" value={draft.price} onChange={(event) => set({ price: event.target.value })} required disabled={lockPrice} placeholder={currency ? "e.g. 25" : undefined} />
       </label>}
       {quantityField("Groups available")}
     </div> : null}
@@ -240,6 +245,7 @@ export function PackagesEditor({ value, onChange }: { value: PackageDraft[]; onC
 
 /** "Free", "$25" or "$20 each · group of 6". */
 export function packagePriceLabel(draft: Pick<PackageDraft, "kind" | "groupSize" | "price">, currency = "AUD", free = false) {
+  if (!free && !draft.price.trim()) return "Add a price";
   const each = free ? 0 : Number(draft.price || 0);
   if (!each) return draft.kind === "group" ? `Free · group of ${draft.groupSize}` : "Free";
   return draft.kind === "group" ? `${dollars(each, currency)} each · group of ${draft.groupSize}` : dollars(each, currency);
@@ -262,8 +268,9 @@ export function TicketPackageList({ value, onChange, paidAllowed = true, currenc
   const close = () => { setEditing(null); setPicking(false); setError(""); };
   const start = (preset?: (typeof PACKAGE_PRESETS)[number]) => {
     setPicking(false); setError("");
-    // No quantity yet means no limit of its own; a group starts at 10 groups, as in the app.
-    const draft = preset ? presetPackage(preset, value[value.length - 1]?.price ?? "0") : newPackage();
+    // No quantity yet means no limit of its own; a group starts at 10 groups, as in the app. With
+    // paid tickets the price starts empty, so each one is set on purpose (Free entry stays 0).
+    const draft = preset ? presetPackage(preset, paidAllowed ? "" : "0") : newPackage({ price: paidAllowed ? "" : "0" });
     setEditing({ draft: { ...draft, currency, quantity: draft.kind === "group" ? "10" : "" }, isNew: true });
   };
   function save() {

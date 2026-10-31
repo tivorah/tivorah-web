@@ -209,11 +209,11 @@ export const topics: readonly GuideTopic[] = [
       'On the Events tab, tap Create.',
       'Basics: tap Add a cover to add up to 4 photos and one video of up to 30 seconds (shown as a slideshow), then add the name, categories and About the event.',
       'When & where: set the date and time, then choose In person (with the address) or Online (with an optional joining link).',
-      'Tickets: turn on Free tickets, or add ticket types such as General admission or Early bird. You can limit capacity.',
+      'Tickets: leave Free tickets on for a free event. For paid entry, switch it off and give every ticket type a price. Enter 0 to keep one free, such as a Student ticket, and add what’s required (like a student ID) under What’s included or required. You can limit capacity.',
       'Finish: tag the event to at least one Hub you’ve joined (up to 3), accept the organiser rules, then tap Publish event or Save as draft.',
     ],
     tip: 'Paid events need payouts set up first. If you haven’t, you’ll be asked to Open payout setup before you can publish.',
-    keywords: ['host', 'organise', 'new event', 'cover', 'slideshow', 'ticket types', 'online event'],
+    keywords: ['host', 'organise', 'new event', 'cover', 'slideshow', 'ticket types', 'online event', 'paid tickets', 'free ticket', 'student ticket'],
   },
   {
     id: 'check-in',
@@ -455,11 +455,11 @@ export const topics: readonly GuideTopic[] = [
     steps: [
       'Go to Profile → Settings & privacy.',
       'Under Appearance, choose Light, Dark or System.',
-      'Under Privacy, turn Read receipts and Show me in Discover on or off.',
+      'Under Privacy, turn Read receipts and Show me in Discover on or off. Read receipts also control whether people in your private chats see when you were last online.',
       'Under Your account, tap Change password, or Blocked people to see and unblock people.',
     ],
     tip: 'Location access is optional. You can still search by suburb without it.',
-    keywords: ['dark mode', 'theme', 'appearance', 'privacy', 'read receipts', 'password', 'location'],
+    keywords: ['dark mode', 'theme', 'appearance', 'privacy', 'read receipts', 'last seen', 'online', 'password', 'location'],
   },
   {
     id: 'delete-account',

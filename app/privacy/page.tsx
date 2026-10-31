@@ -460,6 +460,14 @@ export default function Privacy() {
         stop Tivorah from keeping your own unread counts or processing delivery
         information.
       </p>
+      <p>
+        <strong>Online and last seen.</strong> We record when you last had the
+        app open (the time your connection to Tivorah started or ended). While
+        your read receipts are on, people you have a private chat with can see
+        that you&apos;re online, or when you were last seen. Turning read
+        receipts off hides both straight away; we still keep the time to run the
+        service, and it is deleted with your account.
+      </p>
 
       <h2>Device permissions</h2>
       <p>
