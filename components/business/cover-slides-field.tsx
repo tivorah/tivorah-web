@@ -43,10 +43,11 @@ function readVideo(file: File): Promise<{ seconds: number; frame: File }> {
  * slides, e.g. three photos and a short video. The video uploads as soon as it's picked; its first
  * frame becomes the photo on its slide. Reorder or remove slides in the strip under the cover.
  * `children` sits over the cover's bottom edge (the Hub's round photo).
+ * Without a `purpose` the cover is photos only (items and services).
  */
 export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invalid = false, compact = false, children }: {
   id: string;
-  purpose: CoverVideoPurpose;
+  purpose: CoverVideoPurpose | null;
   slides: CoverSlide[];
   onChange: (slides: CoverSlide[]) => void;
   onBusy?: (busy: boolean) => void;
@@ -65,7 +66,7 @@ export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invali
   useEffect(() => { latest.current = slides; }, [slides]);
   const room = coverRoom(slides);
   const video = hasCoverVideo(slides);
-  const seconds = coverVideoMaxSeconds(purpose);
+  const seconds = coverVideoMaxSeconds(purpose ?? "listing");
 
   // Free the previews when the form goes away.
   useEffect(() => () => { for (const slide of latest.current) { URL.revokeObjectURL(slide.preview); if (slide.kind === "video") URL.revokeObjectURL(slide.framePreview); } }, []);
@@ -75,6 +76,7 @@ export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invali
     setError("");
     const picked = Array.from(files ?? []);
     if (!picked.length) return;
+    if (!purpose && picked.some((file) => !file.type.startsWith("image/"))) { setError("Item and service covers are photos only. Choose JPG, PNG or WebP photos."); return; }
     if (picked.some((file) => !file.type.startsWith("image/") && !file.type.startsWith("video/"))) { setError("Choose photos (JPG, PNG or WebP) or a video (MP4 or MOV)."); return; }
     if (picked.some((file) => file.type.startsWith("image/") && file.size > PHOTO_MAX_BYTES)) { setError("Choose JPG, PNG or WebP photos under 10 MB each."); return; }
     const videos = picked.filter((file) => file.type.startsWith("video/"));
@@ -95,6 +97,7 @@ export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invali
 
   // A picked video as a slide (uploading straight away), or why it can't be used.
   const videoSlide = async (file: File): Promise<CoverSlide | string> => {
+    if (!purpose) return "Item and service covers are photos only.";
     if (file.size > COVER_VIDEO_MAX_BYTES) return "Choose a video under 100 MB.";
     setReading(true);
     onBusy?.(true);
@@ -167,7 +170,7 @@ export function CoverSlidesField({ id, purpose, slides, onChange, onBusy, invali
       <div className="cover-slides-picks">
         {/* Photos and a video in any order: photos after a video, or a video after photos. */}
         {room ? pick("media", slides.length ? "Add photos" : "Add cover") : null}
-        {video ? pick("video", "Change video") : room ? pick("video", "Add video") : null}
+        {!purpose ? null : video ? pick("video", "Change video") : room ? pick("video", "Add video") : null}
       </div>
     </div>
     {children}

@@ -206,7 +206,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
         body: JSON.stringify({
           ...payload,
           communityIds: hubIds,
-          ...(videoUploadId ? kind === "event" ? { coverVideoUploadId: videoUploadId, coverVideoPosition: cover.videoPosition } : { coverUploadIds: [videoUploadId], coverVideoPosition: cover.videoPosition } : {}),
+          // Only events have a cover video; item and service covers are photos.
+          ...(videoUploadId && kind === "event" ? { coverVideoUploadId: videoUploadId, coverVideoPosition: cover.videoPosition } : {}),
           ...(kind === "service" ? { ...serviceSettingsPayload(settings), availabilityTimezone: settings.availabilityTimezone || serviceTimezoneForState(locality?.state, locality?.countryCode ?? placeCountry?.code), ...menuPayload(menu, !!template) } : {}),
         }),
       });
@@ -320,8 +321,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
 
           <section id="create-media" className="shop-step create-section">
             <h2><span className="create-step-no" aria-hidden="true">3</span>{kind === "event" ? "Cover" : "Photos"}</h2>
-            <p className="shop-hint">Add up to 4 photos and one video of up to 30 seconds.</p>
-            <CoverSlidesField id="create-cover" purpose={kind === "event" ? "event-cover" : "listing"} slides={covers} onChange={setCovers} onBusy={setUploading} compact />
+            <p className="shop-hint">{kind === "event" ? "Add up to 4 photos and one video of up to 30 seconds." : "Add up to 4 photos."}</p>
+            <CoverSlidesField id="create-cover" purpose={kind === "event" ? "event-cover" : null} slides={covers} onChange={setCovers} onBusy={setUploading} compact />
           </section>
 
           <section id="create-place" className="shop-step create-section">
