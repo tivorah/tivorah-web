@@ -46,7 +46,7 @@ Primary stack:
 - `app/hub-organisers/` — organiser information, responsibilities, and rules.
 - `app/service-providers/` — provider listing, responsibility, and payment information.
 - `app/contact/` — contact/support surface.
-- `app/guide/` — public feature guide linked from mobile Settings and the web footer; keep steps aligned with shipped app behavior.
+- `app/guide/` — public "How to use Tivorah" guide, the only copy (mobile Settings & privacy → Help & information → Tivorah guide opens it in the in-app browser; also in the web footer). Copy lives in `app/guide/content.ts` (Start here, task groups → topics with summary/steps/tip, FAQ); `guide-browser.tsx` adds search, section chips and `#topic-id` deep links. Name buttons exactly as shipped, never claim chats are end-to-end encrypted, and keep `app/guide/__tests__/content.test.ts` passing.
 - `app/admin/` — protected staff sign-in, MFA, dashboard, and operational UI.
 - `app/connect/return/` and `app/connect/refresh/` — Stripe Connect onboarding returns.
 - `app/newsletter/` — newsletter-related flows.

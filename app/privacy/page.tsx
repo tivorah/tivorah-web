@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 29 October 2026
+        <strong>Last updated:</strong> 31 October 2026
       </p>
 
       <p>
@@ -70,8 +70,10 @@ export default function Privacy() {
           <strong>Hub and social activity:</strong> Hubs you create, join or
           request to join, including their cover photos and an optional short
           cover video (reviewed by Tivorah before it appears publicly);
-          membership and moderation status; Banter, threads, announcements,
-          comments, reactions, polls and reports.
+          membership and moderation status; the Hubs you pin to the top of
+          your Hubs tab (saved to your account so your pins show on every
+          device you sign in on); Banter, threads, announcements, comments,
+          reactions, polls and reports.
         </li>
         <li>
           <strong>Messages and calls:</strong> the content of your private
@@ -161,6 +163,15 @@ export default function Privacy() {
           or delivery information.
         </li>
         <li>
+          <strong>Sign-up checks:</strong> when you create an account with an
+          email address, a one-way code made from the IP address you sign up
+          from (counted for a short time to limit automated sign-ups), the
+          result of any human check, and the outcome of our
+          checks on your email address (whether it already has an account and
+          whether it comes from a disposable email service). See &ldquo;Checks
+          when you sign up&rdquo; below.
+        </li>
+        <li>
           <strong>Support, feedback, waitlist and newsletter information:</strong> your
           correspondence with us, feedback rating and category, support
           requests, and, when you join the waitlist, your name, email address,
@@ -186,7 +197,8 @@ export default function Privacy() {
         to create and protect an account. Other fields, permissions, precise
         location, analytics, marketing and most profile details are optional.
         If required information is not provided, we may be unable to create an
-        account or provide the related feature. We do not ask for government
+        account or provide the related feature. If you sign up with an email
+        address, you must confirm it before you can use your account. We do not ask for government
         identity documents merely to join an ordinary Hub.
       </p>
 
@@ -213,7 +225,8 @@ export default function Privacy() {
         </li>
         <li>
           enforce Hub rules and our policies, investigate reports, prevent
-          fraud or abuse and maintain audit and security records;
+          fraud or abuse (including fake, duplicate and automatically created
+          accounts) and maintain audit and security records;
         </li>
         <li>
           communicate about requested activity, important service or safety
@@ -240,6 +253,71 @@ export default function Privacy() {
         and hurtful language, and may ask you to reconsider or stop it being
         posted. This check doesn&apos;t send your words to another company,
         and we keep only a count of what was flagged, not the words.
+      </p>
+      <p>
+        <strong>Checks when you sign up.</strong> To stop fake, duplicate and
+        automatically created accounts, spam and abuse, we run a few checks
+        when someone creates an account. We collect and use this information
+        because it is reasonably necessary to protect Tivorah and its members
+        (Australian Privacy Principle 3), and only for that purpose. These
+        checks apply when you sign up with an email address; signing up with
+        Apple or Google doesn&apos;t go through them.
+      </p>
+      <ul>
+        <li>
+          <strong>One account per email inbox.</strong> We compare a simplified
+          form of the email address you enter (in lower case, ignoring anything
+          after a &ldquo;+&rdquo; in the part before the @, and, for Gmail and
+          Googlemail addresses, ignoring dots) with the email addresses of
+          existing accounts. If that inbox already has an account, we won&apos;t
+          create another one, and we&apos;ll ask you to sign in or reset your
+          password instead. We don&apos;t store a second copy of your email
+          address for this; the comparison uses the address already saved with
+          each account.
+        </li>
+        <li>
+          <strong>Disposable email addresses.</strong> We check the part of
+          your email address after the @ against a published list of
+          disposable or throwaway email services (such as Mailinator or
+          10-minute mail). We also look up that domain&apos;s public email
+          (DNS) records, which show which mail servers receive its email, to
+          catch new throwaway services that use the same mail servers and
+          domains that can&apos;t receive email at all. Only the domain is
+          looked up, never your full address, and your email address
+          isn&apos;t sent to anyone for these checks. Addresses from these
+          services, or that can&apos;t receive email, can&apos;t be used for
+          new accounts, because we need to be able to reach you about your
+          account, safety and transactions.
+        </li>
+        <li>
+          <strong>Sign-up limits per network.</strong> We count how many new
+          accounts are attempted from the same network. We don&apos;t store
+          your IP address for this: we store a one-way code made from it (which
+          can&apos;t be turned back into the address) with the count, in our
+          temporary cache for no more than 2 hours, after which it is deleted
+          automatically. After a small number of sign-ups from one network in
+          an hour, we ask for a human check; past a higher limit, that network
+          can&apos;t create new accounts until the hour is up.
+        </li>
+        <li>
+          <strong>Human check.</strong> When we see a burst of sign-ups across
+          Tivorah (the check then stays on for about 15 minutes, for new
+          sign-ups and for sign-ins from unrecognised devices) or unusual
+          sign-up activity from one network,
+          we may ask you to complete a quick human check provided by
+          Cloudflare Turnstile. Cloudflare acts as our service provider and
+          processes technical information, such as your IP address and browser
+          or device signals, to decide whether you are a person; it handles
+          that information under its own privacy terms. Tivorah receives the
+          result of the check, not those signals.
+        </li>
+      </ul>
+      <p>
+        These checks can occasionally affect a genuine person, for example
+        someone on a shared work, university or mobile network. If you
+        can&apos;t sign up and think it&apos;s a mistake, try again later or
+        contact <a href="mailto:support@tivorah.com">support@tivorah.com</a>,
+        and a person will look at it.
       </p>
 
       <h2>What other people can see</h2>
@@ -519,8 +597,8 @@ export default function Privacy() {
           infrastructure, database, media-storage, email, push, authentication,
           payment, customer-support, security and analytics providers, including
           Contabo (website, application and database hosting), Redis Cloud and Upstash (caching, rate limiting and live
-          updates), Cloudflare and Cloudflare R2 (security, delivery and media
-          storage), ImageKit (during storage migration or rollback), Google
+          updates), Cloudflare and Cloudflare R2 (security, human checks at
+          sign-in and sign-up, delivery and media storage), ImageKit (during storage migration or rollback), Google
           Cloud Vision and Amazon Rekognition (automated image-safety
           screening), Google (sign-in, embedded maps and the connection service
           that helps voice and video calls connect), Apple (sign-in), Resend
@@ -577,7 +655,10 @@ export default function Privacy() {
         abuse material. Automated
         security and rate-limit checks may temporarily block sign-in attempts,
         sign-ups, messages or checkout requests that look abusive or
-        fraudulent. When an image is published we keep a one-way fingerprint
+        fraudulent, and sign-up checks may refuse a new account from an email
+        inbox that already has one, from a disposable email service or from a
+        network showing automated activity (see &ldquo;Checks when you sign
+        up&rdquo;). When an image is published we keep a one-way fingerprint
         of it (not the image itself) with the account that posted it, so we can
         re-check published images when new known harmful material, such as
         child sexual abuse material, is identified; these fingerprints are kept
@@ -696,7 +777,9 @@ export default function Privacy() {
         lock you out. During an attack, signing in from an unrecognised device
         may require a quick human check provided by Cloudflare Turnstile, which
         processes technical information such as your IP address and browser or
-        device signals under Cloudflare&apos;s own privacy terms. No online service can
+        device signals under Cloudflare&apos;s own privacy terms. The same check
+        may be shown when you sign up (see &ldquo;Checks when you sign
+        up&rdquo;). No online service can
         guarantee absolute security, and encryption cannot protect content on a
         compromised or unlocked device. If we suspect a data breach, we assess
         it promptly, and within 30 days, under the Notifiable Data Breaches
@@ -719,6 +802,15 @@ export default function Privacy() {
         7 days after you signed up, we delete the details you entered (your
         name, email, username, date of birth and password), and you can sign up
         again at any time.
+      </p>
+      <p>
+        The sign-up counts for each network (kept against a one-way code made
+        from the IP address, not the address itself) are deleted automatically
+        within 2 hours. The one-account-per-inbox and
+        disposable-email checks don&apos;t create a separate record: they use
+        the email address you enter and the addresses already saved with
+        existing accounts. Your pinned Hubs are kept with your account until
+        you unpin them, leave the Hub or delete your account.
       </p>
       <p>
         We keep waitlist details while you remain subscribed and for as long as

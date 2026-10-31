@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 30 October 2026
+        <strong>Last updated:</strong> 31 October 2026
       </p>
 
       <div className="legal-callout">
@@ -57,10 +57,29 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         <Link href="/privacy">Privacy Policy</Link> explains what these checks keep.
       </p>
       <p>
-        You may not impersonate another person, create an account for someone
-        without authority, evade a suspension, sell or transfer your account, or
-        use automated account creation. One person should use one genuine member
-        identity unless Tivorah expressly permits another account type.
+        <strong>One account per person.</strong> Each person may have one
+        genuine Tivorah account, and each email inbox can be used for only one
+        account, unless Tivorah expressly permits another account type. If you
+        sign up with an email address, you must confirm it before you can use
+        your account. You
+        must not impersonate another person, create an account for someone
+        without authority, create fake or duplicate accounts, create a new
+        account to get around a suspension, ban or other restriction, sell or
+        transfer your account, or use bots, scripts or other automated tools to
+        create accounts.
+      </p>
+      <p>
+        <strong>Sign-up checks.</strong> To protect members from fake accounts,
+        spam and abuse, we may refuse or limit new sign-ups, including from an
+        email inbox that already has an account, from disposable or throwaway
+        email addresses or addresses that can&apos;t receive email, and from networks showing automated or unusually high
+        sign-up activity. We may ask you to complete a quick human check before
+        your account is created. These checks can occasionally affect a genuine
+        person, for example on a shared network; if that happens, try again
+        later or contact{" "}
+        <a href="mailto:support@tivorah.com">support@tivorah.com</a>. Our{" "}
+        <Link href="/privacy">Privacy Policy</Link> explains what these checks
+        collect and how long it is kept.
       </p>
 
       <h2>What Tivorah provides</h2>
@@ -416,7 +435,11 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         </li>
         <li>
           use @mentions, quotes or polls to harass, pile on, mislead or spam
-          people, or create accounts to vote more than once; or
+          people, or create accounts to vote more than once;
+        </li>
+        <li>
+          create fake, duplicate or automated accounts, or a new account to get
+          around a suspension or ban; or
         </li>
         <li>
           use Tivorah in a way that infringes rights, breaches law or materially
@@ -515,7 +538,8 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <p>
         To protect accounts, we may briefly pause sign-in to an account after
         repeated wrong passwords, and may ask you to complete a quick human
-        check before signing in from a device we don&apos;t recognise. Some
+        check before signing in from a device we don&apos;t recognise or
+        before creating an account. Some
         features, including online payment for particular services, may be
         unavailable for a time while we set them up, maintain them or keep
         Tivorah safe; where that happens we will tell you in the app before you

@@ -195,6 +195,10 @@ export function AuthForm({
         }
         await leaveFor(returnTo);
       } else if (mode === "signup") {
+        // A human check, when the API asks for one (a busy network or a sign-up flood).
+        const sentToken = captchaToken.current;
+        captchaToken.current = null;
+        const fetchOptions = sentToken ? { headers: { "x-turnstile-token": sentToken } } : undefined;
         const result = await memberAuth.signUp.email({
           // Same shape as the mobile app: the API splits this into first and last name.
           name: `${firstName.trim()} ${lastName.trim()}`.trim(),
@@ -205,7 +209,17 @@ export function AuthForm({
           adultConfirmed: form.get("terms") === "on",
           termAndCondition: form.get("terms") === "on",
           privacyTerm: form.get("terms") === "on",
-        } as Parameters<typeof memberAuth.signUp.email>[0]);
+        } as Parameters<typeof memberAuth.signUp.email>[0], fetchOptions);
+        const failure = result.error as (typeof result.error & { code?: string; siteKey?: string }) | null;
+        if (failure?.code === "CAPTCHA_REQUIRED") {
+          // Each token works once: show a fresh check, and create the account as soon as it passes.
+          const siteKey = failure.siteKey || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+          if (!siteKey) throw new Error("Sign-up is busy right now. Please try again in a few minutes.");
+          setCaptcha((current) => ({ siteKey, token: null, attempt: (current?.attempt ?? 0) + 1 }));
+          setNotice("Quick security check — we’ll create your account as soon as it’s done.");
+          return;
+        }
+        if (sentToken) setCaptcha((current) => current && { ...current, token: null, attempt: current.attempt + 1 });
         if (result.error) {
           // Already used: an unfinished sign-up gets a fresh code; a full account is pointed to sign in.
           const exists = String((result.error as { code?: string }).code ?? "").includes("ALREADY_EXISTS") || /already exists/i.test(result.error.message ?? "");
@@ -485,7 +499,7 @@ export function AuthForm({
           </div>
         ) : null}
         {notice ? <p role="status">{notice}</p> : null}
-        {mode === "signin" && captcha && !captcha.token ? (
+        {(mode === "signin" || mode === "signup") && captcha && !captcha.token ? (
           <Turnstile
             key={captcha.attempt}
             siteKey={captcha.siteKey}
@@ -493,7 +507,7 @@ export function AuthForm({
             onError={() => setError("The security check couldn’t load. Check your connection and try again.")}
           />
         ) : null}
-        <button type="submit" className="product-primary" disabled={busy || (mode === "signup" && (!termsAccepted || underage)) || (mode === "signin" && !!captcha && !captcha.token)}>
+        <button type="submit" className="product-primary" disabled={busy || (mode === "signup" && (!termsAccepted || underage)) || ((mode === "signin" || mode === "signup") && !!captcha && !captcha.token)}>
           {busy
             ? "Please wait…"
             : mode === "signup"

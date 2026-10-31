@@ -20,7 +20,7 @@ export default function Cookies() {
     <article className="content">
       <span className="eyebrow">Privacy</span>
       <h1>Cookie Notice</h1>
-      <p className="legal-meta"><strong>Last updated:</strong> 28 October 2026</p>
+      <p className="legal-meta"><strong>Last updated:</strong> 31 October 2026</p>
       <p>
         This notice explains the cookies and similar browser storage used on tivorah.com. The
         Tivorah mobile app uses device storage and secure storage instead of browser cookies;
@@ -77,7 +77,7 @@ export default function Cookies() {
         <li><strong>Google Maps</strong> — the map shown on an event page is provided by Google.</li>
         <li><strong>Stripe</strong> — when you pay, you complete checkout on Stripe&apos;s secure payment page.</li>
         <li><strong>Google and Apple sign-in</strong> — if you choose to sign in with them.</li>
-        <li><strong>Cloudflare Turnstile</strong> — a quick human check shown only when signing in during an attack on unrecognised devices.</li>
+        <li><strong>Cloudflare Turnstile</strong> — a quick human check shown only when signing in from an unrecognised device during an attack, or when signing up while we see unusual sign-up activity.</li>
       </ul>
       <p>
         Our hosting and security providers, such as Contabo and Cloudflare, also process

@@ -10,7 +10,7 @@ export default function Guidelines() {
       <span className="eyebrow">Safety</span>
       <h1>Community Guidelines</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 20 October 2026
+        <strong>Last updated:</strong> 31 October 2026
       </p>
 
       <p>
@@ -55,6 +55,11 @@ export default function Guidelines() {
         coordinate fake engagement, misrepresent qualifications or affiliation,
         or use Tivorah to scam, defraud or manipulate others. Clearly disclose
         relevant commercial relationships and conflicts of interest.
+      </p>
+      <p>
+        Use one account. Don&apos;t create fake or duplicate accounts, use
+        bots to sign up, or open a new account to get around a suspension or
+        ban.
       </p>
 
       <h2>Keep trade and opportunities honest</h2>

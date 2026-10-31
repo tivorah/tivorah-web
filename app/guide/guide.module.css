@@ -1,25 +1,62 @@
-/* Reuses the public content shell; readable guide content is bounded at 960px. */
+/* Reuses the public content shell (centred 1040px column, phone gutters from legal.css); the guide reads at 960px. */
 .guide.guide { max-width: 960px; font-size: 16px; line-height: 1.65; }
-.topics { display: block; margin: 32px 0; padding: 24px; background: #f8f5fc; border-radius: 16px; }
-.guide .topics ul { display: block; list-style: none; margin: 0; padding: 0; }
 .guide a { color: #65409f; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
-.topics a, .back { display: inline-flex; align-items: center; min-height: 44px; }
-.guide a:focus-visible { outline: 3px solid #65409f; outline-offset: 4px; border-radius: 3px; }
-.section { padding: 28px 0; border-top: 1px solid #ded6e7; }
-.section h2 { scroll-margin-top: 110px; }
-.section ol { padding-left: 24px; }
-.section li { padding-left: 6px; margin-bottom: 12px; }
-.where { color: #625369; }
-@media (max-width: 600px) { .topics { padding: 16px; } .guide .topics ul { grid-template-columns: 1fr; } }
+.guide a:focus-visible, .guide summary:focus-visible, .guide button:focus-visible, .guide input:focus-visible { outline: 3px solid #65409f; outline-offset: 3px; border-radius: 6px; }
 
-.groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
-.groups summary { cursor: pointer; min-height: 44px; padding: 8px 0; color: #65409f; font-weight: 600; }
-.groups summary:focus-visible { outline: 3px solid #65409f; outline-offset: 3px; }
-@media (max-width: 600px) { .groups { grid-template-columns: 1fr; } }
+/* Start here: four numbered first steps. */
+.start { margin: 28px 0 8px; padding: 20px 24px; background: #f8f5fc; border-radius: 16px; }
+.start h2 { margin: 0 0 8px; font-size: 22px; }
+.start ol { margin: 0; padding-left: 24px; }
+.start li { padding-left: 4px; margin-bottom: 8px; }
 
-/* Dark theme (CSS modules aren't covered by the generated app/theme-dark.css), same palette. */
-:global(:root[data-theme="dark"]) .topics { background: #19161a; }
-:global(:root[data-theme="dark"]) .guide a, :global(:root[data-theme="dark"]) .groups summary { color: #c9adf7; }
-:global(:root[data-theme="dark"]) .guide a:focus-visible, :global(:root[data-theme="dark"]) .groups summary:focus-visible { outline-color: #c9adf7; }
-:global(:root[data-theme="dark"]) .section { border-top-color: #3a333e; }
-:global(:root[data-theme="dark"]) .where { color: #b7afbb; }
+/* Search and quick-jump chips. */
+.finder { margin: 28px 0 8px; }
+.search label { display: block; font-weight: 700; margin-bottom: 6px; }
+.searchRow { display: flex; gap: 8px; align-items: center; }
+.searchRow input { flex: 1; min-width: 0; min-height: 48px; padding: 0 18px; font: inherit; color: #211d23; background: #ffffff; border: 1px solid #b9adc4; border-radius: 999px; }
+.clear { min-height: 44px; padding: 0 18px; font: inherit; font-weight: 600; color: #211d23; background: #f1ecf6; border: 1px solid #d8cfe1; border-radius: 999px; cursor: pointer; }
+.status { min-height: 1.65em; margin: 6px 0 0; color: #5d5263; }
+.chips ul { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 4px 0 0; padding: 0; }
+.guide .chips a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; color: #3d2468; font-weight: 600; text-decoration: none; background: #f1ecf6; border: 1px solid #d8cfe1; border-radius: 999px; }
+.guide .chips a:hover { background: #e7def1; }
+.empty { margin: 20px 0; padding: 20px 24px; background: #f8f5fc; border-radius: 16px; }
+.empty p { margin: 0 0 12px; }
+
+/* Topic groups and answers. */
+.group { padding: 28px 0 12px; border-top: 1px solid #ded6e7; margin-top: 20px; }
+.group h2 { scroll-margin-top: 110px; margin: 0 0 4px; }
+.groupIntro { margin: 0 0 12px; color: #5d5263; }
+.topic { border: 1px solid #ded6e7; border-radius: 16px; margin: 10px 0; background: #ffffff; scroll-margin-top: 110px; }
+.topic summary { display: grid; gap: 2px; min-height: 44px; padding: 14px 48px 14px 18px; cursor: pointer; list-style: none; position: relative; border-radius: 16px; }
+.topic summary::-webkit-details-marker { display: none; }
+.topic summary::after { content: "+"; position: absolute; right: 18px; top: 12px; font-size: 24px; line-height: 1; color: #65409f; }
+.topic[open] summary::after { content: "−"; }
+.topicTitle { font-weight: 700; font-size: 17px; color: #211d23; }
+.topicSummary { color: #5d5263; }
+.answer { padding: 0 18px 16px; }
+.answer ol { padding-left: 24px; margin: 4px 0 12px; }
+.answer li { padding-left: 4px; margin-bottom: 8px; }
+.where { margin: 0 0 6px; color: #5d5263; }
+.where span { font-weight: 700; }
+.tip { margin: 0; padding: 12px 14px; background: #f8f5fc; border-radius: 12px; }
+.back { display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; }
+.help { padding: 28px 0; border-top: 1px solid #ded6e7; margin-top: 20px; }
+
+@media (max-width: 600px) {
+  .start, .empty { padding: 16px; }
+  .topic summary { padding: 12px 44px 12px 14px; }
+  .answer { padding: 0 14px 14px; }
+}
+
+/* Dark theme (CSS modules aren't covered by the generated app/theme-dark.css), same palette as the app. */
+:global(:root[data-theme="dark"]) .guide a, :global(:root[data-theme="dark"]) .topic summary::after { color: #c9adf7; }
+:global(:root[data-theme="dark"]) .guide a:focus-visible, :global(:root[data-theme="dark"]) .guide summary:focus-visible, :global(:root[data-theme="dark"]) .guide button:focus-visible, :global(:root[data-theme="dark"]) .guide input:focus-visible { outline-color: #c9adf7; }
+:global(:root[data-theme="dark"]) .start, :global(:root[data-theme="dark"]) .empty, :global(:root[data-theme="dark"]) .tip { background: #221d26; }
+:global(:root[data-theme="dark"]) .topic { background: #1d191f; border-color: #3a333e; }
+:global(:root[data-theme="dark"]) .group, :global(:root[data-theme="dark"]) .help { border-top-color: #3a333e; }
+:global(:root[data-theme="dark"]) .topicTitle { color: #f4f0f6; }
+:global(:root[data-theme="dark"]) .topicSummary, :global(:root[data-theme="dark"]) .where, :global(:root[data-theme="dark"]) .groupIntro, :global(:root[data-theme="dark"]) .status { color: #b7afbb; }
+:global(:root[data-theme="dark"]) .searchRow input { color: #f4f0f6; background: #19161a; border-color: #5a5060; }
+:global(:root[data-theme="dark"]) .clear { color: #f4f0f6; background: #2a2430; border-color: #4a4150; }
+:global(:root[data-theme="dark"]) .guide .chips a { color: #e6d9fb; background: #2a2430; border-color: #4a4150; }
+:global(:root[data-theme="dark"]) .guide .chips a:hover { background: #352d3c; }

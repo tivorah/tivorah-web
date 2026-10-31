@@ -1,54 +1,32 @@
 import Link from 'next/link';
 import { pageMetadata } from '../../lib/site';
+import { faqs, groups, startHere, topics } from './content';
+import { GuideBrowser } from './guide-browser';
 import styles from './guide.module.css';
 
-export const metadata = pageMetadata('Tivorah guide', 'Learn how to use Tivorah: Hubs, banter, messages, events, tickets, items, services, jobs and account settings.', '/guide');
-
-const sections = [
-  { id: 'getting-started', title: 'Getting started', where: 'Mobile app and web account', steps: ['Create an account or sign in. Complete any email verification requested.', 'Add your name, profile photo and a short introduction from your profile.', 'Choose your area when browsing. Location permission is optional for manual suburb searches.'], tip: 'Use Settings to choose your theme, manage notification preferences and review location access.' },
-  { id: 'hubs', title: 'Find and join a Hub', where: 'Discover on web · join and participate in the mobile app', steps: ['Open Hubs and search by name, interest or area.', 'Open a Hub to read its description and rules before joining.', 'Join an open Hub, or send a request if membership requires approval. Check back for the result.'], tip: 'Your joined Hubs give you access to their conversations, announcements, people and shared activity.' },
-  { id: 'banter', title: 'Banter, threads and Hub media', where: 'Mobile app', steps: ['Open a Hub you have joined and go to its banter.', 'Write a message or use the attachment controls for supported media.', 'Reply to a message to keep the conversation together. Open shared media or announcements from the Hub.'], tip: 'Follow the Hub rules. Use message or member actions to report a problem rather than sharing private information publicly.' },
-  { id: 'organise-hub', title: 'Create and manage a Hub', where: 'Mobile app', steps: ['Choose Create Hub, add its name, description, category and location.', 'Choose the membership settings and review the organiser rules before creating it.', 'Use the Hub management controls available to your role to review requests, publish announcements and manage members.'], tip: 'Describe who the Hub is for and what members can expect. Moderation controls depend on your role.' },
-  { id: 'connections', title: 'People and connections', where: 'Mobile app', steps: ['Find people through Hub members or a profile.', 'Read their profile and use the connection action when it is available.', 'Manage your connections from your profile. Respect people who decline or do not respond.'], tip: 'A profile or shared Hub is not proof of identity or qualifications. You can manage blocked people in Settings.' },
-  { id: 'messages', title: 'Private messages and enquiries', where: 'Mobile app and web account', steps: ['Open Messages or start a conversation from an available profile or listing action. Chats holds your private conversations; Enquiries holds conversations about listings, services, events and jobs.', 'Write your message, or use an available suggested question to start a listing enquiry.', 'Return to the conversation to read replies. In the app, use its actions if you need to report or block someone.'], tip: 'Your chats and enquiries appear in Messages in the app and in your signed-in web account. View once photos open only in the app. Do not send passwords, verification codes or sensitive documents in a message.' },
-  { id: 'events', title: 'Find and book an event', where: 'Mobile app and web', steps: ['Browse Events and open an event to check its date, location, organiser and ticket options.', 'Choose an available ticket type and quantity, then review the booking details and total.', 'Complete the booking and wait for confirmation. Use your confirmed ticket or booking page for entry details.'], tip: 'An in-person event needs a meeting address. Check any directions before travelling. Payment redirects alone do not confirm a ticket.' },
-  { id: 'create-event', title: 'Create an event', where: 'Mobile app', steps: ['Choose Create event, add a cover photo, event name and category. Cover uploads accept photos.', 'For an in-person event, find and confirm the venue address or enter it and select the suburb manually. Add directions if guests need them. For an online event, use the Online tab.', 'Set the date and time, describe the event, and configure the available ticket and capacity options.', 'Review the organiser rules and event details before publishing. Paid events require the payout setup shown in the app.'], tip: 'Address lookup fills the suburb and postcode after confirmation. Optional directions appear in the event description so guests can read them.' },
-  { id: 'tickets', title: 'Tickets and organiser check-in', where: 'Tickets on mobile and web · organiser tools in the mobile app', steps: ['Open your event booking or ticket to check its status and entry code.', 'Show the confirmed ticket at the event. Follow any transfer or cancellation options offered for that booking.', 'As an organiser, open your event management tools to review attendees and check in confirmed tickets.'], tip: 'Keep private ticket links and entry codes to yourself. Availability of refunds or transfers depends on the booking and event.' },
-  { id: 'items', title: 'Create and find item listings', where: 'In your Hubs and on seller shops, on mobile and web · create in the app or on the web', steps: ['Open a Hub you have joined and choose Member listings to browse items members are selling. A seller’s shop page shows all of their items.', 'To sell, choose the + in Member listings (or Sell locally on your profile), then Sell an item. Add photos, choose a category and enter an accurate description and price.', 'Choose at least one Hub (up to three) to share it with. Members of those Hubs see it there.', 'Set the location and available fulfilment details, then review and publish. Use the listing’s enquiry or order action to arrange collection or delivery with the seller.'], tip: 'You can only share to Hubs you belong to, and each Hub’s rules apply. Use your listing management screen to keep availability and details current.' },
-  { id: 'services', title: 'Find or offer a service', where: 'In your Hubs and on provider shops, on mobile and web · create in the app or on the web', steps: ['Open a Hub you have joined and choose Member listings, then Services, to see what members offer. Check the provider, description, price and delivery options.', 'Use the enquiry or booking action to discuss your needs and confirm the arrangement.', 'To offer a service, choose the + in Member listings, then Offer a service. Complete the details, location and booking settings, and choose at least one Hub to share it with.'], tip: 'Confirm scope, timing and price before booking. Verify qualifications or licences where they matter. Service availability can vary.' },
-  { id: 'shop', title: 'Your shop and published listings', where: 'Mobile app and public web shop', steps: ['Open your shop from your profile to see the public listings, services and events on your shop page.', 'Create items or services from a Hub’s Member listings or Sell locally on your profile; each one is shared to the Hubs you choose and also appears on your shop.', 'Use your listing management tools to update details and availability. Share your shop with Copy link on your public shop page, or Share in the app.'], tip: 'Review your public profile and listing information before sharing your shop.' },
-  { id: 'jobs', title: 'Hub jobs', where: 'Mobile app', steps: ['Open a joined Hub and go to Jobs to see available opportunities.', 'Read the role, location and application details, then use the application action provided.', 'If publishing is available to you, add the job details and application method, then review before posting.'], tip: 'Confirm the employer and working arrangements. Never pay someone merely to apply for a job.' },
-  { id: 'bookings', title: 'Bookings, orders and payouts', where: 'Mobile app and available web account tools', steps: ['Open your bookings or orders to review the latest status and available actions.', 'Read confirmation details before attending, collecting an item or receiving a service.', 'For paid selling or events, open payout setup from your profile and complete the required steps. Return to the app to check its status.'], tip: 'Available actions depend on the booking type and status. Contact support if a payment or booking cannot be resolved through its available actions.' },
-  { id: 'sharing', title: 'Virtual card, sharing and QR codes', where: 'Mobile app · public links open on web', steps: ['Open Virtual card from your profile to view your public profile card and QR code.', 'Use the available Share, Save or Copy link action to share your card. Check your public details first.', 'Use the app scanner to open supported Tivorah profile, Hub, event or listing QR codes. Allow camera access when prompted.'], tip: 'Share public links only. Ticket entry codes and private booking links should stay private.' },
-  { id: 'settings', title: 'Profile, notifications and settings', where: 'Mobile app', steps: ['Open your profile to edit your account details and public introduction.', 'Open Settings to choose Light, Dark or System appearance and manage notification preferences.', 'Review location access, blocked people and account security. Use Help & Legal for this guide, feedback, policies and support.'], tip: 'Booking and ticket updates remain essential account messages. Account deletion is in Settings; read the confirmation carefully before continuing.' },
-  { id: 'safety', title: 'Reporting, blocking and support', where: 'Mobile reporting tools and web support', steps: ['Use the available report action on the content or person involved and explain what happened.', 'Block unwanted contact using the available person or conversation controls.', 'Use Contact & complaints in Settings for help with account, booking or other issues. For immediate danger, contact emergency services.'], tip: 'Preserve relevant details, but do not publish another person’s private information. Read the Safety Centre for further guidance.' },
-];
-
-const groups = [
-  ['Start here', ['getting-started', 'settings', 'safety']],
-  ['Hubs and people', ['hubs', 'banter', 'organise-hub', 'connections', 'messages']],
-  ['Events and tickets', ['events', 'create-event', 'tickets']],
-  ['Items, services and your shop', ['items', 'services', 'shop']],
-  ['Jobs and transactions', ['jobs', 'bookings']],
-  ['Sharing and QR codes', ['sharing']],
-] as const;
+export const metadata = pageMetadata(
+  'How to use Tivorah',
+  'A plain-English guide to Tivorah: joining and pinning Hubs, Banter, booking event tickets, private chats and view once photos, buying and selling, jobs, your profile and staying safe.',
+  '/guide',
+);
 
 export default function GuidePage() {
   return <article className={`content ${styles.guide}`}>
     <span className="eyebrow">Help with Tivorah</span>
-    <h1>Tivorah guide</h1>
-    <p>Choose a feature to learn how it works and where to find it. Some features or actions depend on your account, Hub role, booking status or availability in the app.</p>
-    <nav id="top" aria-label="Guide topics" className={styles.topics}>
-      <h2>What would you like to do?</h2>
-      <div className={styles.groups}>{groups.map(([title, ids]) => <details key={title}><summary>{title}</summary><ul>{ids.map(id => { const section = sections.find(item => item.id === id)!; return <li key={id}><a href={`#${id}`}>{section.title}</a></li>; })}</ul></details>)}</div>
-    </nav>
-    {sections.map(section => <section key={section.id} aria-labelledby={section.id} className={styles.section}>
-      <h2 id={section.id}>{section.title}</h2>
-      <p className={styles.where}>{section.where}</p>
-      <ol>{section.steps.map(step => <li key={step}>{step}</li>)}</ol>
-      <p>{section.tip}</p>
-      <a className={styles.back} href="#top">Back to topics ↑</a>
-    </section>)}
-    <section className={styles.section}><h2>Still need help?</h2><p><Link href="/contact">Contact the Tivorah team</Link> or visit the <Link href="/safety">Safety Centre</Link>. Do not include passwords or verification codes in a support message.</p></section>
+    <h1 id="guide-top">How to use Tivorah</h1>
+    <p>Step-by-step help for the things people do most. Search for what you want to do, or jump to a section. Button names are shown exactly as they appear in the app.</p>
+
+    <section aria-labelledby="start-here" className={styles.start}>
+      <h2 id="start-here">Start here</h2>
+      <ol>{startHere.map(step => <li key={step}>{step}</li>)}</ol>
+    </section>
+
+    <GuideBrowser groups={groups} topics={topics} faqs={faqs} />
+
+    <section aria-labelledby="more-help" className={styles.help}>
+      <h2 id="more-help">Still need help?</h2>
+      <p><Link href="/contact">Contact the Tivorah team</Link> or visit the <Link href="/safety">Safety Centre</Link>. In the app, both are in Profile → Settings &amp; privacy → Help &amp; information. Never include passwords or verification codes in a support message.</p>
+      <p>Tivorah is not an emergency service. If you or someone else is in immediate danger, call 000.</p>
+    </section>
   </article>;
 }
