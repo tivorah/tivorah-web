@@ -32,6 +32,8 @@ type Listing = ServiceSettingsValue & {
   businessName: string | null;
   category: string;
   images: string[];
+  /** The approved cover video and its slide (its first frame is the photo there). */
+  coverVideo?: { url: string; position?: number } | null;
   priceCents: number;
   currency: string;
   priceType: string;
@@ -226,7 +228,8 @@ function Editor({ item, refresh }: { item: Listing & { status?: string }; refres
                 <section className="shop-step">
                   <h2>Photos</h2>
                   <p className="shop-hint">The first photo is the one customers see first. Up to five photos, 10 MB each, checked before publishing.</p>
-                  <MediaField initialUrls={item.images} context={item.listingType} onChange={setImages} onBusy={setUploading} />
+                  <MediaField initialUrls={item.images} context={item.listingType} onChange={setImages} onBusy={setUploading}
+                    videoFrame={item.coverVideo ? item.images[item.coverVideo.position ?? 0] ?? null : null} />
                 </section>
                 {tab === "Photos" ? <OfferingVideosEditor kind={item.listingType} id={item.id} /> : null}
               </div>

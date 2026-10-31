@@ -41,6 +41,9 @@ export type ManagedEvent = { refundPolicy?: string | null; setupIssues?: import(
   status: string;
   images: string[];
   img: string | null;
+  /** The cover video (the organiser also sees one still in review) and its slide. */
+  coverVideoUrl?: string | null;
+  coverVideoPosition?: number | null;
   ticketTypes: TicketType[];
 };
 export function localDate(value: string | null) {

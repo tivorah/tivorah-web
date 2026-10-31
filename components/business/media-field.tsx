@@ -7,8 +7,11 @@ export function MediaField({
   initialUrls = [],
   onChange,
   onBusy,
+  videoFrame,
 }: {
   initialUrls?: string[];
+  /** The photo that is the cover video's first frame: the video moves with it, so it's labelled. */
+  videoFrame?: string | null;
   context: "item" | "service" | "event";
   onChange: (urls: string[]) => void;
   onBusy: (busy: boolean) => void;
@@ -74,12 +77,13 @@ export function MediaField({
       </p>
       {busy ? <p role="status">Uploading and checking photos…</p> : null}
       {error ? <p role="alert">{error}</p> : null}
+      {videoFrame && urls.includes(videoFrame) ? <p className="event-help">The photo marked “video” is your cover video’s first frame. Moving it moves the video; removing it takes the video off the cover.</p> : null}
       {urls.length ? <div className="business-media-preview">{urls.map((url, index) => (
         <div className="business-media-photo" key={url}>
           <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`View photo ${index + 1}`}>
             <Image src={url} alt={`Uploaded photo ${index + 1}`} width={112} height={92} />
           </a>
-          <span>{index === 0 ? "Cover photo" : `Photo ${index + 1}`}</span>
+          <span>{url === videoFrame ? (index === 0 ? "Cover video" : `Video · slide ${index + 1}`) : index === 0 ? "Cover photo" : `Photo ${index + 1}`}</span>
           {index > 0 ? <button type="button" className="product-secondary" disabled={busy} onClick={() => { const next = [url, ...urls.filter((_, i) => i !== index)]; setUrls(next); onChange(next); }}>Make cover</button> : null}
           <button
             type="button"

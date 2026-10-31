@@ -26,10 +26,10 @@ export type ManagedHub = {
 };
 
 export type HubSettings = {
-  whoCanPostBanter: "members" | "moderators";
-  whoCanStartThreads: "members" | "moderators";
-  whoCanPostListings: "members" | "moderators";
-  whoCanPostJobs: "members" | "moderators";
+  whoCanPostBanter: "members" | "moderators" | "creator";
+  whoCanStartThreads: "members" | "moderators" | "creator";
+  whoCanPostListings: "members" | "moderators" | "creator";
+  whoCanPostJobs: "members" | "moderators" | "creator";
   whoCanPostAnnouncements: "moderators" | "creator";
   whoCanUploadMedia: "moderators" | "creator";
   membersCanSeeMemberList: boolean;
@@ -84,10 +84,10 @@ export function suggestHubUsername(name: string) {
 export const HUB_USERNAME_PATTERN = /^[a-z0-9][a-z0-9._-]{2,39}$/;
 
 export const SETTING_COPY: { key: keyof HubSettings; label: string; options: { value: string; label: string }[] }[] = [
-  { key: "whoCanPostBanter", label: "Who can post in Banter", options: [{ value: "members", label: "All members" }, { value: "moderators", label: "Moderators only" }] },
-  { key: "whoCanStartThreads", label: "Who can reply in threads", options: [{ value: "members", label: "All members" }, { value: "moderators", label: "Moderators only" }] },
-  { key: "whoCanPostListings", label: "Who can share listings", options: [{ value: "members", label: "All members" }, { value: "moderators", label: "Moderators only" }] },
-  { key: "whoCanPostJobs", label: "Who can post jobs", options: [{ value: "members", label: "All members" }, { value: "moderators", label: "Moderators only" }] },
+  { key: "whoCanPostBanter", label: "Who can post in Banter", options: [{ value: "members", label: "All members" }, { value: "moderators", label: "Moderators and owner" }, { value: "creator", label: "Owner only" }] },
+  { key: "whoCanStartThreads", label: "Who can reply in threads", options: [{ value: "members", label: "All members" }, { value: "moderators", label: "Moderators and owner" }, { value: "creator", label: "Owner only" }] },
+  { key: "whoCanPostListings", label: "Who can share listings", options: [{ value: "members", label: "All members" }, { value: "moderators", label: "Moderators and owner" }, { value: "creator", label: "Owner only" }] },
+  { key: "whoCanPostJobs", label: "Who can post jobs", options: [{ value: "members", label: "All members" }, { value: "moderators", label: "Moderators and owner" }, { value: "creator", label: "Owner only" }] },
   { key: "whoCanPostAnnouncements", label: "Who can post announcements", options: [{ value: "moderators", label: "Moderators and owner" }, { value: "creator", label: "Owner only" }] },
   { key: "whoCanUploadMedia", label: "Who can add to Hub media", options: [{ value: "moderators", label: "Moderators and owner" }, { value: "creator", label: "Owner only" }] },
 ];

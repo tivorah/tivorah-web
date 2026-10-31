@@ -297,8 +297,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               <input name="title" required minLength={3} maxLength={160} placeholder={kind === "event" ? "Give your event a clear name" : kind === "service" ? "What service do you offer?" : "What are you selling?"} />
             </label>
             <label>
-              Description
-              <textarea name="description" required minLength={10} maxLength={10000} rows={4} placeholder={kind === "event" ? "What can people expect?" : kind === "service" ? "What is included, and how should customers prepare?" : "Condition, size, age and anything buyers should know"} />
+              {kind === "event" ? "About the event (optional)" : "Description"}
+              <textarea name="description" required={kind !== "event"} minLength={kind === "event" ? undefined : 10} maxLength={10000} rows={4} placeholder={kind === "event" ? "What can people expect?" : kind === "service" ? "What is included, and how should customers prepare?" : "Condition, size, age and anything buyers should know"} />
             </label>
             {kind === 'event' && <label>Refund policy<SelectField name="refundPolicyPreset" label="Refund policy" placeholder="Choose a refund policy" options={[...refundPolicyOptions]} /><span className="shop-hint">Buyers can request a refund from their booking while your policy allows it.</span></label>}
             {kind === 'event' && <details className="shop-more event-visit-fields"><summary>Plan your visit · optional</summary>{(['agePolicy','arrival','accessibility','refundPolicy'] as const).map(key => <label key={key}>{({agePolicy:'Age and ID requirements',arrival:'Arrival, parking and doors',accessibility:'Accessibility',refundPolicy:'Refund details'})[key]}<textarea name={key} rows={3} maxLength={key === 'agePolicy' ? 200 : 1200} /></label>)}<p className="shop-hint">Refund instructions cannot remove applicable consumer rights.</p>{Array.from({length:3},(_, index) => <div key={index}><label>Question {index + 1}<input name={`faq-question-${index}`} maxLength={200} minLength={3} /></label><label>Answer {index + 1}<textarea name={`faq-answer-${index}`} rows={3} maxLength={1600} minLength={2} /></label></div>)}</details>}
@@ -529,7 +529,8 @@ function checklistFor(kind: CreationKind, data: ChecklistInput) {
   const items = [
     { id: "hubs", section: "create-hubs", label: "Hubs", done: data.hubs > 0 },
     { id: "title", section: "create-basics", label: kind === "event" ? "Event name" : "Title", done: data.title.trim().length >= 3 },
-    { id: "description", section: "create-basics", label: "Description", done: data.description.trim().length >= 10 },
+    // An event's description is optional.
+    ...(kind === "event" ? [] : [{ id: "description", section: "create-basics", label: "Description", done: data.description.trim().length >= 10 }]),
     { id: "category", section: "create-basics", label: "Category", done: !!data.category },
     { id: "photos", section: "create-media", label: kind === "event" ? "Cover photo" : "Photos", done: data.images.length > 0 },
     { id: "place", section: "create-place", label: kind === "event" ? "Location" : kind === "service" ? "Where you work" : "Pickup suburb", done: online ? (kind === "event" ? /^https:\/\/\S+\.\S+/.test(data.onlineUrl) : true) : !!data.locality },
