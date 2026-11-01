@@ -1585,15 +1585,12 @@ html[data-theme="dark"] .product-primary:hover {
 .hub-detail-hero { overflow: hidden; border: 1px solid #e4dce9; border-radius: 28px; background: #fff; }
 .hub-detail-cover { position: relative; height: clamp(180px, 24vw, 300px); background: linear-gradient(115deg, #a373d7, #68439e 55%, #35244d); }
 .hub-detail-cover img { object-fit: cover; }
-.hub-detail-cover-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 /* The Hub page's cover slides (hub-cover-slides.tsx): swiped, one at a time, like the app. */
 .hub-cover-track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .hub-cover-track::-webkit-scrollbar { display: none; }
 .hub-cover-slide { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; }
 .hub-cover-slide img { object-fit: cover; }
 .hub-cover-count { position: absolute; z-index: 2; right: 14px; top: 14px; padding: 4px 10px; border-radius: 999px; background: rgba(20, 17, 22, .62); color: #fff; font-size: 12px; font-weight: 800; pointer-events: none; }
-/* Reduced motion: keep the still cover photo, never a moving one. */
-@media (prefers-reduced-motion: reduce) { .hub-detail-cover-video { display: none; } }
 .hub-detail-identity { display: flex; align-items: center; gap: 24px; padding: 0 clamp(24px, 4vw, 48px) 30px; }
 .hub-detail-identity-copy { min-width: 0; padding-top: 24px; }
 .hub-detail-avatar { width: 108px; height: 108px; position: relative; display: grid; flex: none; place-items: center; overflow: hidden; margin-top: -34px; border: 5px solid #fff; border-radius: 50%; background: #e3d4f1; color: #7043a8; font-size: 52px; box-shadow: 0 8px 20px #21192720; }
@@ -2309,3 +2306,11 @@ html[data-theme="dark"] .owner-manage .owner-manage-link:hover { background: #5a
 .hub-share.is-invalid .hub-share-card { border-color: #c4314b; box-shadow: 0 0 0 3px #c4314b1f; }
 .hub-share-error { margin: 8px 0 0; color: #b3263e; font-size: 14px; font-weight: 650; }
 .hub-share-note a { color: #5d329d; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Saving overlay (components/ui/saving-overlay.tsx): the same waiting moment on every form. */
+.saving-overlay { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 24px; background: rgba(12, 8, 16, 0.7); backdrop-filter: blur(2px); }
+.saving-overlay-card { width: 100%; max-width: 320px; display: grid; justify-items: center; gap: 10px; padding: 28px 24px; border-radius: 20px; background: #fff; color: #241d29; text-align: center; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35); }
+.saving-overlay-spinner { width: 36px; height: 36px; border: 3px solid #e6dcf3; border-top-color: #65409f; border-radius: 50%; animation: button-progress-spin .8s linear infinite; }
+.saving-overlay-title { margin: 6px 0 0; font-size: 17px; line-height: 22px; font-weight: 700; }
+.saving-overlay-body { margin: 0; font-size: 14px; line-height: 20px; color: #706a73; }
+@media (prefers-reduced-motion: reduce) { .saving-overlay-spinner { animation: none; border-top-color: #e6dcf3; border-right-color: #65409f; } }

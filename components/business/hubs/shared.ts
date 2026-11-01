@@ -108,11 +108,8 @@ export type NewHub = {
   avatar: Blob | null;
   /** One key per create attempt, reused on retries, so a lost response never makes a second Hub. */
   idempotencyKey?: string;
-  /** The cover slides, one photo each (a video's first frame on its slide; lib/cover-slides.ts). */
+  /** The cover slides, one photo each (lib/cover-slides.ts). */
   covers: Blob[];
-  /** The cover video's finished upload, and the slide it plays on. */
-  coverVideoUploadId?: string;
-  coverVideoPosition?: number;
   /** The opening welcome post. Left out, the API posts its suggested welcome (like older apps). */
   welcome?: { enabled: boolean; message: string };
 };
@@ -152,10 +149,6 @@ export function newHubFormData(hub: NewHub): FormData {
   if (hub.avatar) form.set("avatar", hub.avatar);
   if (hub.idempotencyKey) form.set("idempotencyKey", hub.idempotencyKey);
   for (const cover of hub.covers) form.append("banner", cover);
-  if (hub.coverVideoUploadId) {
-    form.set("coverVideoUploadId", hub.coverVideoUploadId);
-    form.set("coverVideoPosition", String(hub.coverVideoPosition ?? 0));
-  }
   // Same fields as the app: off, or the creator's text (empty sends the API's suggestion).
   if (hub.welcome) {
     form.set("postWelcome", hub.welcome.enabled ? "true" : "false");

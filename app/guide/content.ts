@@ -153,7 +153,7 @@ export const topics: readonly GuideTopic[] = [
       'About: add a slogan and description. Turn on Private hub if you want to approve everyone who joins.',
       'Rules: choose the rules members agree to (up to 12), then tap Create hub.',
     ],
-    tip: 'The cover is optional. Without one, your Hub gets one of Tivorah’s colours. Cover videos are checked before they show.',
+    tip: 'The cover is optional: up to 4 photos. Without one, your Hub gets one of Tivorah’s colours.',
     keywords: ['new hub', 'start a hub', 'cover', 'slideshow', 'video', 'organiser'],
   },
   {

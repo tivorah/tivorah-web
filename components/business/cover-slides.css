@@ -1,14 +1,14 @@
 /* Cover slides on the web create pages (cover-slides-field.tsx), like the app's cover editor. */
 .cover-slides { display: grid; gap: 0; min-width: 0; }
 .cover-slides-stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 18px; background: linear-gradient(120deg, #efe6fb, #fde9f3 55%, #fff1e6); transition: aspect-ratio .26s cubic-bezier(.2, .8, .2, 1); }
-/* Events and listings: shorter while it's only photos; a video grows it back to 16:9. */
+/* Events and listings: a shorter banner. */
 .cover-slides.is-compact .cover-slides-stage { aspect-ratio: 12 / 5; }
 @media (prefers-reduced-motion: reduce) { .cover-slides-stage { transition: none; } }
 .cover-slides.is-invalid .cover-slides-stage { box-shadow: 0 0 0 2px #b3263a; }
 .cover-slides-track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .cover-slides-track::-webkit-scrollbar { display: none; }
 .cover-slides-slide { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; }
-.cover-slides-slide img, .cover-slides-slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cover-slides-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .cover-slides-count { position: absolute; left: 12px; top: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(20, 17, 22, .62); color: #fff; font-size: 12px; font-weight: 800; pointer-events: none; }
 .cover-slides-picks { position: absolute; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 /* Soft, frosted pills (light lilac; plum in dark mode), lighter than a dark overlay. */

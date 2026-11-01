@@ -34,6 +34,7 @@ import { NavigationTracker } from "../components/ui/navigation-tracker";
 import { PressEffect } from "../components/ui/press-effect";
 import { NavProgress } from "../components/ui/nav-progress";
 import { ContentReviewDialog } from "../components/ui/content-review-dialog";
+import { AppOpenPrompt } from "../components/ui/app-open-prompt";
 
 // The browser bar matches the page. No viewport-fit=cover: the browser keeps content clear of the
 // notch and its own bars (cover hid the "Back to the Tivorah app" bar under the in-app browser's bar).
@@ -96,6 +97,7 @@ export default async function RootLayout({
           </main>
           <SiteFooter />
           <ContentReviewDialog />
+          <AppOpenPrompt />
         </DiscoveryFeatures></AccountProvider>
       </body>
     </html>

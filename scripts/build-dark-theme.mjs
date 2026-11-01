@@ -28,8 +28,8 @@ export const SOURCES = [
   "components/orders/item-orders.css", "components/bookings/bookings.css", "components/account/booking-help.css",
   "components/business/hubs/hubs.css",
 ].filter((file) => existsSync(join(root, file)));
-// app/controls.css themes itself (CSS variables set in the header below), so it isn't converted.
-const SKIP = ["app/theme-dark.css", "app/controls.css"];
+// app/controls.css and the open-in-app card theme themselves (their own dark variables), so they aren't converted.
+const SKIP = ["app/theme-dark.css", "app/controls.css", "components/ui/app-open-prompt.css"];
 // Any other stylesheet (not CSS modules, whose class names are hashed) follows, so none is missed.
 const walk = (dir) => readdirSync(join(root, dir)).flatMap((name) => { const path = `${dir}/${name}`; return statSync(join(root, path)).isDirectory() ? (name === "node_modules" || name.startsWith(".") ? [] : walk(path)) : [path]; });
 for (const file of [...walk("app"), ...walk("components")].filter((f) => f.endsWith(".css") && !f.endsWith(".module.css") && !SKIP.includes(f)).sort()) if (!SOURCES.includes(file)) SOURCES.push(file);

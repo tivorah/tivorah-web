@@ -20,12 +20,11 @@ test('builds the same multipart fields the mobile app sends', () => {
   assert.equal(form.get('banner'), null);
 });
 
-test('sends every cover slide, and the cover video with its slide', () => {
-  const form = newHubFormData(hub({ covers: [new Blob(['1']), new Blob(['frame']), new Blob(['2'])], coverVideoUploadId: 'upload-1', coverVideoPosition: 1 }));
+test('sends every cover slide as a banner photo, and nothing else about the cover', () => {
+  const form = newHubFormData(hub({ covers: [new Blob(['1']), new Blob(['2']), new Blob(['3'])] }));
   assert.equal(form.getAll('banner').length, 3);
-  assert.equal(form.get('coverVideoUploadId'), 'upload-1');
-  assert.equal(form.get('coverVideoPosition'), '1');
-  assert.equal(newHubFormData(hub()).get('coverVideoUploadId'), null);
+  assert.equal(form.get('coverVideoUploadId'), null);
+  assert.equal(form.get('coverVideoPosition'), null);
 });
 
 test('sends the create attempt key so a retry returns the same Hub', () => {

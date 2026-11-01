@@ -1,34 +1,14 @@
 /**
  * Cover slides (Hubs, events, listings; tivorah-api services/coverSlides.ts): every slide is a
- * photo and an approved video plays on its own slide, over the photo stored there (its first
- * frame). Covers from before slides had positions show the video on the first slide.
+ * photo. Events, items and services take up to MAX_COVER_SLIDES; a Hub's cover takes up to
+ * HUB_COVER_SLIDES (the app and API allow the same).
  */
-export function coverVideoSlide(position: number | null | undefined, slideCount: number) {
-  if (typeof position !== "number" || !Number.isInteger(position) || position < 0) return 0;
-  return Math.min(position, Math.max(0, slideCount - 1));
-}
+export const MAX_COVER_SLIDES = 8;
+export const HUB_COVER_SLIDES = 4;
 
-/** Up to four cover slides, at most one of them a video (the app and API allow the same). */
-export const MAX_COVER_SLIDES = 4;
+export type CoverSlide = { id: string; kind: "photo"; file: File; preview: string };
 
-/**
- * The video a card plays (muted, no controls): cards show only the cover's first photo, so only a
- * video that opens the cover (its first frame is that photo). Older covers: the first slide.
- */
-export function cardCoverVideo(item: { coverVideoUrl?: string | null; coverVideoPosition?: number | null }) {
-  return item.coverVideoUrl && coverVideoSlide(item.coverVideoPosition, MAX_COVER_SLIDES) === 0 ? item.coverVideoUrl : null;
-}
-/** Hub, event and listing cover videos: up to 30 seconds and 100 MB. */
-export type CoverVideoPurpose = "hub-cover" | "event-cover" | "listing";
-export const coverVideoMaxSeconds = (_purpose: CoverVideoPurpose) => 30;
-export const COVER_VIDEO_MAX_BYTES = 100 * 1024 * 1024;
-
-export type CoverSlide =
-  | { id: string; kind: "photo"; file: File; preview: string }
-  | { id: string; kind: "video"; file: File; preview: string; frame: File; framePreview: string; seconds: number; upload: Promise<string> };
-
-export const coverRoom = (slides: CoverSlide[]) => Math.max(0, MAX_COVER_SLIDES - slides.length);
-export const hasCoverVideo = (slides: CoverSlide[]) => slides.some((slide) => slide.kind === "video");
+export const coverRoom = (slides: CoverSlide[], max = MAX_COVER_SLIDES) => Math.max(0, max - slides.length);
 
 export function moveCoverSlide<T>(slides: T[], from: number, to: number): T[] {
   if (from === to || from < 0 || to < 0 || from >= slides.length || to >= slides.length) return slides;
@@ -38,10 +18,7 @@ export function moveCoverSlide<T>(slides: T[], from: number, to: number): T[] {
   return next;
 }
 
-/** What to send: one photo per slide (the video's first frame on its slide) and the video's slide. */
+/** What to send: one photo per slide, in order. */
 export function coverUploadOrder(slides: CoverSlide[]) {
-  const photos = slides.map((slide) => (slide.kind === "photo" ? slide.file : slide.frame));
-  const videoAt = slides.findIndex((slide) => slide.kind === "video");
-  const video = videoAt >= 0 ? slides[videoAt] : null;
-  return { photos, videoPosition: Math.max(0, videoAt), videoUpload: video && video.kind === "video" ? video.upload : null };
+  return { photos: slides.map((slide) => slide.file) };
 }

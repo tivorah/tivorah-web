@@ -506,12 +506,20 @@ CI runs on pull requests and main/develop pushes; it never deploys or runs migra
 ## Cover slides
 
 - The web create pages (Hub, event, listing) use `components/business/cover-slides-field.tsx`, the
-  same rules as the app: up to four slides, at most one video (first frame read in the browser,
-  uploaded straight to storage). Send `coverUploadOrder()` photos plus `coverVideoPosition`.
-  Hub and event pages play the approved video on its own slide (`lib/cover-slides.ts`).
-  `components/discovery/cover-video.tsx`: detail pages and the create field get play/pause + sound
-  (starts muted; swiping away resets); event cards play it silently with no controls only when it
-  opens the cover (`cardCoverVideo()`), while in view. Reduced motion keeps the still photo on public pages.
+  same rules as the app: photo slides only, up to `MAX_COVER_SLIDES` (8) for events, items and
+  services and `HUB_COVER_SLIDES` (4) for a Hub (`lib/cover-slides.ts`; pass `maxSlides`). Send
+  `coverUploadOrder()` photos. Hub and event covers no longer take or show a cover video (removed
+  1 Nov 2026 for data use; the API fields still exist but clients ignore them). Listing videos for
+  items/services/events live in `components/business/offering-videos.tsx`, unchanged.
+
+## Open in the app
+
+- `lib/open-app.ts` holds the shared launcher (`launchApp`: iPhone `tivorah://` with a not-installed
+  check, Android intent with store fallback) and `appLinkFor(pathname)` (profile `/u/:name`, event
+  `/events/:id`, Hub `/hubs/:id` and `/hubs/invite/:id`).
+- `components/ui/app-open-prompt.tsx` (mounted in `app/layout.tsx`): on a phone, outside the app, a
+  page opened from a link asks "Open Tivorah / Not now" once per tab. Nothing opens without the tap.
+  Its stylesheet themes itself and is skipped by `scripts/build-dark-theme.mjs`.
 
 ## Feature switches on the web
 

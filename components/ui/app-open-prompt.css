@@ -1,0 +1,20 @@
+/* "Open in the Tivorah app?" card for phones arriving from a shared link (app-open-prompt.tsx).
+   It themes itself (light and dark variables below), so scripts/build-dark-theme.mjs skips it. */
+.app-open-prompt { --aop-card: #fff; --aop-mark: #f7f4fa; --aop-ink: #17131f; --aop-muted: #625a6b; --aop-primary: #6941b4; --aop-focus: #a978e8; --aop-scrim: rgba(20, 14, 26, .55); --aop-shadow: rgba(20, 14, 26, .28); }
+:root[data-theme="dark"] .app-open-prompt { --aop-card: #211e24; --aop-mark: #2d2831; --aop-ink: #f4f0f5; --aop-muted: #c6bdc9; --aop-primary: #7a4fd0; --aop-focus: #c8a7f5; --aop-scrim: rgba(8, 6, 10, .72); --aop-shadow: rgba(0, 0, 0, .5); }
+.app-open-prompt { width: min(380px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); margin: auto; padding: 44px 0 0; overflow: visible; border: 0; background: transparent; color: var(--aop-ink); }
+.app-open-prompt::backdrop { background: rgba(20, 14, 26, .55); animation: app-open-prompt-fade .2s ease-out; }
+:root[data-theme="dark"] .app-open-prompt::backdrop { background: rgba(8, 6, 10, .72); }
+.app-open-prompt-card { position: relative; display: grid; gap: 12px; justify-items: center; padding: 56px 22px 14px; border-radius: 24px; background: var(--aop-card); box-shadow: 0 24px 60px var(--aop-shadow); text-align: center; animation: app-open-prompt-up .24s cubic-bezier(.2, .8, .2, 1); }
+/* The Tivorah mark sits in a circle over the card's top edge. */
+.app-open-prompt-mark { position: absolute; top: -44px; left: 50%; display: grid; place-items: center; width: 88px; height: 88px; border: 4px solid var(--aop-card); border-radius: 50%; background: var(--aop-mark); box-shadow: 0 6px 18px var(--aop-shadow); transform: translateX(-50%); }
+.app-open-prompt-mark img { width: 56px; height: 56px; object-fit: contain; }
+.app-open-prompt h2 { margin: 0; color: var(--aop-ink); font-size: 22px; line-height: 1.25; overflow-wrap: anywhere; }
+.app-open-prompt p { margin: 0 0 6px; color: var(--aop-muted); font-size: 15px; line-height: 1.5; }
+.app-open-prompt-primary { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 50px; padding: 12px 18px; border: 0; border-radius: 14px; background: var(--aop-primary); color: #fff; font: inherit; font-size: 16px; font-weight: 750; text-decoration: none; cursor: pointer; }
+.app-open-prompt-primary:disabled { opacity: .75; cursor: progress; }
+.app-open-prompt-later { min-height: 44px; padding: 0 16px; border: 0; background: none; color: var(--aop-muted); font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; }
+.app-open-prompt-primary:focus-visible, .app-open-prompt-later:focus-visible { outline: 3px solid var(--aop-focus); outline-offset: 2px; }
+@keyframes app-open-prompt-up { from { transform: translateY(18px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes app-open-prompt-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .app-open-prompt-card, .app-open-prompt::backdrop { animation: none; } }

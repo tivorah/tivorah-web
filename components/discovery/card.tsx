@@ -10,8 +10,6 @@ import { hubInterestTiers } from "../../lib/category-filter";
 import { distanceLabel } from "../../lib/distance";
 import { discoveryByline } from "../../lib/byline";
 import { hubCoverBackground } from "../../lib/hub-cover-color";
-import { cardCoverVideo } from "../../lib/cover-slides";
-import { CardCoverVideo } from "./cover-video";
 export function DiscoveryCard({
   item,
   kind,
@@ -38,8 +36,6 @@ export function DiscoveryCard({
             {kind === "events" ? "↗" : kind === "hubs" ? "◎" : "✳"}
           </span>
         )}
-        {/* An event's cover video, when it opens the cover: muted, looping, no controls, only while in view. */}
-        {kind === "events" && item.image && cardCoverVideo(item) ? <CardCoverVideo src={cardCoverVideo(item)!} poster={item.image} /> : null}
         {item.category ? (
           <span className="discover-category">{item.category}</span>
         ) : null}

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "../../lib/api/client";
 import { SelectField } from "../ui/select-field";
 import { browserCountry, countryFlag, usePlaceCountries, usePlaceCountry, usePlaceLocalities, usePlaceRegions, type PlaceCountry } from "../../lib/api/places";
+import { AU_STATE_NAMES } from "./events/event-venue-field";
 
 /**
  * A place anywhere in the world, sent as suburb/state/postcode + countryCode (the API's shape).
@@ -10,7 +11,7 @@ import { browserCountry, countryFlag, usePlaceCountries, usePlaceCountry, usePla
  */
 export type Locality = { suburb: string; state: string; postcode: string; countryCode?: string };
 
-/** Same as the mobile PlacePicker: Australia searches suburbs, Nigeria picks a state then LGA, elsewhere types a city. */
+/** Same as the mobile PlacePicker: Australia picks a state then searches its suburbs (as events do), Nigeria picks a state then LGA, elsewhere types a city. */
 export function LocalityField({
   onChange,
   onCountryChange,
@@ -65,16 +66,24 @@ export function LocalityField({
 }
 
 function AustralianSuburb({ required, onChange }: { required: boolean; onChange: (value: Locality | null) => void }) {
+  // The state or territory first (as when creating an event), then only its suburbs are searched.
+  const [auState, setAuState] = useState("");
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Locality[]>([]);
   const [selected, setSelected] = useState<Locality | null>(null);
   const [error, setError] = useState("");
+  const chooseState = (code: string) => {
+    if (code === auState) return;
+    setAuState(code);
+    // A suburb in another state no longer fits: search again in this one.
+    setQuery(""); setItems([]); setSelected(null); onChange(null);
+  };
   useEffect(() => {
-    if (query.length < 2 || selected) return;
+    if (query.length < 2 || selected || !auState) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
       api<{ localities: Locality[] }>(
-        `/public/discovery/locations?query=${encodeURIComponent(query)}`,
+        `/public/discovery/locations?query=${encodeURIComponent(query)}&state=${encodeURIComponent(auState)}`,
         { signal: controller.signal },
       )
         .then((result) => {
@@ -94,10 +103,14 @@ function AustralianSuburb({ required, onChange }: { required: boolean; onChange:
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query, selected]);
+  }, [query, selected, auState]);
   return (
-    <div>
-      <label>
+    <div className="event-place-au">
+      <label>State or territory
+        <SelectField label="State or territory" value={auState} placeholder="Choose first, then search the suburb" required={required}
+          options={Object.entries(AU_STATE_NAMES).map(([code, name]) => ({ value: code, label: name }))} onChange={chooseState} />
+      </label>
+      {auState ? <label>
         Suburb or postcode
         <input
           value={query}
@@ -108,11 +121,11 @@ function AustralianSuburb({ required, onChange }: { required: boolean; onChange:
             onChange(null);
             setItems([]);
           }}
-          placeholder="Search Australian suburbs"
+          placeholder={`Search suburbs in ${auState}`}
           autoComplete="off"
           required={required}
         />
-      </label>
+      </label> : <p className="shop-hint">Choose the state or territory first, then search for the suburb.</p>}
       {error ? <p role="alert">{error}</p> : null}
       {!selected && items.length ? (
         <div className="locality-options" aria-label="Matching suburbs">

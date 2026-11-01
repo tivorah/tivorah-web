@@ -1334,6 +1334,27 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
 :root[data-theme="dark"] .hub-share-note a {
   color: #bba1e1;
 }
+:root[data-theme="dark"] .saving-overlay {
+  background: rgba(8, 6, 10, 0.98);
+}
+:root[data-theme="dark"] .saving-overlay-card {
+  background: #141115;
+  color: #e2dde3;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.56);
+}
+:root[data-theme="dark"] .saving-overlay-spinner {
+  border: 3px solid #463c4a;
+  border-top-color: #5d4a7c;
+}
+:root[data-theme="dark"] .saving-overlay-body {
+  color: #c1b7c4;
+}
+@media (prefers-reduced-motion: reduce) {
+:root[data-theme="dark"] .saving-overlay-spinner {
+  border-top-color: #463c4a;
+  border-right-color: #5d4a7c;
+}
+}
 
 /* app/discovery-filters.css */
 :root[data-theme="dark"] .filter-select-trigger,
@@ -6878,16 +6899,6 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
 }
 :root[data-theme="dark"] .admin-dashboard-unavailable p {
   color: #c5bcc8;
-}
-
-/* app/cover-video.css */
-:root[data-theme="dark"] .cover-video-controls button {
-  background: rgba(8, 6, 10, 0.812);
-}
-@media (hover: hover) {
-:root[data-theme="dark"] .cover-video-controls button:hover {
-  background: #08060a;
-}
 }
 
 /* app/u/[username]/profile.css */
