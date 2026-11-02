@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 31 October 2026
+        <strong>Last updated:</strong> 2 November 2026
       </p>
 
       <p>
@@ -68,8 +68,7 @@ export default function Privacy() {
         </li>
         <li>
           <strong>Hub and social activity:</strong> Hubs you create, join or
-          request to join, including their cover photos and an optional short
-          cover video (reviewed by Tivorah before it appears publicly);
+          request to join, including their cover photos;
           membership and moderation status; the Hubs you pin to the top of
           your Hubs tab (saved to your account so your pins show on every
           device you sign in on); Banter, threads, announcements, comments,

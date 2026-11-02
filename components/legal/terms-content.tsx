@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 31 October 2026
+        <strong>Last updated:</strong> 2 November 2026
       </p>
 
       <div className="legal-callout">
@@ -109,14 +109,11 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
         is not an endorsement of a member&apos;s Hub, event or listing.
       </p>
       <p>
-        <strong>Cover videos.</strong> A Hub or event can have a short cover
-        video of up to 30 seconds, shown with its cover photos. It starts
-        muted; on the Hub or event page, people can pause it and turn its
-        sound on, so any sound in your video can be heard. On cards in lists
-        it plays muted with no controls. Tivorah reviews it before it appears
-        publicly; until then, and if it isn’t approved, the cover photo shows
-        instead. Cover videos must follow these Terms and our Community
-        Guidelines like any other content, including their sound.
+        <strong>Cover photos.</strong> A Hub, event or listing can show a set
+        of cover photos at the top of its page and on cards in lists. Cover
+        photos must follow these Terms and our Community Guidelines like any
+        other content. Hubs and events take photos only; a listing can also
+        include short videos as described in the Shops section.
       </p>
       <p>
         <strong>Welcome posts.</strong> When you create a Hub, it can open with
