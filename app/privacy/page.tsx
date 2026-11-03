@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 2 November 2026
+        <strong>Last updated:</strong> 3 November 2026
       </p>
 
       <p>
@@ -568,10 +568,12 @@ export default function Privacy() {
         Push notifications for private one-to-one chats never include the
         message: they only say who sent you a message, so the text does not
         appear on your lock screen or pass through notification services.
-        Notifications for enquiries about a listing, service or event can
-        include the sender&apos;s name, what the enquiry is about and the start
-        of the message. Depending on your device settings, notification text
-        may appear on your lock screen. While you are using the app, new
+        Notifications for enquiries about a listing, service or event also
+        never include the message: they show the sender&apos;s name, the title
+        of the listing, service or event it is about, and that a new enquiry
+        or a photo, video, voice message or file has arrived. Depending on your
+        device settings, this notification text may appear on your lock
+        screen. While you are using the app, new
         messages may appear as an in-app banner. Push notifications are
         delivered through Expo and Apple or Google notification services.
       </p>
