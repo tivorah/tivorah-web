@@ -77,3 +77,14 @@ describe("api client", () => {
     stop();
   });
 });
+
+it("chat receipts do not announce a mutation, so open threads cannot loop", () => {
+  const { announcesMutation } = client;
+  assert.equal(announcesMutation("/chat/conversations/12/delivered", "PUT"), false);
+  assert.equal(announcesMutation("/chat/conversations/12/read", "PUT"), false);
+  assert.equal(announcesMutation("/chat/conversations/12/messages", "POST"), true);
+  assert.equal(announcesMutation("/chat/conversations/12/messages", "GET"), false);
+  assert.equal(announcesMutation("/market/orders", undefined), false);
+  assert.equal(announcesMutation("/market/products/8/booking-quote", "POST"), false);
+  assert.equal(announcesMutation("/market/products/8/bookings", "POST"), true);
+});

@@ -74,8 +74,23 @@ export async function api<T>(path: string, init: RequestInit & { timeoutMs?: num
       body?.data,
     );
   }
-  if (typeof window !== "undefined" && !/^\/chat\/.*\/read$/.test(path) && init.method && !["GET", "HEAD"].includes(init.method.toUpperCase())) {
+  if (typeof window !== "undefined" && announcesMutation(path, init.method)) {
     window.dispatchEvent(new CustomEvent("tivorah:mutation", { detail: path }));
   }
   return body?.data as T;
+}
+
+/**
+ * Requests that change nothing the account screens show must not refresh private data:
+ * read and delivered receipts (announcing them caused an endless delivered → refetch → delivered
+ * loop), and price quotes, which are POSTs only because they carry a selection.
+ */
+const READ_ONLY_POSTS = [
+  /^\/chat\/conversations\/[^/]+\/(read|delivered)$/,
+  /^\/market\/products\/[^/]+\/booking-quote$/,
+];
+export function announcesMutation(path: string, method?: string) {
+  if (!method || ["GET", "HEAD"].includes(method.toUpperCase())) return false;
+  const bare = path.split("?")[0];
+  return !READ_ONLY_POSTS.some((pattern) => pattern.test(bare));
 }

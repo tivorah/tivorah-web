@@ -26,7 +26,7 @@ export type ActionBooking = {
   currency?: string;
   customerNote?: string | null;
   serviceAddress?: ServiceAddress | null;
-  payoutStatus?: "held" | "released" | "reversed" | "not_applicable" | null;
+  payoutStatus?: "held" | "releasing" | "released" | "reversed" | "not_applicable" | null;
   payoutReleasedAt?: string | null;
   paymentDueAt?: string | null;
   requestExpiresAt?: string | null;
@@ -192,7 +192,7 @@ function BookingFacts({ booking, role }: { booking: ActionBooking; role: Role })
   if (booking.providerMessage) rows.push([role === "provider" ? "Your message" : "Provider’s message", booking.providerMessage]);
   if (booking.refundedCents) rows.push(["Refunded", money(booking.refundedCents, currency)]);
   if (["cancelled", "refunded"].includes(booking.status) && booking.cancelledBy) rows.push(["Cancelled by", booking.cancelledBy === role ? "You" : booking.cancelledBy === "provider" ? "The provider" : booking.cancelledBy === "customer" ? "The customer" : "Tivorah"]);
-  if (role === "provider" && booking.payoutStatus && booking.payoutStatus !== "not_applicable") rows.push(["Payout", booking.payoutStatus === "held" ? "Held until 24 hours after the appointment, then sent to your bank" : booking.payoutStatus === "released" ? `Sent${booking.payoutReleasedAt ? ` ${when(booking.payoutReleasedAt, booking.timezone, { day: "numeric", month: "short" })}` : ""}` : "Returned to the customer"]);
+  if (role === "provider" && booking.payoutStatus && booking.payoutStatus !== "not_applicable") rows.push(["Payout", booking.payoutStatus === "held" ? "Held until 24 hours after the appointment, then sent to your bank" : booking.payoutStatus === "releasing" ? "Being sent to your bank now" : booking.payoutStatus === "released" ? `Sent${booking.payoutReleasedAt ? ` ${when(booking.payoutReleasedAt, booking.timezone, { day: "numeric", month: "short" })}` : ""}` : "Returned to the customer"]);
   if (!rows.length) return null;
   return <dl className="booking-facts">{rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>;
 }

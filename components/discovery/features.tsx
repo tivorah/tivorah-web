@@ -158,13 +158,20 @@ export function DiscoveryLinks({
   );
 }
 
+/** Paid or private features: never shown as available without a loaded switch (fail closed). */
+export const FAIL_CLOSED_FEATURES = new Set(["paid_tickets", "service_payments", "service_bookings", "services", "marketplace", "chat"]);
+
 /**
- * One switch from Admin → Features, as the app reads it. While the first load is pending a switch
- * counts as on, so nothing flickers out; the API refuses anything that is really off.
+ * One switch from Admin → Features, as the app reads it. While the first load is pending, a switch
+ * counts as on so nothing flickers out (the API refuses anything that is really off), except paid
+ * and private features. If the switches couldn't load at all, those stay off rather than on.
  */
 export function useFeature() {
   const { config } = useContext(Features);
-  return (key: string) => !config || config.features?.[key]?.enabled === true;
+  return (key: string) => {
+    if (config) return config.features?.[key]?.enabled === true;
+    return !FAIL_CLOSED_FEATURES.has(key);
+  };
 }
 
 // Pages that need a feature, like the app's route guard (tivorah-mobile FeatureRouteGuard).

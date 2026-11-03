@@ -18,14 +18,31 @@ import { destinationLabel } from "../../lib/auth/handoff-destination";
  * (the token is still unused), and when the token is missing (the page was reloaded or restored)
  * or already used, it carries on if this browser is already signed in to the same account the app
  * passed (`account`). Only then does it ask people to go back to the app or sign in.
+ *
+ * Someone could send a link with a token for THEIR account, to sign a victim into it unnoticed. So:
+ * a browser signed in to a different account is never switched without asking, and a signed-out
+ * browser outside the app's own screen is shown who it is now signed in as before it continues.
  */
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+type SessionUser = { id?: string | number; name?: string | null; username?: string | null };
+const insideAppBrowser = () => typeof window !== "undefined" && Boolean((window as Window & { ReactNativeWebView?: unknown }).ReactNativeWebView);
+async function currentSessionUser(): Promise<SessionUser | null> {
+  try {
+    const response = await fetch(`${adminApiBase()}/api/auth/get-session`, { credentials: "include" });
+    if (!response.ok) return null;
+    const body = await response.json() as { user?: SessionUser | null } | null;
+    return body?.user?.id != null ? body.user : null;
+  } catch { return null; }
+}
+const describe = (user: SessionUser | null) => user ? [user.name?.trim(), user.username ? `@${user.username}` : ""].filter(Boolean).join(" ") || "this account" : "this account";
 export function SessionHandoff() {
   const params = useSearchParams();
   const returnTo = safeReturnPath(params.get("returnTo"));
   const [failed, setFailed] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [fromApp, setFromApp] = useState(false);
+  // A decision only the person can make: switch accounts, or confirm who they're now signed in as.
+  const [question, setQuestion] = useState<null | { kind: "switch"; current: SessionUser; exchange: () => void } | { kind: "confirm"; user: SessionUser; go: () => void }>(null);
   const destination = destinationLabel(returnTo);
   const started = useRef(false);
 
@@ -40,34 +57,75 @@ export function SessionHandoff() {
     // Drop the token from the address bar and history straight away (a reload keeps the account).
     window.history.replaceState(null, "", `/auth/handoff?returnTo=${encodeURIComponent(returnTo)}${account ? `&account=${account}` : ""}`);
     const go = () => { setSignedIn(true); window.location.replace(returnTo); };
-    void (async () => {
-      if (token) {
-        for (let attempt = 0; attempt < 3; attempt += 1) {
-          try {
-            const response = await fetch(`${adminApiBase()}/api/auth/one-time-token/verify`, {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ token }),
-            });
-            // A full navigation so every part of the site picks up the new session.
-            if (response.ok) return go();
-            break; // The API answered: the token is used or expired; check for a session below.
-          } catch {
-            await wait(700 * (attempt + 1)); // Didn't reach the API: the token is still unused.
-          }
-        }
-      }
-      try {
-        const response = await fetch(`${adminApiBase()}/api/auth/get-session`, { credentials: "include" });
-        if (response.ok && continuesWithSession(await response.json(), account)) return go();
-      } catch { /* fall through to the message */ }
+    const fail = () => {
       setFailed(true);
       // Inside the app's own browser screen: tell it, so it lifts its preloader and shows this message.
       (window as Window & { ReactNativeWebView?: { postMessage: (message: string) => void } }).ReactNativeWebView?.postMessage("handoff-failed");
+    };
+    const exchange = async () => {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const response = await fetch(`${adminApiBase()}/api/auth/one-time-token/verify`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token }),
+          });
+          if (!response.ok) return false; // The API answered: the token is used or expired.
+          return true;
+        } catch {
+          await wait(700 * (attempt + 1)); // Didn't reach the API: the token is still unused.
+        }
+      }
+      return false;
+    };
+    const exchangeAndContinue = async () => {
+      if (await exchange()) {
+        // Signed out before: outside the app, show who this is now, so a link carrying someone else's
+        // account can't sign this browser in to it unnoticed. Inside the app's screen it's the app's own.
+        const user = insideAppBrowser() ? null : await currentSessionUser();
+        if (user) { setQuestion({ kind: "confirm", user, go }); return; }
+        return go(); // A full navigation so every part of the site picks up the new session.
+      }
+      const user = await currentSessionUser();
+      if (continuesWithSession(user ? { user } : null, account)) return go();
+      fail();
+    };
+    void (async () => {
+      const current = await currentSessionUser();
+      // Already signed in here to the account the app is using: nothing to exchange.
+      if (current && continuesWithSession({ user: current }, account)) return go();
+      if (!token) return fail();
+      // Signed in to a different account: never replace it without asking.
+      if (current) { setQuestion({ kind: "switch", current, exchange: () => { setQuestion(null); void exchangeAndContinue(); } }); return; }
+      await exchangeAndContinue();
     })();
   }, [params, returnTo]);
 
+  if (question?.kind === "switch") {
+    return <section className="product-form auth-form" role="alert">
+      <h1>Switch accounts?</h1>
+      <p>This browser is signed in as {describe(question.current)}. The link you opened is for a different Tivorah account.</p>
+      <div className="handoff-actions">
+        <button type="button" className="product-primary" onClick={question.exchange}>Switch accounts</button>
+        <button type="button" className="product-secondary" onClick={() => window.location.replace(returnTo)}>Keep {describe(question.current)}</button>
+      </div>
+    </section>;
+  }
+  if (question?.kind === "confirm") {
+    const signOut = async () => {
+      await fetch(`${adminApiBase()}/api/auth/sign-out`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => undefined);
+      window.location.replace(`/auth/signin?returnTo=${encodeURIComponent(returnTo)}`);
+    };
+    return <section className="product-form auth-form" role="alert">
+      <h1>You’re signed in as {describe(question.user)}</h1>
+      <p>If this isn’t your account, sign out now. Don’t enter payment or personal details.</p>
+      <div className="handoff-actions">
+        <button type="button" className="product-primary" onClick={question.go}>Continue</button>
+        <button type="button" className="product-secondary" onClick={() => void signOut()}>This isn’t me</button>
+      </div>
+    </section>;
+  }
   if (failed) {
     return <section className="product-form auth-form" role="alert">
       <h1>Let’s try that again</h1>

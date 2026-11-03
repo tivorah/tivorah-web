@@ -254,7 +254,7 @@ export function TicketBooking({ event }: { event: PublicEvent }) {
   const ticketChoices = modePackages.map((item) => {
     const notYet = item.salesStartAt && new Date(item.salesStartAt).getTime() > Date.now();
     const ended = item.salesEndAt && new Date(item.salesEndAt).getTime() <= Date.now();
-    const state = item.releaseAfterName ? `On sale when ${item.releaseAfterName} sells out` : item.remaining <= 0 ? "Sold out" : notYet ? `On sale ${new Date(item.salesStartAt!).toLocaleString("en-AU", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}` : ended ? "Sale ended" : !item.available ? "Unavailable" : item.remaining <= 10 ? `Only ${item.remaining} left` : "";
+    const state = item.releaseAfterName ? `On sale when ${item.releaseAfterName} sells out` : item.remaining <= 0 ? "Sold out" : notYet ? `On sale ${new Date(item.salesStartAt!).toLocaleString("en-AU", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Australia/Adelaide" })} (Adelaide time)` : ended ? "Sale ended" : !item.available ? "Unavailable" : item.remaining <= 10 ? `Only ${item.remaining} left` : "";
     return { item, state, label: `${item.name} · ${item.priceCents ? ticketMoney(item.buyerPriceCents ?? item.priceCents, item.currency) : quantity ? "Free" : ticketMoney(0, ticket?.currency)}${state ? ` · ${state}` : ""}` };
   });
   const chosenTicket = ticketChoices.find((choice) => choice.item.id === ticketId);

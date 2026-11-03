@@ -1,4 +1,5 @@
 "use client";
+import { AccountGate } from "../account/gate";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -32,6 +33,10 @@ const dayKey = (value: string, timezone: string) => when(value, timezone, { year
 const localDayKey = (date: Date) => new Intl.DateTimeFormat("en-AU", { year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 
 export function BusinessAppointments() {
+  return <AccountGate redirectOnSignedOut>{(account) => <BusinessAppointmentsView key={account.id} />}</AccountGate>;
+}
+
+function BusinessAppointmentsView() {
   const params = useSearchParams();
   const router = useRouter();
   const initial = (params.get("tab") as Tab) || (params.get("quote") ? "quotes" : params.get("booking") ? "requests" : "schedule");
@@ -43,13 +48,18 @@ export function BusinessAppointments() {
   const week = usePrivateResource<Schedule>(`/market/provider/appointments?${new URLSearchParams({ from: weekStart.toISOString(), to: weekEnd.toISOString() })}`);
   const overview = usePrivateResource<Schedule>("/market/provider/appointments");
   const quotes = usePrivateResource<{ quotes: { perspective: string; status: string }[] }>("/market/quotes");
-  const refresh = (message: string) => { setNotice(message); week.retry(); overview.retry(); };
+  // Counted over every date, with held money per currency (services/serviceBookings summary).
+  const summary = usePrivateResource<{ pendingRequests: number; invoicesDue: number; upcomingConfirmed: number; held: { currency: string; cents: number }[] }>("/market/provider/appointments/summary");
+  const refresh = (message: string) => { setNotice(message); week.retry(); overview.retry(); summary.retry(); };
   const requests = (overview.data?.appointments ?? []).filter((booking) => booking.status === "requested" && new Date(booking.startsAt) > new Date());
   const invoices = (overview.data?.appointments ?? []).filter((booking) => booking.status === "pending_payment" && booking.paymentDueAt);
   const openQuotes = (quotes.data?.quotes ?? []).filter((quote) => quote.perspective === "provider" && quote.status === "requested").length;
   const upcoming = (overview.data?.appointments ?? []).filter((booking) => booking.status === "confirmed" && new Date(booking.startsAt) > new Date());
-  const heldCents = (overview.data?.appointments ?? []).filter((booking) => booking.payoutStatus === "held").reduce((sum, booking) => sum + booking.totalCents - (booking.refundedCents ?? 0) - (booking.applicationFeeCents ?? 0), 0);
-  const counts: Partial<Record<Tab, number>> = { requests: requests.length, quotes: openQuotes };
+  const held = summary.data?.held ?? [];
+  const heldLabel = held.length ? held.map((row) => money(row.cents, row.currency)).join(" · ") : money(0, "AUD");
+  const pendingRequests = summary.data?.pendingRequests ?? requests.length;
+  const upcomingCount = summary.data?.upcomingConfirmed ?? upcoming.length;
+  const counts: Partial<Record<Tab, number>> = { requests: pendingRequests, quotes: openQuotes };
 
   function choose(next: Tab) {
     setTab(next); setNotice("");
@@ -60,10 +70,10 @@ export function BusinessAppointments() {
   return <div className="business-appointments">
     <header className="account-ticket-heading"><div><p className="product-eyebrow">BUSINESS</p><h1>Appointments</h1><p>One calendar for all your services. Requests, quotes, time off and reviews in one place.</p></div></header>
     <div className="appointments-stats" aria-label="Summary">
-      <button type="button" onClick={() => choose("requests")}><strong>{requests.length}</strong><span>Waiting for your approval</span></button>
+      <button type="button" onClick={() => choose("requests")}><strong>{pendingRequests}</strong><span>Waiting for your approval</span></button>
       <button type="button" onClick={() => choose("quotes")}><strong>{openQuotes}</strong><span>Quotes to send</span></button>
-      <button type="button" onClick={() => choose("schedule")}><strong>{upcoming.length}</strong><span>Confirmed coming up</span></button>
-      <Link href="/business/payouts"><strong>{money(heldCents, "AUD")}</strong><span>Held until appointments finish</span></Link>
+      <button type="button" onClick={() => choose("schedule")}><strong>{upcomingCount}</strong><span>Confirmed coming up</span></button>
+      <Link href="/business/payouts"><strong>{heldLabel}</strong><span>Held until appointments finish</span></Link>
     </div>
     <div className="account-booking-tabs appointments-tabs" role="tablist" aria-label="Appointment tools">
       {TABS.map((item) => <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={tab === item.id ? "selected" : ""} onClick={() => choose(item.id)}>{item.label}{counts[item.id] ? <span>{counts[item.id]}</span> : null}</button>)}

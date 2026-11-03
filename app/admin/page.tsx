@@ -179,11 +179,11 @@ const groupOf = (id: Section) => sectionGroups.find((group) => group.ids.include
 const STAFF_ACCESS: [string, string][] = [
   ["user", "No staff access"],
   ["tester", "Tester: early app features, no admin portal"],
-  ["analyst", "Analyst: view and handle reports"],
-  ["support", "Support: view and handle reports"],
-  ["moderator", "Moderator: view and handle reports"],
-  ["event_operations", "Event operations: view and handle reports"],
-  ["finance", "Finance: view and handle reports"],
+  ["analyst", "Analyst: staff tools, not chat reports (authenticator required)"],
+  ["support", "Support: staff tools, not chat reports (authenticator required)"],
+  ["moderator", "Moderator: view and handle reports (authenticator required)"],
+  ["event_operations", "Event operations: staff tools, not chat reports (authenticator required)"],
+  ["finance", "Finance: staff tools, not chat reports (authenticator required)"],
   ["admin", "Admin: full control (authenticator required)"],
   ["owner", "Owner: full control (authenticator required)"],
 ];
@@ -281,6 +281,7 @@ async function request(path: string, init: RequestInit = {}) {
   const response = await fetch(`${adminApiBase()}${path}`, {
     ...init,
     credentials: "include",
+    cache: "no-store",
     headers: { "content-type": "application/json", ...init.headers },
   });
   const json =
@@ -461,7 +462,8 @@ export default function AdminPage() {
         if (!user || !staffRoles.has(user.role))
           throw new Error("This account does not have staff access");
         if (!mounted) return;
-        if ((user.role === 'owner' || user.role === 'admin') && !user.twoFactorEnabled) {
+        // Every staff role needs an authenticator (the API refuses the portal without one).
+        if (!user.twoFactorEnabled) {
           setError('Sign in with your password to finish authenticator setup.');
           return;
         }
@@ -503,10 +505,7 @@ export default function AdminPage() {
       const user = current?.user;
       if (!user || !staffRoles.has(user.role))
         throw new Error("This account does not have staff access");
-      if (
-        (user.role === "owner" || user.role === "admin") &&
-        !user.twoFactorEnabled
-      ) {
+      if (!user.twoFactorEnabled) {
         const setup = await adminAuthClient.twoFactor.enable({
           password,
           issuer: "Tivorah",

@@ -1,4 +1,5 @@
 "use client";
+import { AccountGate } from "../account/gate";
 import { useState, type FormEvent, useRef } from "react";
 import Link from "next/link";
 import "../account/booking-help.css";
@@ -128,6 +129,10 @@ function RequestRow({ request, showTitle, onDone }: { request: ManagedBookingReq
 
 /** Business-wide inbox: every event and service. */
 export function BusinessRequests() {
+  return <AccountGate redirectOnSignedOut>{(account) => <BusinessRequestsView key={account.id} />}</AccountGate>;
+}
+
+function BusinessRequestsView() {
   const { data, loading, error, retry } = useSellerRequests();
   const [kind, setKind] = useState<RequestKind>("refund");
   return (

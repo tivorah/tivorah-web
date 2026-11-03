@@ -26,6 +26,12 @@ function PayoutSettings() {
   const { data, loading, error, retry } = usePrivateResource<Payouts>(
     "/payments/connect/account",
   );
+  // Back from the Stripe tab: show the new status now, not after the 30-second cache.
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === "visible") retry(); };
+    document.addEventListener("visibilitychange", refresh);
+    return () => document.removeEventListener("visibilitychange", refresh);
+  }, [retry]);
   const [section, setSection] = useState<'payouts' | 'payments' | 'settings'>('payouts');
   useEffect(() => {
     const readSection = () => {
@@ -100,7 +106,7 @@ function PayoutSettings() {
             body: JSON.stringify(
               dashboard
                 ? {}
-                : { agreementVersion: data.currentPartnerAgreementVersion, ...(!data.connected ? { country, checkoutMethods: methods } : {}) },
+                : { agreementVersion: data.currentPartnerAgreementVersion, platform: "web", ...(!data.connected ? { country, checkoutMethods: methods } : {}) },
             ),
           },
         );

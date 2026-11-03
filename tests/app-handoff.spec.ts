@@ -33,3 +33,27 @@ test("a reloaded page (no token) never carries on as another account", async ({ 
   await expect(page.getByRole("link", { name: "Back to the app" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", `/auth/signin?returnTo=${encodeURIComponent(destination)}`);
 });
+
+test("a link for another account never replaces this browser's sign-in without asking", async ({ page }) => {
+  await stubDestination(page);
+  let verified = 0;
+  await page.route("**/api/auth/get-session", (route) => route.fulfill({ json: { session: { id: "s" }, user: { id: "7", name: "Ada Lovelace", username: "ada" } } }));
+  await page.route("**/api/auth/one-time-token/verify", (route) => { verified += 1; return route.fulfill({ json: { session: { id: "s2" }, user: { id: "42" } } }); });
+  await page.goto(`/auth/handoff?token=abc&returnTo=${encodeURIComponent(destination)}&account=42`);
+  await expect(page.getByRole("heading", { name: "Switch accounts?" })).toBeVisible();
+  expect(verified).toBe(0);
+  await page.getByRole("button", { name: "Keep Ada Lovelace @ada" }).click();
+  await expect(page).toHaveURL(new RegExp(`${destination}$`));
+  expect(verified).toBe(0);
+});
+
+test("a signed-out browser outside the app is shown who it is now signed in as", async ({ page }) => {
+  await stubDestination(page);
+  let signedIn = false;
+  await page.route("**/api/auth/get-session", (route) => route.fulfill({ json: signedIn ? { session: { id: "s" }, user: { id: "42", name: "Sam Lee", username: "sam" } } : null }));
+  await page.route("**/api/auth/one-time-token/verify", (route) => { signedIn = true; return route.fulfill({ json: { session: { id: "s" }, user: { id: "42" } } }); });
+  await page.goto(`/auth/handoff?token=abc&returnTo=${encodeURIComponent(destination)}&account=42`);
+  await expect(page.getByRole("heading", { name: "You’re signed in as Sam Lee @sam" })).toBeVisible();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(new RegExp(`${destination}$`));
+});

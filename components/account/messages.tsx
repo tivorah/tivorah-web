@@ -104,6 +104,7 @@ function Thread({ id, accountId }: { id: number; accountId: number }) {
   const [olderBusy, setOlderBusy] = useState(false);
   const messageId = useRef(randomId());
   const bottom = useRef<HTMLDivElement>(null);
+  const deliveredUpTo = useRef<{ conversation: number | null; messageId: number }>({ conversation: null, messageId: 0 });
   const current = conversation.data?.conversation;
   const currentId = current?.id;
   const latestMessages = messages.data;
@@ -122,7 +123,10 @@ function Thread({ id, accountId }: { id: number; accountId: number }) {
     if (!currentId || !latestMessages) return;
     const messageId = Math.max(0, ...latestMessages.messages.filter(message => message.senderId !== accountId).map(message => message.id));
     if (!messageId) return;
-    void api(`/chat/conversations/${id}/delivered`, { method: "PUT", body: JSON.stringify({ messageId }) }).catch(() => {});
+    if (deliveredUpTo.current.conversation !== id || deliveredUpTo.current.messageId < messageId) {
+      deliveredUpTo.current = { conversation: id, messageId };
+      void api(`/chat/conversations/${id}/delivered`, { method: "PUT", body: JSON.stringify({ messageId }) }).catch(() => {});
+    }
     const acknowledge = () => {
       if (document.visibilityState === "visible" && document.hasFocus())
         void api(`/chat/conversations/${id}/read`, { method: "PUT", body: JSON.stringify({ messageId }) }).catch(() => {});
