@@ -109,7 +109,7 @@ export function AccountDashboard() {
               <p>{account.email}</p>
               <AppearanceToggle />
               <div className="account-actions">
-                <Link href="/account/settings">Profile & security</Link>
+                <Link href="/account/settings">Settings</Link>
                 <Link href="/account/notifications">Booking & business updates</Link>
                 <Link href="/contact">Get support</Link>
                 <Link href="/account-deletion">Account deletion</Link>

@@ -35,7 +35,7 @@ export function ServiceReviews({ item, kind = "services" }: { item: DiscoveryIte
   return <section className="service-reviews" id="reviews"><h2>Reviews{item.rating?.count ? ` (${item.rating.count})` : ""}</h2>
     {reviews.length ? <ul>{reviews.map((review) => <li key={review.id}>
       <div className="service-review-head"><strong>{review.author.firstName}</strong><span aria-label={`${review.rating} out of 5 stars`}>{stars(review.rating)}</span></div>
-      <p className="service-review-date">{words.verified} · {new Intl.DateTimeFormat("en-AU", { month: "long", year: "numeric" }).format(new Date(review.createdAt))}</p>
+      <p className="service-review-date">{words.verified} · {new Intl.DateTimeFormat("en-AU", { month: "long", year: "numeric", timeZone: "Australia/Adelaide" }).format(new Date(review.createdAt))}</p>
       {review.comment ? <p>{review.comment}</p> : null}
       {review.providerReply ? <div className="service-review-reply"><span>{words.reply}</span><p>{review.providerReply}</p></div> : null}
     </li>)}</ul> : <p className="service-section-note">{words.none}</p>}

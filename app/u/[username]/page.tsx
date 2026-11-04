@@ -79,7 +79,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const location = [profile.city, profile.country].filter(Boolean).join(", ");
   const downloadUrl = process.env.NEXT_PUBLIC_APP_DOWNLOAD_URL || "/#download";
 
-  const joined = profile.memberSince ? new Date(profile.memberSince).toLocaleDateString("en-AU", { month: "long", year: "numeric" }) : null;
+  const joined = profile.memberSince ? new Date(profile.memberSince).toLocaleDateString("en-AU", { month: "long", year: "numeric", timeZone: "Australia/Adelaide" }) : null;
   // Laid out like the app's profile screen (tivorah-mobile app/profile/friend.tsx): photo beside the
   // name, the bio, the main action, then Details one fact per row with the app's icons.
   const details: { icon: string; text: string; caption?: string; href?: string }[] = [

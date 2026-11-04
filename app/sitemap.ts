@@ -32,6 +32,7 @@ const staticPaths: [string, MetadataRoute.Sitemap[number]["changeFrequency"], nu
   ["/accessibility", "yearly", 0.2],
   ["/disclaimer", "yearly", 0.2],
   ["/account-deletion", "yearly", 0.2],
+  ["/seller-tax", "yearly", 0.2],
 ];
 
 async function catalogue(): Promise<Catalogue | null> {

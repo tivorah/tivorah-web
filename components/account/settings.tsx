@@ -10,6 +10,7 @@ import { useMutation } from "../../hooks/use-mutation";
 import { memberAuth } from "../../lib/auth/client";
 import { api } from "../../lib/api/client";
 import { AnalyticsPreference } from "../analytics/analytics-preference";
+import { BlockedPerson, blockedPersonName } from "../../lib/blocks";
 function Settings() {
   const { data, loading, error, retry } = usePrivateResource<{
     firstName: string;
@@ -184,6 +185,7 @@ function Settings() {
           Read receipts and whether you appear in Discover are in the app under Profile → Settings &amp; privacy. See our <Link href="/privacy">Privacy Policy</Link> and <Link href="/cookies">Cookie Notice</Link>.
         </p>
       </section>
+      <BlockedPeople />
       <section className="product-form business-create">
         <h2>Delete account</h2>
         <p>
@@ -223,6 +225,39 @@ function Settings() {
     </>
   );
 }
+/** Everyone you've blocked, with Unblock (the app's Settings → Blocked people). */
+function BlockedPeople() {
+  const blocked = usePrivateResource<{ blocked: BlockedPerson[] }>("/blocks");
+  const [busyId, setBusyId] = useState<number | null>(null);
+  const [notice, setNotice] = useState("");
+  async function unblock(person: BlockedPerson) {
+    if (busyId) return;
+    setBusyId(person.userId);
+    setNotice("");
+    try {
+      await api(`/blocks/${person.userId}`, { method: "DELETE" });
+      setNotice(`${blockedPersonName(person)} is unblocked.`);
+      blocked.retry();
+    } catch (error) {
+      setNotice(error instanceof Error && error.message ? error.message : "Couldn’t unblock. Please try again.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+  const people = blocked.data?.blocked ?? [];
+  return (
+    <section className="product-form business-create" aria-labelledby="blocked-people-heading">
+      <h2 id="blocked-people-heading">Blocked people</h2>
+      <p className="hub-field-hint">People you block can’t message or call you, and you don’t see each other’s posts or replies. They aren’t told.</p>
+      {blocked.loading && !blocked.data ? <p role="status">Loading…</p> : null}
+      {blocked.error ? <div role="alert" className="product-notice"><p>{blocked.error}</p><button type="button" className="product-secondary" onClick={blocked.retry}>Try again</button></div> : null}
+      {blocked.data && !people.length ? <p>You haven’t blocked anyone.</p> : null}
+      {people.length ? <ul className="blocked-people">{people.map((person) => <li key={person.userId}><span><strong>{blockedPersonName(person)}</strong><small>@{person.username}</small></span><button type="button" className="product-secondary" disabled={busyId === person.userId} onClick={() => void unblock(person)}>{busyId === person.userId ? "Unblocking…" : "Unblock"}</button></li>)}</ul> : null}
+      {notice ? <p role="status">{notice}</p> : null}
+    </section>
+  );
+}
+
 export function AccountSettings() {
   return <AccountGate>{() => <Settings />}</AccountGate>;
 }

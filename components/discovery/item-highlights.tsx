@@ -30,7 +30,7 @@ export function ItemGlance({ item }: { item: DiscoveryItem }) {
     ways ? ["Getting it", ways] : null,
     item.pickupNotes ? ["Pickup details", item.pickupNotes] : null,
     item.inventory && item.inventory > 1 ? ["Available", `${item.inventory} available`] : null,
-    item.createdAt ? ["Listed", new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "long", year: "numeric" }).format(new Date(item.createdAt))] : null,
+    item.createdAt ? ["Listed", new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: "Australia/Adelaide" }).format(new Date(item.createdAt))] : null,
   ].filter((row): row is [string, string] => !!row && !!row[1]);
   return <section className="service-glance" aria-label="At a glance"><h2>At a glance</h2><dl>{rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></section>;
 }

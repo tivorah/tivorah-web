@@ -4,6 +4,8 @@ import { randomId } from "../../lib/random-id";
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { blockConfirmText } from "../../lib/blocks";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { adminApiBase } from "../../app/admin/api-base";
@@ -91,6 +93,8 @@ function Inbox({ accountId }: { accountId: number }) {
 }
 
 function Thread({ id, accountId }: { id: number; accountId: number }) {
+  const router = useRouter();
+  const [blocking, setBlocking] = useState(false);
   const conversation = usePrivateResource<{ conversation: Conversation }>(`/chat/conversations/${id}`);
   const messages = usePrivateResource<{ messages: Message[]; pagination: { isMoreData: boolean } }>(`/chat/conversations/${id}/messages?take=50`);
   const [draft, setDraft] = useState("");
@@ -168,8 +172,21 @@ function Thread({ id, accountId }: { id: number; accountId: number }) {
   const backHref = `/account/messages${messageTabQuery(enquiry ? "enquiry" : "private")}`;
   const other = current.participants.find((person) => person.id !== accountId);
   const name = other?.firstName || (other ? `@${other.username}` : "Tivorah member");
+  // Block, as in the app's chat menu (App Store 1.2 / Google Play UGC): asks first, then leaves the chat.
+  async function block() {
+    if (!other || blocking || !window.confirm(blockConfirmText(name))) return;
+    setBlocking(true);
+    setNotice("");
+    try {
+      await api("/blocks", { method: "POST", body: JSON.stringify({ userId: other.id }) });
+      router.push(backHref);
+    } catch (error) {
+      setNotice(error instanceof Error && error.message ? error.message : "Couldn’t block. Please check your connection and try again.");
+      setBlocking(false);
+    }
+  }
   const shown = [...(messages.data?.messages || []), ...older].filter((item, index, all) => all.findIndex((candidate) => candidate.id === item.id) === index).reverse();
-  return <section className="message-conversation"><nav className="account-ticket-breadcrumb" aria-label="Breadcrumb"><Link href="/account">Your account</Link><span aria-hidden="true">›</span><Link href={backHref}>Messages</Link><span aria-hidden="true">›</span><span aria-current="page">Conversation</span></nav><header className="message-thread-heading"><Link className="message-back" href={backHref} aria-label="Back to messages"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5 8 12l7 7" /></svg></Link><span className="message-avatar" aria-hidden="true">{initials(name)}</span><div><p className="product-eyebrow">CONVERSATION WITH</p><h1>{name}</h1></div><span className="message-live-label" role="status"><span aria-hidden="true" />{live ? "Live updates" : "Checking for new messages"}</span></header>{enquiry ? <div className="message-topic"><span>{kindLabel(current.context?.source?.kind)} enquiry</span><strong>{current.context?.source?.title || "Conversation"}</strong></div> : null}
+  return <section className="message-conversation"><nav className="account-ticket-breadcrumb" aria-label="Breadcrumb"><Link href="/account">Your account</Link><span aria-hidden="true">›</span><Link href={backHref}>Messages</Link><span aria-hidden="true">›</span><span aria-current="page">Conversation</span></nav><header className="message-thread-heading"><Link className="message-back" href={backHref} aria-label="Back to messages"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5 8 12l7 7" /></svg></Link><span className="message-avatar" aria-hidden="true">{initials(name)}</span><div><p className="product-eyebrow">CONVERSATION WITH</p><h1>{name}</h1></div><span className="message-live-label" role="status"><span aria-hidden="true" />{live ? "Live updates" : "Checking for new messages"}</span></header>{other ? <div className="message-safety"><button type="button" className="shop-link-button message-block" onClick={block} disabled={blocking}>{blocking ? "Blocking…" : `Block ${name}`}</button></div> : null}{enquiry ? <div className="message-topic"><span>{kindLabel(current.context?.source?.kind)} enquiry</span><strong>{current.context?.source?.title || "Conversation"}</strong></div> : null}
     {messages.loading && messages.data ? <p className="account-refresh-status" role="status">Updating conversation…</p> : null}
     {messages.error ? <div role="alert" className="product-notice"><p>{messages.error}</p><button className="product-secondary" onClick={messages.retry}>Try again</button></div> : null}
     {(olderMore ?? messages.data?.pagination.isMoreData) ? <button className="product-secondary message-older" disabled={olderBusy} onClick={loadOlder}>{olderBusy ? "Loading…" : "Earlier messages"}</button> : null}

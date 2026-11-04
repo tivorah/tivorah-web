@@ -10,7 +10,7 @@ export default function Privacy() {
       <span className="eyebrow">Legal</span>
       <h1>Privacy Policy</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 3 November 2026
+        <strong>Last updated:</strong> 5 November 2026
       </p>
 
       <p>
@@ -76,7 +76,8 @@ export default function Privacy() {
         </li>
         <li>
           <strong>Messages and calls:</strong> the content of your private
-          chats, group conversations and enquiries, including text, photos,
+          chats, any existing group conversations and enquiries, including
+          text, photos,
           voice messages and other attachments; who you message and when;
           delivery and read status; reports that a participant chooses to
           submit; and device and technical call or signalling records. To connect a
@@ -379,8 +380,8 @@ export default function Privacy() {
       </p>
       <h2>Messages and how we protect them</h2>
       <p>
-        Private one-to-one chats, group conversations and enquiries about a
-        listing, service, event or job are stored by Tivorah so that they can
+        Private one-to-one chats, any existing group conversations and
+        enquiries about a listing, service, event or job are stored by Tivorah so that they can
         be delivered, shown on your phone and on the website, kept safe and
         reviewed when someone reports them. Tivorah private chats are{" "}
         <strong>not</strong> end-to-end encrypted. This is how we protect them:
@@ -522,7 +523,7 @@ export default function Privacy() {
         storage, never runs when your browser sends a Global Privacy Control or
         Do Not Track signal, and can be changed in our{" "}
         <Link href="/cookies">Cookie Notice</Link> or under{" "}
-        <strong>Your account → Profile &amp; security → Privacy</strong>.
+        <strong>Your account → Settings → Privacy</strong>.
       </p>
       <p>
         <strong>Error monitoring.</strong> When something fails on our servers,
@@ -845,7 +846,7 @@ export default function Privacy() {
       <p>
         You can delete your account in the mobile app under
         <strong> Profile → Settings &amp; privacy → Delete account</strong>, or on the
-        website under <strong>Your account → Profile &amp; security → Delete account</strong>.
+        website under <strong>Your account → Settings → Delete account → Continue to account deletion</strong>.
         Deletion signs you out everywhere and removes or de-identifies your
         personal information: your email, username, phone, name, bio, photo
         (including the stored file), address, date of birth, gender, country,

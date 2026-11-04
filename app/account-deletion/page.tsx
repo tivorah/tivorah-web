@@ -1,15 +1,34 @@
+import Link from "next/link";
 import { pageMetadata } from "../../lib/site";
 import { LegalNavigation } from "../legal-navigation";
 
 export const metadata = pageMetadata("Delete Your Account", "How to request deletion of a Tivorah account and data.", "/account-deletion");
 
-export default function AccountDeletion() {
+// The website's Delete account button lands here with ?deleted=1 once the account is gone.
+export default async function AccountDeletion({ searchParams }: { searchParams: Promise<{ deleted?: string | string[] }> }) {
+  const { deleted } = await searchParams;
   return (
     <article className="content">
+      {deleted === "1" ? (
+        <div className="legal-callout" role="status">
+          <strong>Your account has been deleted</strong>
+          <p>
+            You&apos;ve been signed out on every device. Your profile and personal
+            details have been removed or de-identified, your listings have been
+            taken down, and any orders you were buying that were still in
+            progress have been cancelled. Records we must keep for refunds, tax
+            and disputes are kept as explained below. If you have a question,
+            email <a href="mailto:privacy@tivorah.com">privacy@tivorah.com</a>.
+          </p>
+          <p>
+            <Link href="/">Back to Tivorah</Link>
+          </p>
+        </div>
+      ) : null}
       <span className="eyebrow">Account controls</span>
       <h1>Delete your Tivorah account</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 23 October 2026
+        <strong>Last updated:</strong> 5 November 2026
       </p>
 
       <h2>Delete in the mobile app</h2>
@@ -35,8 +54,9 @@ export default function AccountDeletion() {
       <h2>Delete on the website</h2>
       <ol>
         <li>Sign in at tivorah.com.</li>
-        <li>Open <strong>Your account</strong>, then <strong>Profile &amp; security</strong>.</li>
-        <li>Under <strong>Delete account</strong>, confirm your password and select <strong>Permanently delete my account</strong>.</li>
+        <li>Open <strong>Your account</strong>, then <strong>Settings</strong>.</li>
+        <li>Under <strong>Delete account</strong>, select <strong>Continue to account deletion</strong>.</li>
+        <li>Confirm your password, tick the confirmation box and select <strong>Permanently delete my account</strong>.</li>
       </ol>
       <p>
         Deleting your account also removes your shop page. If you have upcoming events with

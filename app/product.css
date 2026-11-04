@@ -2314,3 +2314,13 @@ html[data-theme="dark"] .owner-manage .owner-manage-link:hover { background: #5a
 .saving-overlay-title { margin: 6px 0 0; font-size: 17px; line-height: 22px; font-weight: 700; }
 .saving-overlay-body { margin: 0; font-size: 14px; line-height: 20px; color: #706a73; }
 @media (prefers-reduced-motion: reduce) { .saving-overlay-spinner { animation: none; border-top-color: #e6dcf3; border-right-color: #65409f; } }
+
+/* Block, under the conversation heading (components/account/messages.tsx). */
+.message-safety { display: flex; justify-content: flex-end; margin: -14px 0 10px; }
+.message-safety .message-block { min-height: 44px; color: #b4232f; }
+.message-safety .message-block:disabled { opacity: .6; cursor: default; }
+.blocked-people { display: grid; gap: 0; margin: 12px 0 0; padding: 0; list-style: none; }
+.blocked-people li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; border-top: 1px solid #ece4f2; }
+.blocked-people li:first-child { border-top: 0; }
+.blocked-people strong { display: block; font-size: 15px; }
+.blocked-people small { color: #65576d; font-size: 13px; }

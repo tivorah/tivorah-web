@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 2 November 2026
+        <strong>Last updated:</strong> 5 November 2026
       </p>
 
       <div className="legal-callout">
@@ -161,11 +161,13 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
 
       <h2>Messaging</h2>
       <p>
-        Private one-to-one chats, group conversations and enquiries about
-        listings, services, events, tickets or jobs are stored by Tivorah so
-        they can be delivered and kept safe. They are protected by encryption
-        in transit and at rest and can be read only by the people in the
-        conversation, but they are <strong>not</strong> end-to-end encrypted.
+        Private one-to-one chats, any existing group conversations and
+        enquiries about listings, services, events, tickets or jobs are stored
+        by Tivorah so they can be delivered and kept safe. They are protected
+        by encryption in transit and at rest and can be read by the people in
+        the conversation and, only in the limited cases described below and in
+        the Privacy Policy, by authorised Tivorah staff. They are{" "}
+        <strong>not</strong> end-to-end encrypted.
         See the <Link href="/privacy">Privacy Policy</Link> for how messages
         are protected, screened, reported, kept and deleted.
       </p>

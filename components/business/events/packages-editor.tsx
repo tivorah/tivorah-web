@@ -112,7 +112,7 @@ export function packagesPayload(drafts: PackageDraft[], options: PackagesPayload
     const end = draft.salesEndAt ? new Date(draft.salesEndAt) : null;
     if (start && end && end <= start) throw new Error(`Sales for ${label} must end after they start.`);
     const code = draft.accessCode.trim();
-    if (draft.hidden && code && !/^[A-Za-z0-9-]{3,40}$/.test(code)) throw new Error(`The access code for ${label} must be 3–40 letters, numbers or dashes.`);
+    if (draft.hidden && code && !/^[A-Za-z0-9-]{6,40}$/.test(code)) throw new Error(`The access code for ${label} must be 6–40 letters, numbers or dashes.`);
     const releaseIndex = draft.releaseAfter.startsWith("key:") ? drafts.findIndex((item) => `key:${item.key}` === draft.releaseAfter) : -1;
     return {
       name, priceCents, currency: currencyOf(draft), quantity, maxTicketsPerBuyer,

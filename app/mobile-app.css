@@ -125,6 +125,7 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
   .message-thread-page, .product-page.page-shell.message-thread-page { padding: 0 0 0; }
   .message-conversation { min-height: calc(100dvh - 56px); }
   .message-conversation > .account-ticket-breadcrumb { display: none; }
+  .message-safety { margin: 0; padding: 0 12px; }
   .message-thread-heading { display: grid; grid-template-columns: 44px 36px minmax(0, 1fr); column-gap: 8px; row-gap: 0; align-items: center; margin: 0; padding: 6px 12px 6px 0; border-bottom: 1px solid #ece4f2; }
   .message-thread-heading > .message-back, .message-thread-heading > .message-avatar { grid-row: 1 / span 2; }
   .message-thread-heading > div { grid-column: 3; align-self: end; }

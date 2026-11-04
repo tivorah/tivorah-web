@@ -14,3 +14,11 @@ test("business links follow the Shop switch", () => {
   assert.deepEqual(featuresForPath("/business"), []);
   assert.deepEqual(featuresForPath("/business/payouts"), []);
 });
+
+// /account/orders/[id] is an event ticket order (and where web event checkout returns), so it
+// follows Events, not Shop; item orders live under /account/item-orders.
+test("ticket order pages follow the Events switch", () => {
+  assert.deepEqual(featuresForPath("/account/orders/42"), ["events"]);
+  assert.deepEqual(featuresForPath("/account/tickets"), ["events"]);
+  assert.deepEqual(featuresForPath("/account/item-orders/7"), ["marketplace"]);
+});

@@ -1355,6 +1355,15 @@ html[data-theme="dark"], html[data-theme="dark"] body { background: #151217; col
   border-right-color: #5d4a7c;
 }
 }
+:root[data-theme="dark"] .message-safety .message-block {
+  color: #ea949b;
+}
+:root[data-theme="dark"] .blocked-people li {
+  border-top: 1px solid #433a46;
+}
+:root[data-theme="dark"] .blocked-people small {
+  color: #c7beca;
+}
 
 /* app/discovery-filters.css */
 :root[data-theme="dark"] .filter-select-trigger,

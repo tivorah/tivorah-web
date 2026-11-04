@@ -180,7 +180,7 @@ const routeFeatures: [string, string[]][] = [
   ["/account/tickets", ["events"]],
   ["/account/bookings", ["services", "service_bookings"]],
   ["/account/item-orders", ["marketplace"]],
-  ["/account/orders", ["marketplace"]],
+  ["/account/orders", ["events"]], // event ticket orders (and the web checkout return page)
   ["/account/messages", ["chat"]],
   ["/business/events", ["events"]],
   ["/business/appointments", ["services", "service_bookings"]],

@@ -495,9 +495,10 @@ export const topics: readonly GuideTopic[] = [
     summary: 'Ways to take control when someone bothers you.',
     steps: [
       'Report the message or profile (see Report something).',
+      'Block them: in the chat, tap the options button and choose Block. You can also block from their profile, or from the options on any of their Hub posts. On the website, open the conversation and choose Block. They can’t message or call you, and you won’t see each other’s posts or replies. They aren’t told.',
       'In the chat, tap the options button and choose Mute notifications, or Clear chat for me.',
       'In a Hub, admins can mute, suspend or remove a member. You can also use Report a member.',
-      'To see or unblock people you’ve blocked, go to Settings & privacy → Blocked people.',
+      'To see or unblock people you’ve blocked, go to Settings & privacy → Blocked people in the app, or Account settings → Blocked people on the website.',
     ],
     tip: 'If you feel unsafe, stop replying and don’t agree to meet. Keep screenshots of anything threatening.',
     keywords: ['block', 'harassment', 'mute', 'unwanted', 'stalking'],
