@@ -7,7 +7,7 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <span className="eyebrow">Legal</span>
       <h1>Terms of Use</h1>
       <p className="legal-meta">
-        <strong>Last updated:</strong> 5 November 2026
+        <strong>Last updated:</strong> 7 November 2026
       </p>
 
       <div className="legal-callout">
@@ -349,8 +349,8 @@ export function TermsContent({ inDialog = false }: { inDialog?: boolean }) {
       <p>
         Where paid tickets are enabled, the total customer price, any customer-paid Tivorah fee,
         organiser terms and material cancellation information are shown before
-        payment. Payments are processed by Stripe and net funds may be directed
-        to an organiser&apos;s connected account. Tivorah does not store full card
+        payment. Payments are processed by Stripe. Tivorah holds the payment and
+        pays the organiser&apos;s share to their connected account after the event. Tivorah does not store full card
         numbers. A purchase completed through an external link is governed by
         the organiser or external provider&apos;s checkout terms, privacy practices,
         fees and refund process. Rights that cannot be excluded under Australian
