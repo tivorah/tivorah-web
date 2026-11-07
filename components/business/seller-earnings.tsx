@@ -6,7 +6,8 @@ import { money } from '../../lib/api/discovery';
 type Source = 'all' | 'event' | 'service';
 type Currency = { currency: string; collectedCents: number; payments: number };
 type Payment = { source: 'event' | 'service'; id: number; title: string; reference: string; createdAt: string; currency: string; totalCents: number; status: string };
-type Summary = { totals: Record<Source, Currency[]>; recentPayments?: Record<Source, Payment[]>; updatedAt: string };
+type Held = { currency: string; cents: number; orders: number };
+type Summary = { totals: Record<Source, Currency[]>; recentPayments?: Record<Source, Payment[]>; heldEvents?: Held[]; updatedAt: string };
 const labels = { all: 'All booking payments', event: 'Event ticket payments', service: 'Service payments' };
 export function SellerEarnings({ testMode = false }: { testMode?: boolean }) {
   const { data, error, loading, retry } = usePrivateResource<Summary>('/payments/connect/earnings-summary');
@@ -17,6 +18,10 @@ export function SellerEarnings({ testMode = false }: { testMode?: boolean }) {
     <p className="payouts-statistics-note">Before fees and refunds.</p>
     <nav className="event-manage-tabs" aria-label="Booking payment category">{([{ key: 'all', label: 'All' }, { key: 'event', label: 'Events' }, { key: 'service', label: 'Services' }] as const).map(tab => <button type="button" key={tab.key} aria-pressed={source === tab.key} onClick={() => setSource(tab.key)}>{tab.label}</button>)}</nav>
     {testMode ? <p className="payouts-statistics-note">Sandbox bookings · These amounts are test payments.</p> : null}
+    {source !== 'service' && data?.heldEvents?.length ? <div className="payouts-card" role="note" aria-label="Event payouts on hold">
+      <p className="payouts-amount">{data.heldEvents.map(row => money(row.cents, row.currency)).join(' · ')}</p>
+      <p>Ticket money on hold from {data.heldEvents.reduce((sum, row) => sum + row.orders, 0)} {data.heldEvents.reduce((sum, row) => sum + row.orders, 0) === 1 ? 'order' : 'orders'}. It’s sent to your Stripe account 5 days after each event ends.</p>
+    </div> : null}
     <h3 aria-live="polite">{labels[source]}</h3>
     {loading && !data ? <div className="payouts-card" role="status" aria-label="Loading booking payments"><span className="tivorah-shimmer payouts-skeleton-label" /><span className="tivorah-shimmer payouts-skeleton-status" /></div> : data ? data.totals[source].length ? data.totals[source].map(row => <div className="payouts-card" key={row.currency}>
       <p className="payouts-amount">{money(row.collectedCents, row.currency)}</p><p>{row.payments} paid {row.payments === 1 ? 'booking' : 'bookings'} · {row.currency}</p>

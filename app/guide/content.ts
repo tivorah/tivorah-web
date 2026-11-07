@@ -364,8 +364,8 @@ export const topics: readonly GuideTopic[] = [
       'Tap Connect with Stripe and follow the steps. Your bank and identity details stay with Stripe.',
       'If you stop part way, tap Continue in Stripe to finish. Payout account shows Connected when you’re ready.',
     ],
-    tip: 'Tivorah’s fees are shown before anyone pays. You can see payments and payouts on the Payouts screen.',
-    keywords: ['stripe', 'bank', 'get paid', 'money', 'payout', 'fees'],
+    tip: 'Tivorah’s fees are shown before anyone pays. Ticket money is sent to you 5 days after your event ends, and service payments 24 hours after the appointment is completed. You can see payments and payouts on the Payouts screen.',
+    keywords: ['stripe', 'bank', 'get paid', 'money', 'payout', 'fees', 'when'],
   },
   {
     id: 'your-shop',

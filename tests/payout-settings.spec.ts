@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
   const event = { source: 'event', id: 42, title: 'Adelaide music evening', reference: 'Event order #42', createdAt: '2026-10-06T10:00:00Z', currency: 'AUD', totalCents: 10000, status: 'confirmed' };
   const service = { source: 'service', id: 42, title: 'Home cleaning appointment', reference: 'Service booking #42', createdAt: '2026-10-06T09:00:00Z', currency: 'AUD', totalCents: 6000, status: 'completed' };
-  await page.route("**/api/v1/payments/connect/earnings-summary", route => route.fulfill({ json: { data: { totals: { all: [{ currency: 'AUD', collectedCents: 16000, payments: 3 }], event: [{ currency: 'AUD', collectedCents: 10000, payments: 2 }], service: [{ currency: 'AUD', collectedCents: 6000, payments: 1 }] }, recentPayments: { all: [event, service], event: [event], service: [service] }, updatedAt: '2026-10-07T00:00:00Z' } } }));
+  await page.route("**/api/v1/payments/connect/earnings-summary", route => route.fulfill({ json: { data: { totals: { all: [{ currency: 'AUD', collectedCents: 16000, payments: 3 }], event: [{ currency: 'AUD', collectedCents: 10000, payments: 2 }], service: [{ currency: 'AUD', collectedCents: 6000, payments: 1 }] }, recentPayments: { all: [event, service], event: [event], service: [service] }, heldEvents: [{ currency: 'AUD', cents: 9500, orders: 2 }], updatedAt: '2026-10-07T00:00:00Z' } } }));
   await page.route("**/api/v1/payments/event-tax-profile", route => route.fulfill({ json: { data: { profile: null } } }));
 });
 
@@ -30,12 +30,18 @@ test("payout loading matches its layout and Stripe opens in a separate tab", asy
   await expect(earnings.locator(".payouts-amount").filter({ hasText: /AUD.*60\.00/ })).toBeVisible();
   await expect(earnings.getByText('Home cleaning appointment')).toBeVisible();
   await expect(earnings.getByText('Adelaide music evening')).toHaveCount(0);
+  await expect(earnings.getByRole('note', { name: 'Event payouts on hold' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Your bank payouts' })).toHaveCount(0);
   await earnings.getByRole('button', { name: 'Events', exact: true }).click();
   await expect(earnings.locator(".payouts-amount").filter({ hasText: /AUD.*100\.00/ })).toBeVisible();
   await expect(earnings.getByText('Adelaide music evening')).toBeVisible();
   await expect(earnings.getByText('Home cleaning appointment')).toHaveCount(0);
   await expect(earnings.getByText('Event order #42', { exact: true })).toBeVisible();
+  // Ticket money is held on Tivorah's balance until 5 days after each event.
+  const heldTickets = earnings.getByRole('note', { name: 'Event payouts on hold' });
+  await expect(heldTickets.getByText(/AUD.*95\.00/)).toBeVisible();
+  await expect(heldTickets).toContainText('2 orders');
+  await expect(heldTickets).toContainText('5 days after each event ends');
   await earnings.getByRole('button', { name: 'All', exact: true }).click();
   await earnings.screenshot({ path: "/tmp/tivorah-booking-payments-desktop.png" });
   await workspace.getByRole('button', { name: 'Payouts', exact: true }).click();
