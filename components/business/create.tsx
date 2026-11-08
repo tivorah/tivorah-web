@@ -1,6 +1,5 @@
 "use client";
 import { randomId } from "../../lib/random-id";
-import { currencyOptions } from "../../lib/pricing-currencies";
 import { BookingSetupNotice, type BookingSetupIssue } from "./booking-setup-notice";
 import { LoadingState } from "../ui/loading-state";
 import Link from "next/link";
@@ -31,7 +30,6 @@ import { hasMenuItems, menuPayload, type ServiceMenuValue } from "../../lib/serv
 import categories from "../../lib/discovery-categories.json";
 import { ItemOrderingFields } from "./item-ordering-fields";
 import { useFeature } from "../discovery/features";
-const EVENT_CURRENCIES = currencyOptions();
 /** A ticket type with no quantity of its own and no event capacity (as in the app). */
 const NO_LIMIT = 1000000;
 function CreationForm({ kind }: { kind: CreationKind }) {
@@ -41,10 +39,11 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [mode, setMode] = useState(kind === "event" ? "venue" : "at_provider");
   const [locality, setLocality] = useState<Locality | null>(null);
   const [placeCountry, setPlaceCountry] = useState<PlaceCountry | null>(null);
-  // Tivorah tickets are sold only where Tivorah payments work (e.g. Australia, set by admins).
-  // Elsewhere, people get tickets from the organiser's link, by messaging them, or both.
-  const tivorahTicketing = kind !== "event" || mode === "online" || (placeCountry?.payments ?? true);
-  const [ticketContact, setTicketContact] = useState<"link" | "message" | "both">("link");
+  // Paid Tivorah tickets only where Tivorah payments work (Australia for now, set by admins).
+  // Elsewhere, free Tivorah tickets, the organiser's link, messaging them, or both.
+  const paymentsHere = kind !== "event" || mode === "online" || (placeCountry?.payments ?? true);
+  const [ticketContact, setTicketContact] = useState<"tivorah" | "link" | "message" | "both">("tivorah");
+  const tivorahTicketing = paymentsHere || ticketContact === "tivorah";
   // The cover: up to eight photo slides (cover-slides-field.tsx), uploaded on submit.
   const [covers, setCovers] = useState<CoverSlide[]>([]);
   const uploadedCovers = useRef(new Map<File, string>());
@@ -55,10 +54,11 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   // Tickets, in the app's order: currency, group bookings, free, capacity, then the ticket types
   // (the only ticket list; it starts with General admission and always keeps one).
   const [packages, setPackages] = useState<PackageDraft[]>(() => [newPackage({ name: "General admission", quantity: "", price: "" })]);
-  const [currency, setCurrency] = useState("AUD");
+  // Money is Australia-only for now, so paid tickets are always in Australian dollars.
+  const currency = "AUD";
   const [allowGroups, setAllowGroups] = useState(false);
   const [free, setFree] = useState(true);
-  const isFree = free || !paidTicketsOn;
+  const isFree = free || !paidTicketsOn || !paymentsHere;
   const [limitCapacity, setLimitCapacity] = useState(false);
   const [capacityText, setCapacityText] = useState("");
   // Australia: the state or territory first, then the venue search inside it.
@@ -356,7 +356,6 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               <input type="hidden" name="mode" value={mode} />
             </div> : null}
             {kind === "item" || mode !== "online" ? <LocalityField required onChange={setLocality}
-              isAvailable={kind === "event" ? (country) => country.payments : undefined}
               onCountryChange={(country) => { setPlaceCountry(country); if (country.code !== "AU") { setAuState(""); setVenue(null); } }}
               australia={kind === "event" ? <div className="event-place-au">
                 <label>State or territory
@@ -391,13 +390,16 @@ function CreationForm({ kind }: { kind: CreationKind }) {
             </section>
             <section id="create-tickets" className="shop-step create-section">
               <h2><span className="create-step-no" aria-hidden="true">6</span>Tickets</h2>
+              {!paymentsHere ? <>
+                <p className="create-ticket-region" role="note">Paid tickets are only available in Australia for now. Free tickets work in {placeCountry?.name ?? "your country"}.</p>
+                <p className="create-question">How do people get tickets?</p>
+                <div className="create-segmented" role="radiogroup" aria-label="How do people get tickets?">
+                  {([["tivorah", "Free tickets"], ["link", "Ticket link"], ["message", "Message me"], ["both", "Both"]] as const).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={ticketContact === value} className={ticketContact === value ? "is-selected" : ""} onClick={() => setTicketContact(value)}>{label}</button>)}
+                </div>
+              </> : null}
               {tivorahTicketing ? <>
-                {/* First what shapes the ticket types: their currency and whether one can be a group. */}
+                {/* First what shapes the ticket types: whether one can be a group, and paid entry. */}
                 <div className="create-extras-list create-ticket-options">
-                  <div className="create-extra-row">
-                    <span className="create-extra-text"><strong>Currency</strong><small>Used for every ticket type</small></span>
-                    <span className="create-ticket-currency"><SelectField label="Ticket currency" value={currency} onChange={setCurrency} disabled={busy} options={EVENT_CURRENCIES} /></span>
-                  </div>
                   <label className="create-extra-row create-extra-switch">
                     <span className="create-extra-text"><strong>Allow group bookings</strong><small>{allowGroups ? "Ticket types can be Group tickets" : "Switch on to add Group tickets"}</small></span>
                     <span className="shop-switch"><input type="checkbox" role="switch" name="allowGroupBookings" checked={allowGroups} disabled={busy}
@@ -407,10 +409,10 @@ function CreationForm({ kind }: { kind: CreationKind }) {
                         if (!event.target.checked) setPackages((current) => current.map((item) => item.kind === "group" ? { ...item, kind: "standard" } : item));
                       }} /><span className="shop-switch-track" aria-hidden="true" /></span>
                   </label>
-                  <label className="create-extra-row create-extra-switch">
+                  {paymentsHere ? <label className="create-extra-row create-extra-switch">
                     <span className="create-extra-text"><strong>Free tickets</strong><small>{paidTicketsOn ? "Switch off for paid entry" : "Paid entry is currently unavailable"}</small></span>
                     <span className="shop-switch"><input type="checkbox" role="switch" checked={isFree} disabled={busy || !paidTicketsOn} onChange={(event) => setFree(event.target.checked)} /><span className="shop-switch-track" aria-hidden="true" /></span>
-                  </label>
+                  </label> : null}
                   <label className="create-extra-row create-extra-switch">
                     <span className="create-extra-text"><strong>Limit capacity</strong><small>{limitCapacity ? "Bookings stop when full" : "Unlimited by default"}</small></span>
                     <span className="shop-switch"><input type="checkbox" role="switch" checked={limitCapacity} disabled={busy} onChange={(event) => setLimitCapacity(event.target.checked)} /><span className="shop-switch-track" aria-hidden="true" /></span>
@@ -423,11 +425,6 @@ function CreationForm({ kind }: { kind: CreationKind }) {
                   unlimited={limitCapacity && Number.isInteger(Number(capacityText)) && Number(capacityText) > 0 ? Number(capacityText) : NO_LIMIT} />
                 <p className="shop-hint">{isFree ? "Free tickets are issued instantly." : <>Paid tickets need <Link href="/business/payouts">payout setup</Link> before you publish.</>}</p>
               </> : <>
-                <p className="create-ticket-region" role="note">Tivorah tickets aren’t available in your region at the moment.</p>
-                <p className="create-question">How do people get tickets?</p>
-                <div className="create-segmented" role="radiogroup" aria-label="How do people get tickets?">
-                  {([["link", "Ticket link"], ["message", "Message me"], ["both", "Both"]] as const).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={ticketContact === value} className={ticketContact === value ? "is-selected" : ""} onClick={() => setTicketContact(value)}>{label}</button>)}
-                </div>
                 {ticketContact !== "message" ? <label>Ticket link<input name="externalTicketUrl" type="url" required placeholder="https://" maxLength={2000} /></label> : null}
                 <p className="shop-hint">{ticketContact === "link" ? "People open your ticket website from the event page." : ticketContact === "message" ? "People message you on Tivorah; enquiries arrive in your messages." : "People can open your ticket website or message you on Tivorah."}</p>
               </>}
