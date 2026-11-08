@@ -42,6 +42,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [placeCountry, setPlaceCountry] = useState<PlaceCountry | null>(null);
   // Picking a country where admins haven't switched payments on explains what's possible there.
   const [paymentsNotice, setPaymentsNotice] = useState<PlaceCountry | null>(null);
+  // Filled from a searched place's name when empty; shown once the event has an address.
+  const [venueName, setVenueName] = useState("");
   // Paid Tivorah tickets only where Tivorah payments work (Australia for now, set by admins).
   // Elsewhere, free Tivorah tickets, the organiser's link, messaging them, or both.
   const paymentsHere = kind !== "event" || mode === "online" || (placeCountry?.payments ?? true);
@@ -157,7 +159,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
         document.getElementById(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
       };
       if (mode === "venue" && placeCountry?.code === "AU" && !auState) return fail("Choose the state or territory, then search for the venue.", "create-place");
-      if (mode === "venue" && placeCountry?.code === "AU" && !venue) return fail("Search for the venue’s address and choose it, or enter it manually.", "create-place");
+      if (mode === "venue" && placeCountry?.code === "AU" && !venue) return fail("Add the event address: search for the venue under Event address, or choose “Can’t find your venue?” to type it yourself.", "create-place");
       if (!draft.startsAt) return fail("Choose the start date and time.", "create-when");
       if (!draft.endsAt) return fail("Choose the end date and time.", "create-when");
       if (tivorahTicketing) {
@@ -371,12 +373,13 @@ function CreationForm({ kind }: { kind: CreationKind }) {
                       setAuState(code);
                     }} />
                 </label>
-                {auState ? <EventVenueField key={auState} state={auState} value={venue} disabled={busy} onChange={(next) => { setVenue(next); setLocality(next?.locality ?? null); }} />
+                {auState ? <EventVenueField key={auState} state={auState} value={venue} disabled={busy} onChange={(next) => { setVenue(next); setLocality(next?.locality ?? null); if (next?.venueName) setVenueName((current) => current.trim() ? current : next.venueName ?? ""); }} />
                   : <p className="shop-hint">Choose the state or territory first, then search for the venue.</p>}
               </div> : undefined} /> : null}
             {kind === "service" && (mode === "mobile" || mode === "flexible") ? <label>Travel distance (km)<input name="serviceAreaKm" type="number" min={1} max={500} required placeholder="e.g. 15" /></label> : null}
             {kind === "event" ? (mode === "venue" ? placeCountry?.code === "AU" ? <>
-              <label><span className="shop-label">Venue name <span className="shop-optional">Optional</span></span><input name="venueName" maxLength={160} placeholder="e.g. Adelaide Town Hall" /></label>
+              {/* An extra for the address, so only once there is one (it isn't where the address goes). */}
+              {venue ? <label><span className="shop-label">Venue name <span className="shop-optional">Optional</span></span><input name="venueName" maxLength={160} placeholder="e.g. Adelaide Town Hall" value={venueName} onChange={(event) => setVenueName(event.target.value)} /></label> : null}
               <input type="hidden" name="address" value={venue?.address ?? ""} />
             </> : <div className="shop-row">
               <label><span className="shop-label">Venue name <span className="shop-optional">Optional</span></span><input name="venueName" maxLength={160} placeholder="e.g. Adelaide Town Hall" /></label>

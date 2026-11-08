@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newPackage, packagePriceLabel, packagesPayload } from "../events/packages-editor";
-import { AU_STATE_NAMES, venueSearchText, venuesInState } from "../events/event-venue-field";
+import { AU_STATE_NAMES, placeDetails, venueSearchText, venuesInState } from "../events/event-venue-field";
 import { quickHubs } from "../hub-share-field";
 import { creationPayload } from "../create-payload";
 
@@ -62,4 +62,9 @@ test("create form: with paid tickets each price is set on purpose, 0 making one 
   assert.equal(packagesPayload([newPackage({ name: "General admission", price: "" })], { paidAllowed: false })[0].priceCents, 0);
   assert.equal(packagePriceLabel(newPackage({ price: "" })), "Add a price");
   assert.equal(packagePriceLabel(newPackage({ price: "0" })), "Free");
+});
+
+test("a named venue's address is shown without its name repeated", () => {
+  assert.equal(placeDetails("Adelaide Town Hall, 128 King William Street, Adelaide", "Adelaide Town Hall"), "128 King William Street, Adelaide");
+  assert.equal(placeDetails("128 King William Street, Adelaide", "Adelaide Town Hall"), "128 King William Street, Adelaide");
 });

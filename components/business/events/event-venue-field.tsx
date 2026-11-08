@@ -12,8 +12,9 @@ import type { Locality } from "../locality-field";
 /** Australia's states and territories, for choosing one before searching an address. */
 export const AU_STATE_NAMES: Record<string, string> = { NSW: "New South Wales", VIC: "Victoria", QLD: "Queensland", WA: "Western Australia", SA: "South Australia", TAS: "Tasmania", ACT: "Australian Capital Territory", NT: "Northern Territory" };
 
-export type Venue = { address: string; locality: Locality; latitude?: number; longitude?: number };
-type Suggestion = { id: string; address: string; formattedAddress: string; countryCode: string; locality: Locality | null; latitude: number; longitude: number; precise: boolean };
+/** venueName: a searched place's name (a hall, a park), to fill an empty venue name. */
+export type Venue = { address: string; locality: Locality; latitude?: number; longitude?: number; venueName?: string | null };
+type Suggestion = { id: string; address: string; venueName?: string | null; formattedAddress: string; countryCode: string; locality: Locality | null; latitude: number; longitude: number; precise: boolean };
 
 /** The search text sent for a state: the query plus the state's name (unless it's already there). */
 export function venueSearchText(query: string, state?: string) {
@@ -26,11 +27,16 @@ export function venuesInState<T extends { locality: { state: string } | null }>(
   return state ? found.filter((item) => !item.locality || item.locality.state === state) : found;
 }
 
+/** A named place's full address without its name in front (the name is shown first, in bold). */
+export function placeDetails(formattedAddress: string, venueName: string) {
+  return formattedAddress.startsWith(`${venueName}, `) ? formattedAddress.slice(venueName.length + 2) : formattedAddress;
+}
+
 export function EventVenueField({ state, value, onChange, disabled }: { state: string; value: Venue | null; onChange: (venue: Venue | null) => void; disabled?: boolean }) {
   const [query, setQuery] = useState("");
   const [typed, setTyped] = useState(false);
   const [manual, setManual] = useState(false);
-  const [draft, setDraft] = useState<{ address: string; locality: Locality | null }>({ address: "", locality: null });
+  const [draft, setDraft] = useState<{ address: string; locality: Locality | null; venueName: string | null }>({ address: "", locality: null, venueName: null });
   const [suburbQuery, setSuburbQuery] = useState("");
   const [suburbs, setSuburbs] = useState<Locality[]>([]);
   const [suburbStatus, setSuburbStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -78,20 +84,20 @@ export function EventVenueField({ state, value, onChange, disabled }: { state: s
 
   const enterManual = (item?: Suggestion) => {
     stop(); setLoading(false); setError(""); setSuggestions([]);
-    setDraft({ address: item?.address ?? query.trim(), locality: item?.locality && item.locality.state === state ? { ...item.locality, countryCode: "AU" } : null });
+    setDraft({ address: item?.address ?? query.trim(), locality: item?.locality && item.locality.state === state ? { ...item.locality, countryCode: "AU" } : null, venueName: item?.venueName ?? null });
     setSuburbQuery(""); setManual(true);
   };
   const choose = (item: Suggestion) => {
     if (item.countryCode !== "AU") { setError("Event publishing currently supports Australian addresses. International event publishing is not available yet."); return; }
     if (item.locality && item.precise) {
-      onChange({ address: item.address, locality: { ...item.locality, countryCode: "AU" }, latitude: item.latitude, longitude: item.longitude });
+      onChange({ address: item.address, locality: { ...item.locality, countryCode: "AU" }, latitude: item.latitude, longitude: item.longitude, venueName: item.venueName ?? null });
       setSuggestions([]); setQuery(""); setTyped(false);
     } else enterManual(item);
   };
   const saveManual = () => {
     if (!draft.address.trim()) { setError("Enter the address the way guests should see it."); return; }
     if (!draft.locality) { setError(`Choose the suburb in ${state} from the list, so people nearby can find the event.`); return; }
-    onChange({ address: draft.address.trim(), locality: draft.locality });
+    onChange({ address: draft.address.trim(), locality: draft.locality, venueName: draft.venueName });
     setManual(false);
   };
   const clear = () => {
@@ -151,7 +157,7 @@ export function EventVenueField({ state, value, onChange, disabled }: { state: s
     {suggestions.length ? <ul className="event-venue-results" aria-label="Matching addresses">
       {suggestions.map((item) => <li key={item.id}>
         <button type="button" onClick={() => choose(item)}>
-          <span>{item.formattedAddress}</span>
+          <span>{item.venueName ? <><strong>{item.venueName}</strong> · {placeDetails(item.formattedAddress, item.venueName)}</> : item.formattedAddress}</span>
           {item.countryCode !== "AU" ? <small>International event publishing is not available yet</small> : !item.precise || !item.locality ? <small>Confirm the address manually</small> : null}
         </button>
       </li>)}
