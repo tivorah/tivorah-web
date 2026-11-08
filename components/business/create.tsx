@@ -158,7 +158,6 @@ function CreationForm({ kind }: { kind: CreationKind }) {
         setError(message);
         document.getElementById(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
       };
-      if (mode === "venue" && placeCountry?.code === "AU" && !auState) return fail("Choose the state or territory, then search for the venue.", "create-place");
       if (mode === "venue" && placeCountry?.code === "AU" && !venue) return fail("Add the event address: search for the venue under Event address, or choose “Can’t find your venue?” to type it yourself.", "create-place");
       if (!draft.startsAt) return fail("Choose the start date and time.", "create-when");
       if (!draft.endsAt) return fail("Choose the end date and time.", "create-when");
@@ -364,8 +363,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               onCountryChosen={kind === "event" ? (country) => { if (!country.payments) setPaymentsNotice(country); } : undefined}
               onCountryChange={(country) => { setPlaceCountry(country); if (country.code !== "AU") { setAuState(""); setVenue(null); } }}
               australia={kind === "event" ? <div className="event-place-au">
-                <label>State or territory
-                  <SelectField label="State or territory" value={auState} placeholder="Choose first, then search the venue" disabled={busy}
+                <label><span className="shop-label">State or territory <span className="shop-optional">Optional · narrows the address search</span></span>
+                  <SelectField label="State or territory" value={auState || venue?.locality.state || ""} placeholder="Any state or territory" disabled={busy}
                     options={Object.entries(AU_STATE_NAMES).map(([code, name]) => ({ value: code, label: name }))}
                     onChange={(code) => {
                       // A venue in another state no longer fits: search again in this one.
@@ -373,8 +372,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
                       setAuState(code);
                     }} />
                 </label>
-                {auState ? <EventVenueField key={auState} state={auState} value={venue} disabled={busy} onChange={(next) => { setVenue(next); setLocality(next?.locality ?? null); if (next?.venueName) setVenueName((current) => current.trim() ? current : next.venueName ?? ""); }} />
-                  : <p className="shop-hint">Choose the state or territory first, then search for the venue.</p>}
+                <EventVenueField key={auState} state={auState || undefined} value={venue} disabled={busy} onChange={(next) => { setVenue(next); setLocality(next?.locality ?? null); if (next?.venueName) setVenueName((current) => current.trim() ? current : next.venueName ?? ""); }} />
               </div> : undefined} /> : null}
             {kind === "service" && (mode === "mobile" || mode === "flexible") ? <label>Travel distance (km)<input name="serviceAreaKm" type="number" min={1} max={500} required placeholder="e.g. 15" /></label> : null}
             {kind === "event" ? (mode === "venue" ? placeCountry?.code === "AU" ? <>
