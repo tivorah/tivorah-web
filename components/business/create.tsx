@@ -356,6 +356,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               <input type="hidden" name="mode" value={mode} />
             </div> : null}
             {kind === "item" || mode !== "online" ? <LocalityField required onChange={setLocality}
+              isAvailable={kind === "event" ? (country) => country.payments : undefined}
               onCountryChange={(country) => { setPlaceCountry(country); if (country.code !== "AU") { setAuState(""); setVenue(null); } }}
               australia={kind === "event" ? <div className="event-place-au">
                 <label>State or territory

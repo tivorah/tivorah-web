@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { ApiError, api } from "../../../lib/api/client";
+import { api } from "../../../lib/api/client";
 import type { Locality } from "../locality-field";
 
 // An Australian event's venue, as in the app (tivorah-mobile/components/location/EventVenueSearch.tsx):
 // the state or territory is chosen first (AU_STATE_NAMES), then the address search stays inside it —
-// the state's name goes with the query and results in another state are dropped — and an address
-// entered by hand must be in that state too.
+// the state's name goes with the query and results in another state are dropped. An address entered
+// by hand is taken as written; only its suburb is picked from a list (in that state), so it always matches.
 
 /** Australia's states and territories, for choosing one before searching an address. */
 export const AU_STATE_NAMES: Record<string, string> = { NSW: "New South Wales", VIC: "Victoria", QLD: "Queensland", WA: "Western Australia", SA: "South Australia", TAS: "Tasmania", ACT: "Australian Capital Territory", NT: "Northern Territory" };
@@ -30,7 +30,10 @@ export function EventVenueField({ state, value, onChange, disabled }: { state: s
   const [query, setQuery] = useState("");
   const [typed, setTyped] = useState(false);
   const [manual, setManual] = useState(false);
-  const [draft, setDraft] = useState({ address: "", suburb: "", postcode: "" });
+  const [draft, setDraft] = useState<{ address: string; locality: Locality | null }>({ address: "", locality: null });
+  const [suburbQuery, setSuburbQuery] = useState("");
+  const [suburbs, setSuburbs] = useState<Locality[]>([]);
+  const [suburbStatus, setSuburbStatus] = useState<"idle" | "loading" | "error">("idle");
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [error, setError] = useState("");
@@ -60,10 +63,23 @@ export function EventVenueField({ state, value, onChange, disabled }: { state: s
     return () => { window.clearTimeout(timer); stop(); };
   }, [query, typed, manual, value, state]);
 
+  // The suburb list for a typed address, 250ms after typing stops, inside the chosen state.
+  useEffect(() => {
+    if (!manual || draft.locality || suburbQuery.trim().length < 2) { setSuburbs([]); setSuburbStatus("idle"); return; }
+    const controller = new AbortController();
+    setSuburbStatus("loading");
+    const timer = window.setTimeout(() => {
+      api<{ localities: Locality[] }>(`/public/discovery/locations?query=${encodeURIComponent(suburbQuery.trim())}&state=${encodeURIComponent(state)}`, { signal: controller.signal })
+        .then((data) => { if (!controller.signal.aborted) { setSuburbs((data?.localities ?? []).slice(0, 8)); setSuburbStatus("idle"); } })
+        .catch(() => { if (!controller.signal.aborted) setSuburbStatus("error"); });
+    }, 250);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [manual, draft.locality, suburbQuery, state]);
+
   const enterManual = (item?: Suggestion) => {
     stop(); setLoading(false); setError(""); setSuggestions([]);
-    setDraft({ address: item?.address ?? query.trim(), suburb: item?.locality?.suburb ?? "", postcode: item?.locality?.postcode ?? "" });
-    setManual(true);
+    setDraft({ address: item?.address ?? query.trim(), locality: item?.locality && item.locality.state === state ? { ...item.locality, countryCode: "AU" } : null });
+    setSuburbQuery(""); setManual(true);
   };
   const choose = (item: Suggestion) => {
     if (item.countryCode !== "AU") { setError("Event publishing currently supports Australian addresses. International event publishing is not available yet."); return; }
@@ -72,25 +88,11 @@ export function EventVenueField({ state, value, onChange, disabled }: { state: s
       setSuggestions([]); setQuery(""); setTyped(false);
     } else enterManual(item);
   };
-  const saveManual = async () => {
-    if (!draft.address.trim() || !draft.suburb.trim() || !/^\d{4}$/.test(draft.postcode.trim())) { setError(`Enter a street address, a suburb or city in ${state} and a four-digit postcode.`); return; }
-    stop();
-    const controller = new AbortController();
-    request.current = controller;
-    setLoading(true); setError("");
-    try {
-      const params = new URLSearchParams({ suburb: draft.suburb.trim(), state, postcode: draft.postcode.trim() });
-      const data = await api<{ locality?: Locality }>(`/utility/locations/resolve?${params}`, { signal: controller.signal });
-      if (controller.signal.aborted) return;
-      const match = data?.locality;
-      if (!match) { setError("The suburb, state and postcode do not match. Check those fields and try again."); return; }
-      if (match.state !== state) { setError(`This address isn’t in ${state}. Change the state above, or enter an address in ${state}.`); return; }
-      onChange({ address: draft.address.trim(), locality: { suburb: match.suburb, state: match.state, postcode: match.postcode, countryCode: "AU" } });
-      setManual(false);
-    } catch (cause) {
-      if (controller.signal.aborted) return;
-      setError(cause instanceof ApiError && cause.status === 422 ? "The suburb, state and postcode do not match. Check those fields and try again." : "Could not confirm the suburb. Your entries are kept; check your connection and try again.");
-    } finally { if (!controller.signal.aborted) setLoading(false); }
+  const saveManual = () => {
+    if (!draft.address.trim()) { setError("Enter the address the way guests should see it."); return; }
+    if (!draft.locality) { setError(`Choose the suburb in ${state} from the list, so people nearby can find the event.`); return; }
+    onChange({ address: draft.address.trim(), locality: draft.locality });
+    setManual(false);
   };
   const clear = () => {
     stop(); setLoading(false); setError(""); setSuggestions([]); setQuery(""); setTyped(false); setManual(false);
@@ -101,7 +103,7 @@ export function EventVenueField({ state, value, onChange, disabled }: { state: s
   const keepEnter = (event: KeyboardEvent) => {
     if (event.key !== "Enter" || (event.target as HTMLElement).tagName !== "INPUT") return;
     event.preventDefault();
-    if (manual) void saveManual();
+    if (manual) saveManual();
   };
 
   if (value) return <div className="event-venue">
@@ -113,17 +115,29 @@ export function EventVenueField({ state, value, onChange, disabled }: { state: s
   </div>;
 
   if (manual) return <div className="event-venue" onKeyDown={keepEnter}>
-    <p className="create-question">Enter the address manually</p>
-    <label>Street address<input value={draft.address} maxLength={300} disabled={loading || disabled} placeholder="Street number and street name" autoComplete="street-address" onChange={(event) => { setError(""); setDraft((current) => ({ ...current, address: event.target.value })); }} /></label>
-    <div className="shop-row">
-      <label>Suburb or city<input value={draft.suburb} maxLength={100} disabled={loading || disabled} placeholder="e.g. Adelaide" onChange={(event) => { setError(""); setDraft((current) => ({ ...current, suburb: event.target.value })); }} /></label>
-      <label>Postcode<input value={draft.postcode} inputMode="numeric" maxLength={4} disabled={loading || disabled} placeholder="e.g. 5000" onChange={(event) => { setError(""); setDraft((current) => ({ ...current, postcode: event.target.value.replace(/\D/g, "") })); }} /></label>
-    </div>
-    <p className="shop-hint">State or territory: {AU_STATE_NAMES[state]}. A manually entered address has no confirmed map pin.</p>
+    <p className="create-question">Enter the address yourself</p>
+    <label>Address<input value={draft.address} maxLength={300} disabled={disabled} placeholder="e.g. Rear hall, 12 King William St" autoComplete="street-address" onChange={(event) => { setError(""); setDraft((current) => ({ ...current, address: event.target.value })); }} /></label>
+    {draft.locality ? <div className="event-venue-chosen" role="status">
+      <span className="event-venue-chosen-text"><strong>{draft.locality.suburb}</strong><small>{draft.locality.state} {draft.locality.postcode} · Australia</small></span>
+      <button type="button" className="ticket-list-edit" disabled={disabled} onClick={() => { setError(""); setSuburbQuery(""); setDraft((current) => ({ ...current, locality: null })); }} aria-label={`Change suburb, ${draft.locality.suburb}`}>Change</button>
+    </div> : <>
+      <label>Suburb<input type="search" value={suburbQuery} maxLength={80} disabled={disabled} autoComplete="off" aria-busy={suburbStatus === "loading"} placeholder={`Search a suburb or postcode in ${state}`}
+        onChange={(event) => { setError(""); setSuburbQuery(event.target.value); }} /></label>
+      {suburbs.length ? <ul className="event-venue-results" aria-label="Matching suburbs">
+        {suburbs.map((item) => <li key={`${item.suburb}-${item.postcode}`}>
+          <button type="button" onClick={() => { setError(""); setSuburbQuery(""); setDraft((current) => ({ ...current, locality: { suburb: item.suburb, state: item.state, postcode: item.postcode, countryCode: "AU" } })); }}>
+            <span>{item.suburb}</span><small>{item.state} · {item.postcode}</small>
+          </button>
+        </li>)}
+      </ul> : suburbStatus === "loading" ? <p className="shop-hint" role="status">Finding suburbs…</p>
+        : suburbStatus === "error" ? <p className="field-error" role="alert">Couldn’t search suburbs. Check your connection and try again.</p>
+        : suburbQuery.trim().length >= 2 ? <p className="shop-hint">No matching suburb in {state}. Try the postcode.</p> : null}
+    </>}
+    <p className="shop-hint">Write the address however guests will find it. A typed address has no map pin, so guests see the address only.</p>
     {error ? <p className="field-error" role="alert">{error}</p> : null}
     <div className="event-venue-actions">
-      <button type="button" className="product-primary press-fx" disabled={loading || disabled} onClick={() => void saveManual()}>{loading ? "Checking address…" : "Use this address"}</button>
-      <button type="button" className="event-venue-link" disabled={loading} onClick={() => { stop(); setError(""); setQuery(draft.address); setTyped(false); setManual(false); }}>Search for an address instead</button>
+      <button type="button" className="product-primary press-fx" disabled={disabled} onClick={saveManual}>Use this address</button>
+      <button type="button" className="event-venue-link" onClick={() => { stop(); setError(""); setQuery(draft.address); setTyped(false); setManual(false); }}>Search for an address instead</button>
     </div>
   </div>;
 

@@ -18,6 +18,7 @@ export function LocalityField({
   defaultCountry,
   required = true,
   australia,
+  isAvailable,
 }: {
   required?: boolean;
   /** Replaces the suburb search when Australia is chosen (events: state, then venue search). */
@@ -25,6 +26,8 @@ export function LocalityField({
   onChange: (value: Locality | null) => void;
   /** Called with the chosen country (and on first load), e.g. to show whether Tivorah ticketing works there. */
   onCountryChange?: (country: PlaceCountry) => void;
+  /** Countries that can be chosen (e.g. events: where Tivorah ticketing is on); the rest are listed after, as coming soon. */
+  isAvailable?: (country: PlaceCountry) => boolean;
   /** The record's current country when editing; new records start on the browser's region. */
   defaultCountry?: string | null;
 }) {
@@ -38,6 +41,15 @@ export function LocalityField({
     guessed.current = true;
     setCountry(browserCountry());
   }, []);
+  // A browser region that can't be chosen here starts on Australia instead.
+  const available = useRef(isAvailable);
+  useEffect(() => { available.current = isAvailable; });
+  useEffect(() => {
+    const found = countries?.find((item) => item.code === country);
+    if (found && available.current && !available.current(found)) { setCountry("AU"); onChange(null); }
+    // Only when the country or the list changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countries, country]);
   const notify = useRef(onCountryChange);
   useEffect(() => { notify.current = onCountryChange; });
   // Keyed on the values, not the object: the fallback details are a new object every render.
@@ -54,7 +66,11 @@ export function LocalityField({
       <label>
         Country
         <SelectField label="Country" value={country} onChange={chooseCountry} searchable
-          options={(countries ?? [config]).map((item) => ({ value: item.code, label: `${countryFlag(item.code)} ${item.name}` }))} />
+          options={[...(countries ?? [config])].sort((a, b) => Number(!isAvailable || isAvailable(b)) - Number(!isAvailable || isAvailable(a)))
+            .map((item) => {
+              const open = !isAvailable || isAvailable(item);
+              return { value: item.code, label: `${countryFlag(item.code)} ${item.name}${open ? "" : " · Coming soon"}`, disabled: !open };
+            })} />
       </label>
       {country === "AU" && australia !== undefined
         ? australia
