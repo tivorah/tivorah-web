@@ -1,0 +1,16 @@
+/* Centred "Got it" notice (notice-dialog.tsx), styled like the open-in-app card. It themes itself
+   (light and dark variables below), so scripts/build-dark-theme.mjs skips it. */
+.notice-dialog { --nd-card: #fff; --nd-icon: #f2edf7; --nd-icon-ink: #65409f; --nd-ink: #17131f; --nd-muted: #625a6b; --nd-primary: #151217; --nd-primary-ink: #fff; --nd-focus: #a978e8; --nd-shadow: rgba(20, 14, 26, .28); }
+:root[data-theme="dark"] .notice-dialog { --nd-card: #211e24; --nd-icon: #2b2531; --nd-icon-ink: #dcc8fa; --nd-ink: #f4f0f5; --nd-muted: #c6bdc9; --nd-primary: #f5f2f7; --nd-primary-ink: #151217; --nd-focus: #c8a7f5; --nd-shadow: rgba(0, 0, 0, .5); }
+.notice-dialog { width: min(390px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: var(--nd-ink); }
+.notice-dialog::backdrop { background: rgba(18, 14, 20, .55); animation: notice-dialog-fade .2s ease-out; }
+:root[data-theme="dark"] .notice-dialog::backdrop { background: rgba(8, 6, 10, .72); }
+.notice-dialog-card { display: grid; gap: 8px; justify-items: center; padding: 22px 20px 18px; border-radius: 28px; background: var(--nd-card); box-shadow: 0 24px 60px var(--nd-shadow); text-align: center; animation: notice-dialog-up .24s cubic-bezier(.2, .8, .2, 1); }
+.notice-dialog-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--nd-icon); color: var(--nd-icon-ink); font-size: 22px; font-weight: 800; }
+.notice-dialog h2 { margin: 6px 0 0; color: var(--nd-ink); font-size: 19px; line-height: 1.3; overflow-wrap: anywhere; }
+.notice-dialog p { margin: 0 4px 10px; color: var(--nd-muted); font-size: 14px; line-height: 1.45; }
+.notice-dialog-primary { width: 100%; min-height: 50px; padding: 12px 18px; border: 0; border-radius: 25px; background: var(--nd-primary); color: var(--nd-primary-ink); font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+.notice-dialog-primary:focus-visible { outline: 3px solid var(--nd-focus); outline-offset: 2px; }
+@keyframes notice-dialog-up { from { transform: translateY(18px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes notice-dialog-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .notice-dialog-card, .notice-dialog::backdrop { animation: none; } }

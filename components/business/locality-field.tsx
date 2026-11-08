@@ -18,6 +18,7 @@ export function LocalityField({
   defaultCountry,
   required = true,
   australia,
+  onCountryChosen,
 }: {
   required?: boolean;
   /** Replaces the suburb search when Australia is chosen (events: state, then venue search). */
@@ -25,6 +26,8 @@ export function LocalityField({
   onChange: (value: Locality | null) => void;
   /** Called with the chosen country (and on first load), e.g. to show whether Tivorah ticketing works there. */
   onCountryChange?: (country: PlaceCountry) => void;
+  /** Called only when the person picks a country (not on load), e.g. to explain what works there. */
+  onCountryChosen?: (country: PlaceCountry) => void;
   /** The record's current country when editing; new records start on the browser's region. */
   defaultCountry?: string | null;
 }) {
@@ -47,6 +50,8 @@ export function LocalityField({
   const chooseCountry = (code: string) => {
     if (!code || code === country) return;
     setCountry(code);
+    const chosen = countries?.find((item) => item.code === code);
+    if (chosen) onCountryChosen?.(chosen);
     onChange(null);
   };
   return (

@@ -21,6 +21,7 @@ import { TicketPackageList, newPackage, packagesPayload, type PackageDraft } fro
 import { EventWhenField } from "./events/event-when-field";
 import { AU_STATE_NAMES, EventVenueField, type Venue } from "./events/event-venue-field";
 import { Sheet } from "../ui/sheet";
+import { NoticeDialog } from "../ui/notice-dialog";
 import { SavingOverlay } from "../ui/saving-overlay";
 import { conditionOptions, priceTypeOptions } from "./select-options";
 import { asksCondition, createCopy } from "./listing-kinds";
@@ -39,6 +40,8 @@ function CreationForm({ kind }: { kind: CreationKind }) {
   const [mode, setMode] = useState(kind === "event" ? "venue" : "at_provider");
   const [locality, setLocality] = useState<Locality | null>(null);
   const [placeCountry, setPlaceCountry] = useState<PlaceCountry | null>(null);
+  // Picking a country where admins haven't switched payments on explains what's possible there.
+  const [paymentsNotice, setPaymentsNotice] = useState<PlaceCountry | null>(null);
   // Paid Tivorah tickets only where Tivorah payments work (Australia for now, set by admins).
   // Elsewhere, free Tivorah tickets, the organiser's link, messaging them, or both.
   const paymentsHere = kind !== "event" || mode === "online" || (placeCountry?.payments ?? true);
@@ -356,6 +359,7 @@ function CreationForm({ kind }: { kind: CreationKind }) {
               <input type="hidden" name="mode" value={mode} />
             </div> : null}
             {kind === "item" || mode !== "online" ? <LocalityField required onChange={setLocality}
+              onCountryChosen={kind === "event" ? (country) => { if (!country.payments) setPaymentsNotice(country); } : undefined}
               onCountryChange={(country) => { setPlaceCountry(country); if (country.code !== "AU") { setAuState(""); setVenue(null); } }}
               australia={kind === "event" ? <div className="event-place-au">
                 <label>State or territory
@@ -519,6 +523,9 @@ function CreationForm({ kind }: { kind: CreationKind }) {
         </div>
       </form>
 
+      <NoticeDialog open={paymentsNotice !== null} onClose={() => setPaymentsNotice(null)} icon="$"
+        title={`Paid events aren’t open in ${paymentsNotice?.name ?? "this country"} yet`}
+        body={`Tivorah can’t collect ticket payments for events in ${paymentsNotice?.name ?? "this country"} yet. You can still create free events there, in person or online.`} />
       <Sheet open={promptsOpen} onClose={() => setPromptsOpen(false)} title={`Questions for ${kind === "event" ? "attendees" : "customers"}`} description="Suggested questions appear when people message you, so conversations start well."
         footer={<><span /><span className="tv-sheet-foot-actions"><button type="button" className="product-primary press-fx" onClick={() => setPromptsOpen(false)}>Done</button></span></>}>
         <div className="create-prompts-fields">
